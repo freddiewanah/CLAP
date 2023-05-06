@@ -1,0 +1,25 @@
+def get_name(self, include_role_fqcn=True):
+    """ return the name of the task """
+    if self._role:
+        role_name = self._role.get_name(include_role_fqcn=include_role_fqcn)
+    if self._role and self.name:
+        return '%s : %s' % (role_name, self.name)
+    elif self.name:
+        return self.name
+    elif self._role:
+        return '%s : %s' % (role_name, self.action)
+    else:
+        return '%s' % (self.action,)
+
+----------
+
+def test_play_with_hosts_string():
+    p = Play.load({'hosts': 'foo'})
+    assert str(p) == 'foo'
+    assert p.get_name() == 'foo'
+
+----------
+
+
+
+Test Class Name: default

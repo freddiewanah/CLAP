@@ -1,0 +1,38 @@
+@gen.coroutine
+def resolve(self, host: str, port: int, family: int=0) -> 'Generator[Any, Any, List[Tuple[int, Any]]]':
+    if is_valid_ip(host):
+        addresses = [host]
+    else:
+        fut = Future()
+        self.channel.gethostbyname(host, family, lambda result, error: fut.set_result((result, error)))
+        (result, error) = (yield fut)
+        if error:
+            raise IOError('C-Ares returned error %s: %s while resolving %s' % (error, pycares.errno.strerror(error), host))
+        addresses = result.addresses
+    addrinfo = []
+    for address in addresses:
+        if '.' in address:
+            address_family = socket.AF_INET
+        elif ':' in address:
+            address_family = socket.AF_INET6
+        else:
+            address_family = socket.AF_UNSPEC
+        if family != socket.AF_UNSPEC and family != address_family:
+            raise IOError('Requested socket family %d but got %d' % (family, address_family))
+        addrinfo.append((typing.cast(int, address_family), (address, port)))
+    return addrinfo
+
+----------
+
+@gen_test
+def test_resolve_multiaddr(self):
+    result = (yield self.resolver.resolve('google.com', 80, socket.AF_INET))
+    self.assertIn((socket.AF_INET, ('1.2.3.4', 80)), result)
+    result = (yield self.resolver.resolve('google.com', 80, socket.AF_INET6))
+    self.assertIn((socket.AF_INET6, ('2a02:6b8:7c:40c:c51e:495f:e23a:3', 80, 0, 0)), result)
+
+----------
+
+
+
+Test Class Name: OverrideResolverTest

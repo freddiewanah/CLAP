@@ -1,0 +1,16 @@
+def is_hop_by_hop_header(header):
+    """Checks if the given header is a Hop By Hop header"""
+    return header.lower() in _HOP_BY_HOP_HEADERS
+
+----------
+
+def test_is_hop_by_hop_header():
+    tests = (('connection', True), ('upgrade', True), ('', False), ('test', False))
+    for (header, expected) in tests:
+        assert helpers.is_hop_by_hop_header(header) is expected
+
+----------
+
+
+
+Test Class Name: default

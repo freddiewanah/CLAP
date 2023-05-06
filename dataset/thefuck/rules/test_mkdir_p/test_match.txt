@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('mkdir foo/bar/baz', 'mkdir: foo/bar: No such file or directory'), Command('./bin/hdfs dfs -mkdir foo/bar/baz', "mkdir: `foo/bar/baz': No such file or directory"), Command('hdfs dfs -mkdir foo/bar/baz', "mkdir: `foo/bar/baz': No such file or directory")])
+def test_match(command):
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

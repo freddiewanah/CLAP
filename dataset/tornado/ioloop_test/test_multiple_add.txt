@@ -1,0 +1,19 @@
+def fileno(self) -> int:
+    pass
+
+----------
+
+def test_multiple_add(self):
+    (sock, port) = bind_unused_port()
+    try:
+        self.io_loop.add_handler(sock.fileno(), lambda fd, events: None, IOLoop.READ)
+        self.assertRaises(Exception, self.io_loop.add_handler, sock.fileno(), lambda fd, events: None, IOLoop.READ)
+    finally:
+        self.io_loop.remove_handler(sock.fileno())
+        sock.close()
+
+----------
+
+
+
+Test Class Name: TestIOLoop

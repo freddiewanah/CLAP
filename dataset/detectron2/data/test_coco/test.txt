@@ -1,0 +1,38 @@
+def get(self, name):
+    """
+        Args:
+            name (str): name of a dataset (e.g. coco_2014_train).
+
+        Returns:
+            Metadata: The :class:`Metadata` instance associated with this name,
+            or create an empty one if none is available.
+        """
+    assert len(name)
+    r = super().get(name, None)
+    if r is None:
+        r = self[name] = Metadata(name=name)
+    return r
+
+----------
+
+def test(self):
+    mask = make_mask()
+    DatasetCatalog.register('test_dataset', lambda : make_dataset_dicts(mask))
+    MetadataCatalog.get('test_dataset').set(thing_classes=['test_label'])
+    json_dict = convert_to_coco_dict('test_dataset')
+    with tempfile.TemporaryDirectory() as tmpdir:
+        json_file_name = os.path.join(tmpdir, 'test.json')
+        with open(json_file_name, 'w') as f:
+            json.dump(json_dict, f)
+        dicts = load_coco_json(json_file_name, '')
+    anno = dicts[0]['annotations'][0]
+    loaded_mask = mask_util.decode(anno['segmentation'])
+    self.assertTrue(np.array_equal(loaded_mask, mask))
+    DatasetCatalog.pop('test_dataset')
+    MetadataCatalog.pop('test_dataset')
+
+----------
+
+
+
+Test Class Name: TestRLEToJson

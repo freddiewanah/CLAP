@@ -1,0 +1,15 @@
+def assert_compressed(self, response):
+    self.assertEqual(response.headers.get('Content-Encoding', response.headers.get('X-Consumed-Content-Encoding')), 'gzip')
+
+----------
+
+def test_gzip(self):
+    response = self.fetch('/')
+    self.assert_compressed(response)
+    self.assertEqual(response.headers['Vary'], 'Accept-Encoding')
+
+----------
+
+
+
+Test Class Name: Handler

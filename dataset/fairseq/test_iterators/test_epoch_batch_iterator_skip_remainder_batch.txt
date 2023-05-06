@@ -1,0 +1,27 @@
+def has_next(self):
+    """Whether the iterator has been exhausted."""
+    return self.n < self.total
+
+----------
+
+def test_epoch_batch_iterator_skip_remainder_batch(self):
+    reference = [1, 2, 3]
+    itr1 = _get_epoch_batch_itr(reference, 2, True)
+    self.assertEqual(len(itr1), 1)
+    itr2 = _get_epoch_batch_itr(reference, 2, False)
+    self.assertEqual(len(itr2), 2)
+    itr3 = _get_epoch_batch_itr(reference, 1, True)
+    self.assertEqual(len(itr3), 2)
+    itr4 = _get_epoch_batch_itr(reference, 1, False)
+    self.assertEqual(len(itr4), 3)
+    itr5 = _get_epoch_batch_itr(reference, 4, True)
+    self.assertEqual(len(itr5), 0)
+    self.assertFalse(itr5.has_next())
+    itr6 = _get_epoch_batch_itr(reference, 4, False)
+    self.assertEqual(len(itr6), 1)
+
+----------
+
+
+
+Test Class Name: TestIterators

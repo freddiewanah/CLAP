@@ -1,0 +1,28 @@
+def empty(status: int=204, headers: Optional[Dict[str, str]]=None) -> HTTPResponse:
+    """
+    Returns an empty response to the client.
+
+    :param status Response code.
+    :param headers Custom Headers.
+    """
+    return HTTPResponse(body=b'', status=status, headers=headers)
+
+----------
+
+def test_protocol_attribute(app):
+    retrieved = None
+
+    @app.get('/')
+    async def get(request):
+        nonlocal retrieved
+        retrieved = request.protocol
+        return response.empty()
+    headers = {'Connection': 'keep-alive'}
+    _ = app.test_client.get('/', headers=headers)
+    assert isinstance(retrieved, HttpProtocol)
+
+----------
+
+
+
+Test Class Name: FooRequest

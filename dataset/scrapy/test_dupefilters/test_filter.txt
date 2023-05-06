@@ -1,0 +1,27 @@
+def request_seen(self, request: Request) -> bool:
+    fp = self.request_fingerprint(request)
+    if fp in self.fingerprints:
+        return True
+    self.fingerprints.add(fp)
+    if self.file:
+        self.file.write(fp + '\n')
+    return False
+
+----------
+
+def test_filter(self):
+    dupefilter = _get_dupefilter()
+    r1 = Request('http://scrapytest.org/1')
+    r2 = Request('http://scrapytest.org/2')
+    r3 = Request('http://scrapytest.org/2')
+    assert not dupefilter.request_seen(r1)
+    assert dupefilter.request_seen(r1)
+    assert not dupefilter.request_seen(r2)
+    assert dupefilter.request_seen(r3)
+    dupefilter.close('finished')
+
+----------
+
+
+
+Test Class Name: RFPDupeFilterTest

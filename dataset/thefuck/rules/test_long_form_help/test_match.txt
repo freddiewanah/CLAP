@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('output', ["Try 'grep --help' for more information."])
+def test_match(output):
+    assert match(Command('grep -h', output))
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,25 @@
+def side_effect(old_cmd, command):
+    offending_pattern = re.compile('(?:Offending (?:key for IP|\\S+ key)|Matching host key) in ([^:]+):(\\d+)', re.MULTILINE)
+    offending = offending_pattern.findall(old_cmd.output)
+    for (filepath, lineno) in offending:
+        with open(filepath, 'r') as fh:
+            lines = fh.readlines()
+            del lines[int(lineno) - 1]
+        with open(filepath, 'w') as fh:
+            fh.writelines(lines)
+
+----------
+
+@pytest.mark.skipif(os.name == 'nt', reason='Skip if testing on Windows')
+def test_side_effect(ssh_error):
+    (errormsg, path, reset, known_hosts) = ssh_error
+    command = Command('ssh user@host', errormsg)
+    side_effect(command, None)
+    expected = ['123.234.567.890 asdjkasjdakjsd\n', '111.222.333.444 qwepoiwqepoiss\n']
+    assert known_hosts(path) == expected
+
+----------
+
+
+
+Test Class Name: default

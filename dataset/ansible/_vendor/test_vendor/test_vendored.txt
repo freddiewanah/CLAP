@@ -1,0 +1,24 @@
+def remove(options, option, collection_name_field):
+    if options.get(collection_name_field) == collection_name:
+        del options[collection_name_field]
+
+----------
+
+def test_vendored(vendored_pkg_names=None):
+    if not vendored_pkg_names:
+        vendored_pkg_names = ['boguspkg']
+    reset_internal_vendor_package()
+    with patch.object(pkgutil, 'iter_modules', return_value=list(((None, p, None) for p in vendored_pkg_names))):
+        previous_path = list(sys.path)
+        import ansible
+        ansible_vendor_path = os.path.join(os.path.dirname(ansible.__file__), '_vendor')
+        assert sys.path[0] == ansible_vendor_path
+        if ansible_vendor_path in previous_path:
+            previous_path.remove(ansible_vendor_path)
+        assert sys.path[1:] == previous_path
+
+----------
+
+
+
+Test Class Name: default

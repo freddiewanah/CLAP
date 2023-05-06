@@ -1,0 +1,34 @@
+def tsort(dep_map):
+    sorted_list = []
+    unsorted_map = dep_map.copy()
+    while unsorted_map:
+        acyclic = False
+        for (node, edges) in list(unsorted_map.items()):
+            for edge in edges:
+                if edge in unsorted_map:
+                    break
+            else:
+                acyclic = True
+                del unsorted_map[node]
+                sorted_list.append((node, edges))
+        if not acyclic:
+            raise CycleFoundInFactDeps('Unable to tsort deps, there was a cycle in the graph. sorted=%s' % sorted_list)
+    return sorted_list
+
+----------
+
+def test_multi_pass(self):
+    dep_map = {'leaf1': set(), 'leaf2': set(['leaf3', 'leaf1', 'leaf4', 'leaf5']), 'leaf3': set(['leaf4', 'leaf1']), 'leaf4': set(['leaf1']), 'leaf5': set(['leaf1'])}
+    res = collector.tsort(dep_map)
+    self.assertIsInstance(res, list)
+    names = [x[0] for x in res]
+    self.assertEqual(set(names), set(dep_map.keys()))
+    self.assertTrue(names.index('leaf1') < names.index('leaf2'))
+    for leaf in ('leaf2', 'leaf3', 'leaf4', 'leaf5'):
+        self.assertTrue(names.index('leaf1') < names.index(leaf))
+
+----------
+
+
+
+Test Class Name: TestTsort

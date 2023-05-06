@@ -1,0 +1,19 @@
+def gen_extractors():
+    """ Return a list of an instance of every supported extractor.
+    The order does matter; the first extractor matched is the one handling the URL.
+    """
+    return [klass() for klass in gen_extractor_classes()]
+
+----------
+
+def test_netrc_present(self):
+    for ie in gen_extractors():
+        if not hasattr(ie, '_login'):
+            continue
+        self.assertTrue(hasattr(ie, '_NETRC_MACHINE'), 'Extractor %s supports login, but is missing a _NETRC_MACHINE property' % ie.IE_NAME)
+
+----------
+
+
+
+Test Class Name: TestNetRc

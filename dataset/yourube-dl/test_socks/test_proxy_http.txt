@@ -1,0 +1,27 @@
+def urlopen(self, req):
+    """ Start an HTTP download """
+    if isinstance(req, compat_basestring):
+        req = sanitized_Request(req)
+    return self._opener.open(req, timeout=self._socket_timeout)
+
+----------
+
+def test_proxy_http(self):
+    params = self._check_params(['primary_proxy', 'primary_server_ip'])
+    if params is None:
+        return
+    ydl = FakeYDL({'proxy': params['primary_proxy']})
+    self.assertEqual(ydl.urlopen('http://yt-dl.org/ip').read().decode('utf-8'), params['primary_server_ip'])
+
+----------
+
+@staticmethod
+def _check_params(attrs):
+    params = get_params()
+    for attr in attrs:
+        if attr not in params:
+            print('Missing %s. Skipping.' % attr)
+            return
+    return params
+
+Test Class Name: TestMultipleSocks

@@ -1,0 +1,23 @@
+def add_group(self, group):
+    added = False
+    for oldg in group.get_ancestors():
+        if oldg not in self.groups:
+            self.groups.append(oldg)
+    if group not in self.groups:
+        self.groups.append(group)
+        added = True
+    return added
+
+----------
+
+def test_add_group(self):
+    group = Group('some_group')
+    group_len = len(self.hostA.groups)
+    self.hostA.add_group(group)
+    self.assertEqual(len(self.hostA.groups), group_len + 1)
+
+----------
+
+
+
+Test Class Name: TestHost

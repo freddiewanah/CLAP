@@ -1,0 +1,24 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_flow_control_compressed_body(self: typing.Any):
+    bytesio = BytesIO()
+    gzip_file = gzip.GzipFile(mode='w', fileobj=bytesio)
+    gzip_file.write(b'abcdefghijklmnopqrstuvwxyz')
+    gzip_file.close()
+    compressed_body = bytesio.getvalue()
+    response = self.fetch('/', body=compressed_body, method='POST', headers={'Content-Encoding': 'gzip'})
+    response.rethrow()
+    self.assertEqual(json_decode(response.body), dict(methods=['prepare', 'data_received', 'data_received', 'data_received', 'post']))
+
+----------
+
+
+
+Test Class Name: BaseStreamingRequestFlowControlTest

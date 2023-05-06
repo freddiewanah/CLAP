@@ -1,0 +1,21 @@
+def getlist(self, key, def_val=None):
+    try:
+        return super().__getitem__(key)
+    except KeyError:
+        if def_val is not None:
+            return self.normvalue(def_val)
+        return []
+
+----------
+
+def test_multivalue_for_one_header(self):
+    h = Headers((('a', 'b'), ('a', 'c')))
+    self.assertEqual(h['a'], b'c')
+    self.assertEqual(h.get('a'), b'c')
+    self.assertEqual(h.getlist('a'), [b'b', b'c'])
+
+----------
+
+
+
+Test Class Name: HeadersTest

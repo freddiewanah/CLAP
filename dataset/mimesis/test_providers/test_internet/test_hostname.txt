@@ -1,0 +1,28 @@
+def hostname(self, tld_type: t.Optional[TLDType]=None, subdomains: t.Optional[t.List[str]]=None) -> str:
+    """Generate a random hostname without scheme.
+
+        :param tld_type: TLDType.
+        :param subdomains: List of subdomains (make sure they are valid).
+        :return: Hostname.
+        """
+    tld = self.tld(tld_type=tld_type)
+    host = self.random.choice(USERNAMES)
+    if subdomains:
+        subdomain = self.random.choice(subdomains)
+        host = f'{subdomain}.{host}'
+    return f'{host}{tld}'
+
+----------
+
+@pytest.mark.parametrize('subdomains', [[], ['app', 'core', 'api'], ['dev', 'prod', 'test'], ['admin', 'smtp', 'pop3']])
+def test_hostname(self, net, subdomains):
+    hostname = net.hostname(subdomains=subdomains)
+    (subdomain, *_) = hostname.split('.', 1)
+    if subdomains:
+        assert subdomain in subdomains
+
+----------
+
+
+
+Test Class Name: TestInternet

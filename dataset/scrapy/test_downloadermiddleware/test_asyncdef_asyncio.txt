@@ -1,0 +1,71 @@
+def download(self, download_func: Callable, request: Request, spider: Spider):
+
+    @defer.inlineCallbacks
+    def process_request(request: Request):
+        for method in self.methods['process_request']:
+            method = cast(Callable, method)
+            response = (yield deferred_from_coro(method(request=request, spider=spider)))
+            if response is not None and (not isinstance(response, (Response, Request))):
+                raise _InvalidOutput(f'Middleware {method.__qualname__} must return None, Response or Request, got {response.__class__.__name__}')
+            if response:
+                return response
+        return (yield download_func(request=request, spider=spider))
+
+    @defer.inlineCallbacks
+    def process_response(response: Union[Response, Request]):
+        if response is None:
+            raise TypeError('Received None in process_response')
+        elif isinstance(response, Request):
+            return response
+        for method in self.methods['process_response']:
+            method = cast(Callable, method)
+            response = (yield deferred_from_coro(method(request=request, response=response, spider=spider)))
+            if not isinstance(response, (Response, Request)):
+                raise _InvalidOutput(f'Middleware {method.__qualname__} must return Response or Request, got {type(response)}')
+            if isinstance(response, Request):
+                return response
+        return response
+
+    @defer.inlineCallbacks
+    def process_exception(failure: Failure):
+        exception = failure.value
+        for method in self.methods['process_exception']:
+            method = cast(Callable, method)
+            response = (yield deferred_from_coro(method(request=request, exception=exception, spider=spider)))
+            if response is not None and (not isinstance(response, (Response, Request))):
+                raise _InvalidOutput(f'Middleware {method.__qualname__} must return None, Response or Request, got {type(response)}')
+            if response:
+                return response
+        return failure
+    deferred = mustbe_deferred(process_request, request)
+    deferred.addErrback(process_exception)
+    deferred.addCallback(process_response)
+    return deferred
+
+----------
+
+@mark.only_asyncio()
+def test_asyncdef_asyncio(self):
+    resp = Response('http://example.com/index.html')
+
+    class CoroMiddleware:
+
+        async def process_request(self, request, spider):
+            await asyncio.sleep(0.1)
+            result = await get_from_asyncio_queue(resp)
+            return result
+    self.mwman._add_middleware(CoroMiddleware())
+    req = Request('http://example.com/index.html')
+    download_func = mock.MagicMock()
+    dfd = self.mwman.download(download_func, req, self.spider)
+    results = []
+    dfd.addBoth(results.append)
+    self._wait(dfd)
+    self.assertIs(results[0], resp)
+    self.assertFalse(download_func.called)
+
+----------
+
+
+
+Test Class Name: CoroMiddleware

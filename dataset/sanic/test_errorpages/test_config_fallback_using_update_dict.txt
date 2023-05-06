@@ -1,0 +1,25 @@
+def update(self, *other: Any, **kwargs: Any) -> None:
+    kwargs.update({k: v for item in other for (k, v) in dict(item).items()})
+    setters: Dict[str, Any] = {k: kwargs.pop(k) for k in {**kwargs}.keys() if k in self.__class__.__setters__}
+    for (key, value) in setters.items():
+        try:
+            super().__setattr__(key, value)
+        except AttributeError:
+            ...
+    super().update(**kwargs)
+    for (attr, value) in {**setters, **kwargs}.items():
+        self._post_set(attr, value)
+
+----------
+
+def test_config_fallback_using_update_dict(app):
+    app.config.update({'FALLBACK_ERROR_FORMAT': 'text'})
+    (_, response) = app.test_client.get('/error')
+    assert response.status == 500
+    assert response.content_type == 'text/plain; charset=utf-8'
+
+----------
+
+
+
+Test Class Name: MyConfig

@@ -1,0 +1,22 @@
+def passport_number(self) -> int:
+    """Generate random passport number.
+
+        :return: Number.
+
+        :Example:
+            560430
+        """
+    return self.random.randint(100000, 999999)
+
+----------
+
+def test_passport_number(russia):
+    result = russia.passport_number()
+    assert isinstance(result, int)
+    assert result <= 999999 and result >= 100000
+
+----------
+
+
+
+Test Class Name: default

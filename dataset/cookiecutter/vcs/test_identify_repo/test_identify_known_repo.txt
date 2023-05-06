@@ -1,0 +1,34 @@
+def identify_repo(repo_url):
+    """Determine if `repo_url` should be treated as a URL to a git or hg repo.
+
+    Repos can be identified by prepending "hg+" or "git+" to the repo URL.
+
+    :param repo_url: Repo URL of unknown type.
+    :returns: ('git', repo_url), ('hg', repo_url), or None.
+    """
+    repo_url_values = repo_url.split('+')
+    if len(repo_url_values) == 2:
+        repo_type = repo_url_values[0]
+        if repo_type in ['git', 'hg']:
+            return (repo_type, repo_url_values[1])
+        else:
+            raise UnknownRepoType
+    elif 'git' in repo_url:
+        return ('git', repo_url)
+    elif 'bitbucket' in repo_url:
+        return ('hg', repo_url)
+    else:
+        raise UnknownRepoType
+
+----------
+
+@pytest.mark.parametrize('repo_url, exp_repo_type, exp_repo_url', [('git+https://github.com/pytest-dev/cookiecutter-pytest-plugin.git', 'git', 'https://github.com/pytest-dev/cookiecutter-pytest-plugin.git'), ('hg+https://bitbucket.org/foo/bar.hg', 'hg', 'https://bitbucket.org/foo/bar.hg'), ('https://github.com/pytest-dev/cookiecutter-pytest-plugin.git', 'git', 'https://github.com/pytest-dev/cookiecutter-pytest-plugin.git'), ('https://bitbucket.org/foo/bar.hg', 'hg', 'https://bitbucket.org/foo/bar.hg'), ('https://github.com/audreyfeldroy/cookiecutter-pypackage.git', 'git', 'https://github.com/audreyfeldroy/cookiecutter-pypackage.git'), ('https://github.com/audreyfeldroy/cookiecutter-pypackage', 'git', 'https://github.com/audreyfeldroy/cookiecutter-pypackage'), ('git@gitorious.org:cookiecutter-gitorious/cookiecutter-gitorious.git', 'git', 'git@gitorious.org:cookiecutter-gitorious/cookiecutter-gitorious.git'), ('https://audreyr@bitbucket.org/audreyr/cookiecutter-bitbucket', 'hg', 'https://audreyr@bitbucket.org/audreyr/cookiecutter-bitbucket')])
+def test_identify_known_repo(repo_url, exp_repo_type, exp_repo_url):
+    """Verify different correct repositories url syntax is correctly transformed."""
+    assert vcs.identify_repo(repo_url) == (exp_repo_type, exp_repo_url)
+
+----------
+
+
+
+Test Class Name: default

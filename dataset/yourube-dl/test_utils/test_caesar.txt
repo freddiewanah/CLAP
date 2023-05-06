@@ -1,0 +1,23 @@
+def caesar(s, alphabet, shift):
+    if shift == 0:
+        return s
+    l = len(alphabet)
+    return ''.join((alphabet[(alphabet.index(c) + shift) % l] if c in alphabet else c for c in s))
+
+----------
+
+def test_caesar(self):
+    self.assertEqual(caesar('ace', 'abcdef', 2), 'cea')
+    self.assertEqual(caesar('cea', 'abcdef', -2), 'ace')
+    self.assertEqual(caesar('ace', 'abcdef', -2), 'eac')
+    self.assertEqual(caesar('eac', 'abcdef', 2), 'ace')
+    self.assertEqual(caesar('ace', 'abcdef', 0), 'ace')
+    self.assertEqual(caesar('xyz', 'abcdef', 2), 'xyz')
+    self.assertEqual(caesar('abc', 'acegik', 2), 'ebg')
+    self.assertEqual(caesar('ebg', 'acegik', -2), 'abc')
+
+----------
+
+
+
+Test Class Name: TestUtil

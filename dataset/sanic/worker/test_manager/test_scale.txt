@@ -1,0 +1,51 @@
+def scale(self, num_worker: int):
+    if num_worker <= 0:
+        raise ValueError('Cannot scale to 0 workers.')
+    change = num_worker - self.num_server
+    if change == 0:
+        logger.info(f'No change needed. There are already {num_worker} workers.')
+        return
+    logger.info(f'Scaling from {self.num_server} to {num_worker} workers')
+    if change > 0:
+        for _ in range(change):
+            worker = self.create_server()
+            for process in worker.processes:
+                process.start()
+    else:
+        for _ in range(abs(change)):
+            self.shutdown_server()
+    self.num_server = num_worker
+
+----------
+
+def test_scale(caplog):
+    p1 = Mock()
+    p1.pid = 1234
+    p2 = Mock()
+    p2.pid = 3456
+    p3 = Mock()
+    p3.pid = 5678
+    context = Mock()
+    context.Process.side_effect = [p1, p2, p3]
+    pub = Mock()
+    manager = WorkerManager(1, fake_serve, {}, context, (pub, Mock()), {})
+    assert len(manager.transient) == 1
+    manager.scale(3)
+    assert len(manager.transient) == 3
+    with patch('os.kill') as kill:
+        manager.scale(2)
+        assert len(manager.transient) == 2
+        manager.scale(1)
+        assert len(manager.transient) == 1
+        kill.call_count == 2
+    with caplog.at_level(INFO):
+        manager.scale(1)
+    assert ('sanic.root', INFO, 'No change needed. There are already 1 workers.') in caplog.record_tuples
+    with pytest.raises(ValueError, match='Cannot scale to 0 workers\\.'):
+        manager.scale(0)
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,49 @@
+@staticmethod
+def split(addrinfo: List[Tuple]) -> Tuple[List[Tuple[socket.AddressFamily, Tuple]], List[Tuple[socket.AddressFamily, Tuple]]]:
+    """Partition the ``addrinfo`` list by address family.
+
+        Returns two lists.  The first list contains the first entry from
+        ``addrinfo`` and all others with the same family, and the
+        second list contains all other addresses (normally one list will
+        be AF_INET and the other AF_INET6, although non-standard resolvers
+        may return additional families).
+        """
+    primary = []
+    secondary = []
+    primary_af = addrinfo[0][0]
+    for (af, addr) in addrinfo:
+        if af == primary_af:
+            primary.append((af, addr))
+        else:
+            secondary.append((af, addr))
+    return (primary, secondary)
+
+----------
+
+def test_header_callback(self):
+    first_line = []
+    headers = {}
+    chunks = []
+
+    def header_callback(header_line):
+        if header_line.startswith('HTTP/1.1 101'):
+            pass
+        elif header_line.startswith('HTTP/'):
+            first_line.append(header_line)
+        elif header_line != '\r\n':
+            (k, v) = header_line.split(':', 1)
+            headers[k.lower()] = v.strip()
+
+    def streaming_callback(chunk):
+        self.assertEqual(headers['content-type'], 'text/html; charset=UTF-8')
+        chunks.append(chunk)
+    self.fetch('/chunk', header_callback=header_callback, streaming_callback=streaming_callback)
+    self.assertEqual(len(first_line), 1, first_line)
+    self.assertRegex(first_line[0], 'HTTP/[0-9]\\.[0-9] 200.*\r\n')
+    self.assertEqual(chunks, [b'asdf', b'qwer'])
+
+----------
+
+
+
+Test Class Name: HTTPClientCommonTestCase

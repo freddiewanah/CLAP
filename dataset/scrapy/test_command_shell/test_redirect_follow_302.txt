@@ -1,0 +1,15 @@
+def url(self, path):
+    return urljoin(self.baseurl, path)
+
+----------
+
+@defer.inlineCallbacks
+def test_redirect_follow_302(self):
+    (_, out, _) = (yield self.execute([self.url('/redirect-no-meta-refresh'), '-c', 'response.status']))
+    assert out.strip().endswith(b'200')
+
+----------
+
+
+
+Test Class Name: ShellTest

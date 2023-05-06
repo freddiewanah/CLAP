@@ -1,0 +1,30 @@
+def default(self, o):
+    if getattr(o, '__ENCRYPTED__', False):
+        if self._vault_to_text:
+            value = to_text(o, errors='surrogate_or_strict')
+        else:
+            value = {'__ansible_vault': to_text(o._ciphertext, errors='surrogate_or_strict', nonstring='strict')}
+    elif getattr(o, '__UNSAFE__', False):
+        value = {'__ansible_unsafe': to_text(o, errors='surrogate_or_strict', nonstring='strict')}
+    elif isinstance(o, Mapping):
+        value = dict(o)
+    elif isinstance(o, (datetime.date, datetime.datetime)):
+        value = o.isoformat()
+    else:
+        value = super(AnsibleJSONEncoder, self).default(o)
+    return value
+
+----------
+
+@pytest.mark.parametrize('test_input,expected', [(datetime(2019, 5, 14, 13, 39, 38, 569047), '2019-05-14T13:39:38.569047'), (datetime(2019, 5, 14, 13, 47, 16, 923866), '2019-05-14T13:47:16.923866'), (date(2019, 5, 14), '2019-05-14'), (date(2020, 5, 14), '2020-05-14'), (datetime(2019, 6, 15, 14, 45, tzinfo=timezone.utc), '2019-06-15T14:45:00+00:00'), (datetime(2019, 6, 15, 14, 45, tzinfo=timezone(timedelta(hours=1, minutes=40))), '2019-06-15T14:45:00+01:40')])
+def test_date_datetime(self, ansible_json_encoder, test_input, expected):
+    """
+        Test for passing datetime.date or datetime.datetime objects to AnsibleJSONEncoder.default().
+        """
+    assert ansible_json_encoder.default(test_input) == expected
+
+----------
+
+
+
+Test Class Name: M

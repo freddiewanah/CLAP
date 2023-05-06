@@ -1,0 +1,35 @@
+@classmethod
+def from_response(cls: Type[FormRequestTypeVar], response: TextResponse, formname: Optional[str]=None, formid: Optional[str]=None, formnumber: Optional[int]=0, formdata: FormdataType=None, clickdata: Optional[dict]=None, dont_click: bool=False, formxpath: Optional[str]=None, formcss: Optional[str]=None, **kwargs) -> FormRequestTypeVar:
+    kwargs.setdefault('encoding', response.encoding)
+    if formcss is not None:
+        from parsel.csstranslator import HTMLTranslator
+        formxpath = HTMLTranslator().css_to_xpath(formcss)
+    form = _get_form(response, formname, formid, formnumber, formxpath)
+    formdata = _get_inputs(form, formdata, dont_click, clickdata)
+    url = _get_form_url(form, kwargs.pop('url', None))
+    method = kwargs.pop('method', form.method)
+    if method is not None:
+        method = method.upper()
+        if method not in cls.valid_form_methods:
+            method = 'GET'
+    return cls(url=url, method=method, formdata=formdata, **kwargs)
+
+----------
+
+def test_from_response_get(self):
+    response = _buildresponse('<form action="get.php" method="GET">\n            <input type="hidden" name="test" value="val1">\n            <input type="hidden" name="test" value="val2">\n            <input type="hidden" name="test2" value="xxx">\n            </form>', url='http://www.example.com/this/list.html')
+    r1 = self.request_class.from_response(response, formdata={'one': ['two', 'three'], 'six': 'seven'})
+    self.assertEqual(r1.method, 'GET')
+    self.assertEqual(urlparse(r1.url).hostname, 'www.example.com')
+    self.assertEqual(urlparse(r1.url).path, '/this/get.php')
+    fs = _qs(r1)
+    self.assertEqual(set(fs[b'test']), {b'val1', b'val2'})
+    self.assertEqual(set(fs[b'one']), {b'two', b'three'})
+    self.assertEqual(fs[b'test2'], [b'xxx'])
+    self.assertEqual(fs[b'six'], [b'seven'])
+
+----------
+
+
+
+Test Class Name: FormRequestTest

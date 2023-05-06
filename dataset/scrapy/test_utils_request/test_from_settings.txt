@@ -1,0 +1,29 @@
+def fingerprint(self, request: Request):
+    return self._fingerprint(request)
+
+----------
+
+def test_from_settings(self):
+
+    class RequestFingerprinter:
+
+        @classmethod
+        def from_settings(cls, settings):
+            return cls(settings)
+
+        def __init__(self, settings):
+            self._fingerprint = settings['FINGERPRINT']
+
+        def fingerprint(self, request):
+            return self._fingerprint
+    settings = {'REQUEST_FINGERPRINTER_CLASS': RequestFingerprinter, 'FINGERPRINT': b'fingerprint'}
+    crawler = get_crawler(settings_dict=settings)
+    request = Request('http://www.example.com')
+    fingerprint = crawler.request_fingerprinter.fingerprint(request)
+    self.assertEqual(fingerprint, settings['FINGERPRINT'])
+
+----------
+
+self._fingerprint = crawler.settings['FINGERPRINT']
+
+Test Class Name: RequestFingerprinter

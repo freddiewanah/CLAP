@@ -1,0 +1,13 @@
+def keys(self) -> KeysView[str]:
+    return self._state[self._name].keys()
+
+----------
+
+def test_state_keys():
+    assert list(gen_state(one=1, two=2).keys()) == list({'one': 1, 'two': 2}.keys())
+
+----------
+
+
+
+Test Class Name: default

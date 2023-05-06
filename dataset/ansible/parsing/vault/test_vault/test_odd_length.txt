@@ -1,0 +1,14 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_odd_length(self):
+    b_data = b'123456789abcdefghijklmnopqrstuvwxyz'
+    self.assertRaisesRegex(vault.AnsibleVaultFormatError, '.*Vault format unhexlify error.*', vault._unhexlify, b_data)
+
+----------
+
+
+
+Test Class Name: TestUnhexlify

@@ -1,0 +1,55 @@
+def get_losses_for(self, inputs=None):
+    return super(RNN, self).get_losses_for(inputs=inputs)
+
+----------
+
+@test_combinations.run_all_keras_modes
+def test_clear_losses(self):
+
+    class LayerWithSharedNestedLossLayer(layers.Layer):
+
+        def __init__(self):
+            super().__init__()
+            self.loss_layer = layers.ActivityRegularization(l2=0.001)
+            self.add_weight(shape=(1,), regularizer='l2')
+
+        def call(self, x):
+            x = self.loss_layer(x)
+            return self.loss_layer(x)
+    inputs = Input(shape=(1,))
+    l = LayerWithSharedNestedLossLayer()
+    x1 = tf.ones((1, 1))
+    _ = l(x1)
+    if not tf.executing_eagerly():
+        self.assertEqual(len(l.get_losses_for(x1)), 2)
+        self.assertEqual(len(l.get_losses_for(None)), 1)
+    x2 = tf.ones((1, 1))
+    _ = l(x2)
+    if not tf.executing_eagerly():
+        self.assertEqual(len(l.get_losses_for(x1)), 2)
+        self.assertEqual(len(l.get_losses_for(x2)), 2)
+        self.assertEqual(len(l.get_losses_for(None)), 1)
+    outputs = l(inputs)
+    model = Model(inputs, outputs)
+    if not tf.executing_eagerly():
+        self.assertEqual(len(model.losses), 7)
+        self.assertEqual(len(l.get_losses_for(x1)), 2)
+        self.assertEqual(len(l.get_losses_for(x2)), 2)
+        self.assertEqual(len(l.get_losses_for(None)), 1)
+    x3 = tf.ones((1, 1))
+    model(x3)
+    x4 = tf.ones((1, 1))
+    model(x4)
+    if tf.executing_eagerly():
+        self.assertEqual(len(model.losses), 3)
+    else:
+        self.assertEqual(len(model.losses), 11)
+        self.assertEqual(len(model.get_losses_for(x3)), 2)
+        self.assertEqual(len(model.get_losses_for(x4)), 2)
+        self.assertEqual(len(model.get_losses_for(None)), 1)
+
+----------
+
+
+
+Test Class Name: default

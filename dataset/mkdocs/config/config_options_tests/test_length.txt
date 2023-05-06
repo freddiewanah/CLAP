@@ -1,0 +1,20 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_length(self) -> None:
+
+    class Schema(Config):
+        option = c.Type(str, length=7)
+    conf = self.get_config(Schema, {'option': 'Testing'})
+    assert_type(conf.option, str)
+    self.assertEqual(conf.option, 'Testing')
+    with self.expect_error(option="Expected type: <class 'str'> with length 7 but received: 'Testing Long' with length 12"):
+        self.get_config(Schema, {'option': 'Testing Long'})
+
+----------
+
+
+
+Test Class Name: default

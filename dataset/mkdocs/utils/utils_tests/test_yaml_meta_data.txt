@@ -1,0 +1,52 @@
+def get_data(doc: str) -> Tuple[str, Dict[str, Any]]:
+    """
+    Extract meta-data from a text document.
+
+    Returns a tuple of document and a data dict.
+    """
+    data = {}
+    m = YAML_RE.match(doc)
+    if m:
+        try:
+            data = yaml.load(m.group(1), SafeLoader)
+            if isinstance(data, dict):
+                doc = doc[m.end():].lstrip('\n')
+            else:
+                data = {}
+        except Exception:
+            pass
+        return (doc, data)
+    lines = doc.replace('\r\n', '\n').replace('\r', '\n').split('\n')
+    key = None
+    while lines:
+        line = lines.pop(0)
+        if line.strip() == '':
+            break
+        m1 = META_RE.match(line)
+        if m1:
+            key = m1.group('key').lower().strip()
+            value = m1.group('value').strip()
+            if key in data:
+                data[key] += f' {value}'
+            else:
+                data[key] = value
+        else:
+            m2 = META_MORE_RE.match(line)
+            if m2 and key:
+                data[key] += ' {}'.format(m2.group('value').strip())
+            else:
+                lines.insert(0, line)
+                break
+    return ('\n'.join(lines).lstrip('\n'), data)
+
+----------
+
+def test_yaml_meta_data(self):
+    doc = dedent('\n            ---\n            Title: Foo Bar\n            Date: 2018-07-10\n            Summary: Line one\n                Line two\n            Tags:\n                - foo\n                - bar\n            ---\n            Doc body\n            ')
+    self.assertEqual(meta.get_data(doc), ('Doc body', {'Title': 'Foo Bar', 'Date': datetime.date(2018, 7, 10), 'Summary': 'Line one Line two', 'Tags': ['foo', 'bar']}))
+
+----------
+
+
+
+Test Class Name: UtilsTests

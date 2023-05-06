@@ -1,0 +1,26 @@
+def size(self, minimum: int=1, maximum: int=100) -> str:
+    """Get size of file.
+
+        :param minimum: Maximum value.
+        :param maximum: Minimum value.
+        :return: Size of file.
+
+        :Example:
+            56 kB
+        """
+    num = self.random.randint(minimum, maximum)
+    unit = self.random.choice(['bytes', 'kB', 'MB', 'GB', 'TB'])
+    return f'{num} {unit}'
+
+----------
+
+def test_size(self, file):
+    result = file.size(10, 10)
+    size = result.split(' ')[0].strip()
+    assert int(size) == 10
+
+----------
+
+
+
+Test Class Name: TestFile

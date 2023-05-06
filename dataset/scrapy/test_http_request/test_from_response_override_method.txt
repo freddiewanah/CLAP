@@ -1,0 +1,30 @@
+@classmethod
+def from_response(cls: Type[FormRequestTypeVar], response: TextResponse, formname: Optional[str]=None, formid: Optional[str]=None, formnumber: Optional[int]=0, formdata: FormdataType=None, clickdata: Optional[dict]=None, dont_click: bool=False, formxpath: Optional[str]=None, formcss: Optional[str]=None, **kwargs) -> FormRequestTypeVar:
+    kwargs.setdefault('encoding', response.encoding)
+    if formcss is not None:
+        from parsel.csstranslator import HTMLTranslator
+        formxpath = HTMLTranslator().css_to_xpath(formcss)
+    form = _get_form(response, formname, formid, formnumber, formxpath)
+    formdata = _get_inputs(form, formdata, dont_click, clickdata)
+    url = _get_form_url(form, kwargs.pop('url', None))
+    method = kwargs.pop('method', form.method)
+    if method is not None:
+        method = method.upper()
+        if method not in cls.valid_form_methods:
+            method = 'GET'
+    return cls(url=url, method=method, formdata=formdata, **kwargs)
+
+----------
+
+def test_from_response_override_method(self):
+    response = _buildresponse('<html><body>\n            <form action="/app"></form>\n            </body></html>')
+    request = FormRequest.from_response(response)
+    self.assertEqual(request.method, 'GET')
+    request = FormRequest.from_response(response, method='POST')
+    self.assertEqual(request.method, 'POST')
+
+----------
+
+
+
+Test Class Name: FormRequestTest

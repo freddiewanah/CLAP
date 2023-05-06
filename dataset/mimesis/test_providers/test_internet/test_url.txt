@@ -1,0 +1,28 @@
+def url(self, scheme: t.Optional[URLScheme]=URLScheme.HTTPS, port_range: t.Optional[PortRange]=None, tld_type: t.Optional[TLDType]=None, subdomains: t.Optional[t.List[str]]=None) -> str:
+    """Generate random URL.
+
+        :param scheme: Scheme.
+        :param port_range: PortRange enum object.
+        :param tld_type: TLDType.
+        :param subdomains: List of subdomains (make sure they are valid).
+        :return: URL.
+        """
+    host = self.hostname(tld_type, subdomains)
+    url_scheme = self.validate_enum(scheme, URLScheme)
+    url = f'{url_scheme}://{host}'
+    if port_range is not None:
+        url = f'{url}:{self.port(port_range)}'
+    return f'{url}/'
+
+----------
+
+@pytest.mark.parametrize('scheme', (URLScheme.HTTP, URLScheme.HTTPS, URLScheme.FTP, URLScheme.SFTP, URLScheme.WS, URLScheme.WSS))
+def test_url(self, net, scheme):
+    result = net.url(scheme=scheme)
+    assert result.startswith(scheme.value)
+
+----------
+
+
+
+Test Class Name: TestInternet

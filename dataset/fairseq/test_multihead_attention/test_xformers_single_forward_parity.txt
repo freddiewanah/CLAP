@@ -1,0 +1,55 @@
+def uniform(dataset_sizes: List[int]):
+    return [1.0] * len(dataset_sizes)
+
+----------
+
+@pytest.mark.parametrize('device', DEVICE)
+@pytest.mark.parametrize('attn_dtype', ATTN_MASK_DTYPE)
+@pytest.mark.parametrize('key_padding_dtype', KEY_PADDING_MASK_DTYPE)
+@pytest.mark.parametrize('add_bias_kv', [True, False])
+@pytest.mark.parametrize('add_zero_attn', [True, False])
+@pytest.mark.parametrize('static_kv', [False])
+@pytest.mark.parametrize('batch_size', BATCH)
+@pytest.mark.parametrize('embedding', EMB)
+@pytest.mark.parametrize('seq_len', SEQ)
+@pytest.mark.parametrize('num_heads', HEADS)
+def test_xformers_single_forward_parity(device, attn_dtype, key_padding_dtype, add_bias_kv, add_zero_attn, static_kv, batch_size, embedding, seq_len, num_heads):
+    xformers_att_config = '{"name": "scaled_dot_product"}'
+    attn_mask = None if attn_dtype is None else _get_mask(to_dtype=attn_dtype, dim0=seq_len, dim1=seq_len).to(device)
+    key_padding_mask = None if key_padding_dtype is None else _get_mask(to_dtype=key_padding_dtype, dim0=batch_size, dim1=seq_len).to(device)
+    q = torch.rand(seq_len, batch_size, embedding).to(device)
+    q.requires_grad = True
+    k = torch.rand(seq_len, batch_size, embedding).to(device)
+    k.requires_grad = True
+    v = torch.rand(seq_len, batch_size, embedding).to(device)
+    v.requires_grad = True
+    q_ = q.detach().clone()
+    q_.requires_grad = True
+    k_ = k.detach().clone()
+    k_.requires_grad = True
+    v_ = v.detach().clone()
+    v_.requires_grad = True
+    _reset_seeds()
+    xformers_mha = MultiheadAttention(embedding, num_heads, dropout=0.0, xformers_att_config=xformers_att_config, add_bias_kv=add_bias_kv, add_zero_attn=add_zero_attn).to(device)
+    (xformers_output, _) = xformers_mha(q, k, v, key_padding_mask=key_padding_mask, attn_mask=attn_mask, static_kv=static_kv)
+    _reset_seeds()
+    original_mha = MultiheadAttention(embedding, num_heads, dropout=0.0, xformers_att_config=None, add_bias_kv=add_bias_kv, add_zero_attn=add_zero_attn).to(device)
+    (original_output, _) = original_mha(q_, k_, v_, key_padding_mask=key_padding_mask, attn_mask=attn_mask, static_kv=static_kv)
+    if xformers_output.isnan().any() or original_output.isnan().any():
+        rand = random.uniform(0, 1)
+        xformers_output = xformers_output.masked_fill(xformers_output.isnan(), rand)
+        original_output = original_output.masked_fill(original_output.isnan(), rand)
+    assert torch.allclose(xformers_output, original_output, atol=1e-06), f'max diff is {torch.max(torch.abs(xformers_output - original_output))}'
+    loss_xformers = torch.norm(xformers_output)
+    loss_original = torch.norm(original_output)
+    loss_xformers.backward()
+    loss_original.backward()
+    assert torch.allclose(q.grad, q_.grad), f'max diff is {torch.max(torch.abs(q.grad - q_.grad))}'
+    assert torch.allclose(k.grad, k_.grad), f'max diff is {torch.max(torch.abs(k.grad - k_.grad))}'
+    assert torch.allclose(v.grad, v_.grad), f'max diff is {torch.max(torch.abs(v.grad - v_.grad))}'
+
+----------
+
+
+
+Test Class Name: default

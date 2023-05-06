@@ -1,0 +1,22 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_multipart_form(self):
+    response = self.raw_fetch([b'POST /multipart HTTP/1.0', b'Content-Type: multipart/form-data; boundary=1234567890', b'X-Header-encoding-test: \xe9'], b'\r\n'.join([b'Content-Disposition: form-data; name=argument', b'', 'á'.encode('utf-8'), b'--1234567890', 'Content-Disposition: form-data; name="files"; filename="ó"'.encode('utf8'), b'', 'ú'.encode('utf-8'), b'--1234567890--', b'']))
+    data = json_decode(response)
+    self.assertEqual('é', data['header'])
+    self.assertEqual('á', data['argument'])
+    self.assertEqual('ó', data['filename'])
+    self.assertEqual('ú', data['filebody'])
+
+----------
+
+
+
+Test Class Name: HTTPConnectionTest

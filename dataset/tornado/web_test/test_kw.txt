@@ -1,0 +1,20 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_kw(self):
+    response = self.fetch('/kw/foo')
+    response.rethrow()
+    data = json_decode(response.body)
+    self.assertEqual(data, {'args': [], 'kwargs': {'path': 'foo'}})
+
+----------
+
+
+
+Test Class Name: Handler

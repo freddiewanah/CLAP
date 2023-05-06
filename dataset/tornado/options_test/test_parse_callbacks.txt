@@ -1,0 +1,71 @@
+def parse_command_line(self, args: Optional[List[str]]=None, final: bool=True) -> List[str]:
+    """Parses all options given on the command line (defaults to
+        `sys.argv`).
+
+        Options look like ``--option=value`` and are parsed according
+        to their ``type``. For boolean options, ``--option`` is
+        equivalent to ``--option=true``
+
+        If the option has ``multiple=True``, comma-separated values
+        are accepted. For multi-value integer options, the syntax
+        ``x:y`` is also accepted and equivalent to ``range(x, y)``.
+
+        Note that ``args[0]`` is ignored since it is the program name
+        in `sys.argv`.
+
+        We return a list of all arguments that are not parsed as options.
+
+        If ``final`` is ``False``, parse callbacks will not be run.
+        This is useful for applications that wish to combine configurations
+        from multiple sources.
+
+        """
+    if args is None:
+        args = sys.argv
+    remaining = []
+    for i in range(1, len(args)):
+        if not args[i].startswith('-'):
+            remaining = args[i:]
+            break
+        if args[i] == '--':
+            remaining = args[i + 1:]
+            break
+        arg = args[i].lstrip('-')
+        (name, equals, value) = arg.partition('=')
+        name = self._normalize_name(name)
+        if name not in self._options:
+            self.print_help()
+            raise Error('Unrecognized command line option: %r' % name)
+        option = self._options[name]
+        if not equals:
+            if option.type == bool:
+                value = 'true'
+            else:
+                raise Error('Option %r requires a value' % name)
+        option.parse(value)
+    if final:
+        self.run_parse_callbacks()
+    return remaining
+
+----------
+
+def test_parse_callbacks(self):
+    options = OptionParser()
+    self.called = False
+
+    def callback():
+        self.called = True
+    options.add_parse_callback(callback)
+    options.parse_command_line(['main.py'], final=False)
+    self.assertFalse(self.called)
+    options.parse_command_line(['main.py'])
+    self.assertTrue(self.called)
+    self.called = False
+    options.parse_command_line(['main.py'])
+    self.assertTrue(self.called)
+
+----------
+
+
+
+Test Class Name: OptionsTest

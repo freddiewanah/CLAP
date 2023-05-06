@@ -1,0 +1,21 @@
+def getlist(self, key, def_val=None):
+    try:
+        return super().__getitem__(key)
+    except KeyError:
+        if def_val is not None:
+            return self.normvalue(def_val)
+        return []
+
+----------
+
+def test_update(self):
+    h = Headers()
+    h.update({'Content-Type': 'text/html', 'X-Forwarded-For': ['ip1', 'ip2']})
+    self.assertEqual(h.getlist('Content-Type'), [b'text/html'])
+    self.assertEqual(h.getlist('X-Forwarded-For'), [b'ip1', b'ip2'])
+
+----------
+
+
+
+Test Class Name: HeadersTest

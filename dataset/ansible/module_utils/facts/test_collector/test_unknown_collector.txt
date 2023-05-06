@@ -1,0 +1,15 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_unknown_collector(self):
+    self.assertRaisesRegex(TypeError, 'Bad subset.*unknown_collector.*given to Ansible.*allowed\\:.*all,.*env.*', self._classes, all_collector_classes=default_collectors.collectors, gather_subset=['env', 'unknown_collector'])
+
+----------
+
+def _classes(self, all_collector_classes=None, valid_subsets=None, minimal_gather_subset=None, gather_subset=None, gather_timeout=None, platform_info=None):
+    platform_info = platform_info or {'system': 'Linux'}
+    return collector.collector_classes_from_gather_subset(all_collector_classes=all_collector_classes, valid_subsets=valid_subsets, minimal_gather_subset=minimal_gather_subset, gather_subset=gather_subset, gather_timeout=gather_timeout, platform_info=platform_info)
+
+Test Class Name: TestCollectorClassesFromGatherSubset

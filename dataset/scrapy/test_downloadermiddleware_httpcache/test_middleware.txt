@@ -1,0 +1,36 @@
+def process_request(self, request: Request, spider: Spider) -> Optional[Response]:
+    if request.meta.get('dont_cache', False):
+        return None
+    if not self.policy.should_cache_request(request):
+        request.meta['_dont_cache'] = True
+        return None
+    cachedresponse = self.storage.retrieve_response(spider, request)
+    if cachedresponse is None:
+        self.stats.inc_value('httpcache/miss', spider=spider)
+        if self.ignore_missing:
+            self.stats.inc_value('httpcache/ignore', spider=spider)
+            raise IgnoreRequest(f'Ignored request not in cache: {request}')
+        return None
+    cachedresponse.flags.append('cached')
+    if self.policy.is_cached_response_fresh(cachedresponse, request):
+        self.stats.inc_value('httpcache/hit', spider=spider)
+        return cachedresponse
+    request.meta['cached_response'] = cachedresponse
+    return None
+
+----------
+
+def test_middleware(self):
+    with self._middleware() as mw:
+        assert mw.process_request(self.request, self.spider) is None
+        mw.process_response(self.request, self.response, self.spider)
+        response = mw.process_request(self.request, self.spider)
+        assert isinstance(response, HtmlResponse)
+        self.assertEqualResponse(self.response, response)
+        assert 'cached' in response.flags
+
+----------
+
+
+
+Test Class Name: DummyPolicyTest

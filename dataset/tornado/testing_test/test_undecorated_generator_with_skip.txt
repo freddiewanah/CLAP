@@ -1,0 +1,40 @@
+def run() -> None:
+    try:
+        result = func()
+        if result is not None:
+            from tornado.gen import convert_yielded
+            result = convert_yielded(result)
+    except Exception:
+        fut = Future()
+        future_cell[0] = fut
+        future_set_exc_info(fut, sys.exc_info())
+    else:
+        if is_future(result):
+            future_cell[0] = result
+        else:
+            fut = Future()
+            future_cell[0] = fut
+            fut.set_result(result)
+    assert future_cell[0] is not None
+    self.add_future(future_cell[0], lambda future: self.stop())
+
+----------
+
+def test_undecorated_generator_with_skip(self):
+
+    class Test(AsyncTestCase):
+
+        @unittest.skip("don't run this")
+        def test_gen(self):
+            yield
+    test = Test('test_gen')
+    result = unittest.TestResult()
+    test.run(result)
+    self.assertEqual(len(result.errors), 0)
+    self.assertEqual(len(result.skipped), 1)
+
+----------
+
+
+
+Test Class Name: Test

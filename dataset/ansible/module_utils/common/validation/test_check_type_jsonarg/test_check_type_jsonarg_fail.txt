@@ -1,0 +1,27 @@
+def check_type_jsonarg(value):
+    """Return a jsonified string. Sometimes the controller turns a json string
+    into a dict/list so transform it back into json here
+
+    Raises :class:`TypeError` if unable to covert the value
+
+    """
+    if isinstance(value, (text_type, binary_type)):
+        return value.strip()
+    elif isinstance(value, (list, tuple, dict)):
+        return jsonify(value)
+    raise TypeError('%s cannot be converted to a json string' % type(value))
+
+----------
+
+def test_check_type_jsonarg_fail():
+    test_cases = (1.5, 910313498012384012341982374109384098)
+    for case in test_cases:
+        with pytest.raises(TypeError) as e:
+            check_type_jsonarg(case)
+        assert 'cannot be converted to a json string' in to_native(e.value)
+
+----------
+
+
+
+Test Class Name: default

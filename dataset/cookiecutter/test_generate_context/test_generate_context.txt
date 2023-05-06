@@ -1,0 +1,45 @@
+def generate_context(context_file='cookiecutter.json', default_context=None, extra_context=None):
+    """Generate the context for a Cookiecutter project template.
+
+    Loads the JSON file as a Python object, with key being the JSON filename.
+
+    :param context_file: JSON file containing key/value pairs for populating
+        the cookiecutter's variables.
+    :param default_context: Dictionary containing config to take into account.
+    :param extra_context: Dictionary containing configuration overrides
+    """
+    context = OrderedDict([])
+    try:
+        with open(context_file, encoding='utf-8') as file_handle:
+            obj = json.load(file_handle, object_pairs_hook=OrderedDict)
+    except ValueError as e:
+        full_fpath = os.path.abspath(context_file)
+        json_exc_message = str(e)
+        our_exc_message = f"JSON decoding error while loading '{full_fpath}'. Decoding error details: '{json_exc_message}'"
+        raise ContextDecodingException(our_exc_message) from e
+    file_name = os.path.split(context_file)[1]
+    file_stem = file_name.split('.')[0]
+    context[file_stem] = obj
+    if default_context:
+        try:
+            apply_overwrites_to_context(obj, default_context)
+        except ValueError as error:
+            warnings.warn(f'Invalid default received: {error}')
+    if extra_context:
+        apply_overwrites_to_context(obj, extra_context)
+    logger.debug('Context generated is %s', context)
+    return context
+
+----------
+
+@pytest.mark.usefixtures('clean_system')
+@pytest.mark.parametrize('input_params, expected_context', context_data())
+def test_generate_context(input_params, expected_context):
+    """Verify input contexts combinations result in expected content on output."""
+    assert generate.generate_context(**input_params) == expected_context
+
+----------
+
+
+
+Test Class Name: default

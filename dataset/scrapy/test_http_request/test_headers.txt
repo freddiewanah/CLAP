@@ -1,0 +1,25 @@
+def items(self):
+    return ((k, self.getlist(k)) for k in self.keys())
+
+----------
+
+def test_headers(self):
+    url = 'http://www.scrapy.org'
+    headers = {b'Accept': 'gzip', b'Custom-Header': 'nothing to tell you'}
+    r = self.request_class(url=url, headers=headers)
+    p = self.request_class(url=url, headers=r.headers)
+    self.assertEqual(r.headers, p.headers)
+    self.assertFalse(r.headers is headers)
+    self.assertFalse(p.headers is r.headers)
+    h = Headers({'key1': 'val1', 'key2': 'val2'})
+    h['newkey'] = 'newval'
+    for (k, v) in h.items():
+        self.assertIsInstance(k, bytes)
+        for s in v:
+            self.assertIsInstance(s, bytes)
+
+----------
+
+
+
+Test Class Name: RequestTest

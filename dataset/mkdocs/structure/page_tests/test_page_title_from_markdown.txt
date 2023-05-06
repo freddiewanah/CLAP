@@ -1,0 +1,46 @@
+def read_source(self, config: MkDocsConfig) -> None:
+    source = config['plugins'].run_event('page_read_source', page=self, config=config)
+    if source is None:
+        try:
+            with open(self.file.abs_src_path, encoding='utf-8-sig', errors='strict') as f:
+                source = f.read()
+        except OSError:
+            log.error(f'File not found: {self.file.src_path}')
+            raise
+        except ValueError:
+            log.error(f'Encoding error reading file: {self.file.src_path}')
+            raise
+    (self.markdown, self.meta) = meta.get_data(source)
+    self._set_title()
+
+----------
+
+def test_page_title_from_markdown(self):
+    cfg = load_config()
+    fl = File('testing.md', cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls'])
+    pg = Page(None, fl, cfg)
+    pg.read_source(cfg)
+    self.assertEqual(pg.url, 'testing/')
+    self.assertEqual(pg.abs_url, None)
+    self.assertEqual(pg.canonical_url, None)
+    self.assertEqual(pg.edit_url, None)
+    self.assertEqual(pg.file, fl)
+    self.assertEqual(pg.content, None)
+    self.assertFalse(pg.is_homepage)
+    self.assertFalse(pg.is_index)
+    self.assertTrue(pg.is_page)
+    self.assertFalse(pg.is_section)
+    self.assertTrue(pg.is_top_level)
+    self.assertTrue(pg.markdown.startswith('# Welcome to MkDocs\n'))
+    self.assertEqual(pg.meta, {})
+    self.assertEqual(pg.next_page, None)
+    self.assertEqual(pg.parent, None)
+    self.assertEqual(pg.previous_page, None)
+    self.assertEqual(pg.title, 'Welcome to MkDocs')
+    self.assertEqual(pg.toc, [])
+
+----------
+
+
+
+Test Class Name: PageTests

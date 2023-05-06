@@ -1,0 +1,24 @@
+def download_request(self, request: Request, spider: Spider) -> Deferred:
+    agent = ScrapyH2Agent(context_factory=self._context_factory, pool=self._pool, crawler=self._crawler)
+    return agent.download_request(request, spider)
+
+----------
+
+def test_custom_content_length_bad(self):
+    request = Request(self.getURL('contentlength'))
+    actual_content_length = str(len(request.body))
+    bad_content_length = str(len(request.body) + 1)
+    request.headers['Content-Length'] = bad_content_length
+    log = LogCapture()
+    d = self.download_request(request, Spider('foo'))
+    d.addCallback(lambda r: r.text)
+    d.addCallback(self.assertEqual, actual_content_length)
+    d.addCallback(lambda _: log.check_present(('scrapy.core.http2.stream', 'WARNING', f'Ignoring bad Content-Length header {bad_content_length!r} of request {request}, sending {actual_content_length!r} instead')))
+    d.addCallback(lambda _: log.uninstall())
+    return d
+
+----------
+
+
+
+Test Class Name: Https2TestCase

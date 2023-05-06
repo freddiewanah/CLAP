@@ -1,0 +1,27 @@
+@classmethod
+def tty_ify(cls, text):
+    t = cls._ITALIC.sub("`\\1'", text)
+    t = cls._BOLD.sub('*\\1*', t)
+    t = cls._MODULE.sub('[' + '\\1' + ']', t)
+    t = cls._URL.sub('\\1', t)
+    t = cls._LINK.sub('\\1 <\\2>', t)
+    t = cls._REF.sub('\\1', t)
+    t = cls._CONST.sub("`\\1'", t)
+    t = cls._RULER.sub('\n{0}\n'.format('-' * 13), t)
+    t = cls._RST_SEEALSO.sub('See also:', t)
+    t = cls._RST_NOTE.sub('Note:', t)
+    t = cls._RST_ROLES.sub('`', t)
+    t = cls._RST_DIRECTIVES.sub('', t)
+    return t
+
+----------
+
+@pytest.mark.parametrize('text, expected', sorted(TTY_IFY_DATA.items()))
+def test_ttyify(text, expected):
+    assert DocCLI.tty_ify(text) == expected
+
+----------
+
+
+
+Test Class Name: default

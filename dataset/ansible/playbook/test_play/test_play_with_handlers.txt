@@ -1,0 +1,17 @@
+def get_handlers(self):
+    return self.handlers[:]
+
+----------
+
+def test_play_with_handlers():
+    p = Play.load(dict(name='test play', hosts=['foo'], gather_facts=False, handlers=[dict(action='shell echo "hello world"')]))
+    assert len(p.handlers) >= 1
+    assert len(p.get_handlers()) >= 1
+    assert isinstance(p.handlers[0], Block)
+    assert p.handlers[0].has_tasks() is True
+
+----------
+
+
+
+Test Class Name: default

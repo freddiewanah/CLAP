@@ -1,0 +1,24 @@
+def items(self) -> Iterable[Tuple[str, Any]]:
+    """An iterable of (name, value) pairs.
+
+        .. versionadded:: 3.1
+        """
+    return [(opt.name, opt.value()) for (name, opt) in self._options.items()]
+
+----------
+
+def test_items(self):
+    options = self._sample_options()
+    expected = [('a', 1), ('b', 2), ('help', options.help)]
+    actual = sorted(options.items())
+    self.assertEqual(expected, actual)
+
+----------
+
+def _sample_options(self):
+    options = OptionParser()
+    options.define('a', default=1)
+    options.define('b', default=2)
+    return options
+
+Test Class Name: OptionsTest

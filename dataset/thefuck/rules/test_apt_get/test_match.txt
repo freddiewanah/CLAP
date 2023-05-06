@@ -1,0 +1,17 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command, packages', [(Command('vim', 'vim: command not found'), [('vim', 'main'), ('vim-tiny', 'main')]), (Command('sudo vim', 'vim: command not found'), [('vim', 'main'), ('vim-tiny', 'main')]), (Command('vim', "The program 'vim' is currently not installed. You can install it by typing: sudo apt install vim"), [('vim', 'main'), ('vim-tiny', 'main')])])
+def test_match(mocker, command, packages):
+    mocker.patch('thefuck.rules.apt_get.which', return_value=None)
+    mocker.patch('thefuck.rules.apt_get._get_packages', create=True, return_value=packages)
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

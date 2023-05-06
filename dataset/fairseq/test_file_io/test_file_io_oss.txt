@@ -1,0 +1,20 @@
+@staticmethod
+def open(path: str, mode: str='r', buffering: int=-1, encoding: Optional[str]=None, errors: Optional[str]=None, newline: Optional[str]=None):
+    if IOPathManager:
+        return IOPathManager.open(path=path, mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
+    return open(path, mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
+
+----------
+
+def test_file_io_oss(self):
+    sys.modules['iopath'] = MagicMock()
+    from fairseq.file_io import PathManager
+    with PathManager.open(os.path.join(self._tmpdir, 'test.txt'), 'r') as f:
+        s = f.read()
+    self.assertEqual(s, self._tmpfile_contents)
+
+----------
+
+
+
+Test Class Name: TestFileIO

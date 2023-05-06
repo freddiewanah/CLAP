@@ -1,0 +1,23 @@
+def has_capacity(self) -> bool:
+    warnings.warn('ExecutionEngine.has_capacity is deprecated', ScrapyDeprecationWarning, stacklevel=2)
+    return not bool(self.slot)
+
+----------
+
+@defer.inlineCallbacks
+def test_deprecated_has_capacity(self):
+    with pytest.warns(ScrapyDeprecationWarning, match='ExecutionEngine.has_capacity is deprecated'):
+        e = ExecutionEngine(get_crawler(TestSpider), lambda _: None)
+        self.assertTrue(e.has_capacity())
+        spider = TestSpider()
+        yield e.open_spider(spider, [])
+        self.assertFalse(e.has_capacity())
+        e.start()
+        yield e.close()
+        self.assertTrue(e.has_capacity())
+
+----------
+
+
+
+Test Class Name: EngineTest

@@ -1,0 +1,28 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+def test_request_signing6(self):
+    date = 'Tue, 27 Mar 2007 21:06:08 +0000'
+    req = Request('s3://static.johnsmith.net:8080/db-backup.dat.gz', method='PUT', headers={'User-Agent': 'curl/7.15.5', 'Host': 'static.johnsmith.net:8080', 'Date': date, 'x-amz-acl': 'public-read', 'content-type': 'application/x-download', 'Content-MD5': '4gJE4saaMU4BqNR0kLY+lw==', 'X-Amz-Meta-ReviewedBy': 'joe@johnsmith.net,jane@johnsmith.net', 'X-Amz-Meta-FileChecksum': '0x02661779', 'X-Amz-Meta-ChecksumAlgorithm': 'crc32', 'Content-Disposition': 'attachment; filename=database.dat', 'Content-Encoding': 'gzip', 'Content-Length': '5913339'})
+    with self._mocked_date(date):
+        httpreq = self.download_request(req, self.spider)
+    self.assertEqual(httpreq.headers['Authorization'], b'AWS 0PN5J17HBGZHT7JJ3X82:C0FlOtU8Ylb9KDTpZqYkZPX91iI=')
+
+----------
+
+@contextlib.contextmanager
+def _mocked_date(self, date):
+    try:
+        import botocore.auth
+    except ImportError:
+        yield
+    else:
+        with mock.patch('botocore.auth.formatdate') as mock_formatdate:
+            mock_formatdate.return_value = date
+            yield
+
+Test Class Name: S3TestCase

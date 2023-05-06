@@ -1,0 +1,25 @@
+def users_folder(self) -> str:
+    """Generate a random path to user's folders.
+
+        :return: Path.
+
+        :Example:
+            /home/taneka/Pictures
+        """
+    user = self.user()
+    folder = self.random.choice(FOLDERS)
+    return str(self._pathlib_home / user / folder)
+
+----------
+
+def test_users_folder(self, path):
+    folder = path.users_folder()
+    folder = folder.split(self.directory_separator(path))
+    assert len(folder) == 4
+    assert folder[3] in FOLDERS
+
+----------
+
+
+
+Test Class Name: TestPath

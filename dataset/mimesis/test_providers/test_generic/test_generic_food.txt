@@ -1,0 +1,21 @@
+def spices(self) -> str:
+    """Get a random spices or herbs.
+
+        :return: Spices or herbs.
+
+        :Example:
+            Anise.
+        """
+    return self._choice_from('spices')
+
+----------
+
+def test_generic_food(self, g1, g2):
+    assert g1.food.dish() == g2.food.dish()
+    assert g1.food.spices() == g2.food.spices()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

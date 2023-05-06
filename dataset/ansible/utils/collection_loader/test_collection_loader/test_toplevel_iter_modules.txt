@@ -1,0 +1,17 @@
+def iter_modules(self, prefix):
+    return _iter_modules_impl(self._subpackage_search_paths, prefix)
+
+----------
+
+def test_toplevel_iter_modules():
+    finder = get_default_finder()
+    reset_collections_loader_state(finder)
+    modules = list(pkgutil.iter_modules(default_test_collection_paths, ''))
+    assert len(modules) == 1
+    assert modules[0][1] == 'ansible_collections'
+
+----------
+
+
+
+Test Class Name: default

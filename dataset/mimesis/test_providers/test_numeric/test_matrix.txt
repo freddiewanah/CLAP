@@ -1,0 +1,57 @@
+def matrix(self, m: int=10, n: int=10, num_type: NumType=NumType.FLOAT, **kwargs: t.Any) -> Matrix:
+    """Generate m x n matrix with random numbers.
+
+        This method works with variety of types,
+        so you can pass method-specific `**kwargs`.
+
+        See code for more details.
+
+        :param m: Number of rows.
+        :param n: Number of columns.
+        :param num_type: NumType enum object.
+        :param kwargs: Other method-specific arguments.
+        :return: A matrix of random numbers.
+        """
+    key = self.validate_enum(num_type, NumType)
+    kwargs.update({'n': n})
+    method = getattr(self, key)
+    return [method(**kwargs) for _ in range(m)]
+
+----------
+
+def test_matrix(self, numeric):
+    with pytest.raises(NonEnumerableError):
+        numeric.matrix(num_type='int')
+    result = numeric.matrix(precision=4)
+    assert len(result) == 10
+    for row in result:
+        assert len(row) == 10
+        for e in row:
+            assert isinstance(e, float)
+            assert len(str(e).split('.')[1]) <= 4
+    result = numeric.matrix(m=5, n=5, num_type=NumType.INTEGER, start=5)
+    assert len(result) == 5
+    for row in result:
+        assert len(row) == 5
+        assert min(row) >= 5
+        for e in row:
+            assert isinstance(e, int)
+    (precision_real, precision_imag) = (4, 6)
+    result = numeric.matrix(num_type=NumType.COMPLEX, precision_real=precision_real, precision_imag=precision_imag)
+    result[0][0] = 0.0001 + 1e-06j
+    assert len(result) == 10
+    for row in result:
+        assert len(row) == 10
+        for e in row:
+            real_str = f'{e.real:.{precision_real}f}'
+            imag_str = f'{e.imag:.{precision_imag}f}'
+            assert float(real_str) == e.real
+            assert float(imag_str) == e.imag
+            assert len(real_str.split('.')[1]) <= precision_real
+            assert len(imag_str.split('.')[1]) <= precision_imag
+
+----------
+
+
+
+Test Class Name: TestNumbers

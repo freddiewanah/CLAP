@@ -1,0 +1,24 @@
+def fetch(self, request: Union['HTTPRequest', str], **kwargs: Any) -> 'HTTPResponse':
+    """Executes a request, returning an `HTTPResponse`.
+
+        The request may be either a string URL or an `HTTPRequest` object.
+        If it is a string, we construct an `HTTPRequest` using any additional
+        kwargs: ``HTTPRequest(request, **kwargs)``
+
+        If an error occurs during the fetch, we raise an `HTTPError` unless
+        the ``raise_error`` keyword argument is set to False.
+        """
+    response = self._io_loop.run_sync(functools.partial(self._async_client.fetch, request, **kwargs))
+    return response
+
+----------
+
+def test_uimodule_resources(self):
+    response = self.fetch('/uimodule_resources')
+    self.assertEqual(response.body, b'<html><head><link href="/base.css" type="text/css" rel="stylesheet"/><link href="/foo.css" type="text/css" rel="stylesheet"/>\n<style type="text/css">\n.entry { margin-bottom: 1em; }\n</style>\n<meta>\n</head><body>\n\n\n<div class="entry">...</div>\n\n\n<div class="entry">...</div>\n\n<script src="/common.js" type="text/javascript"></script>\n<script type="text/javascript">\n//<![CDATA[\njs_embed()\n//]]>\n</script>\n<script src="/analytics.js"/>\n</body></html>')
+
+----------
+
+
+
+Test Class Name: WSGISafeWebTest

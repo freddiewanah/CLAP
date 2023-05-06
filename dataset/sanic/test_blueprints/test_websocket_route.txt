@@ -1,0 +1,55 @@
+def blueprint(self, blueprint: Union[Blueprint, Iterable[Blueprint], BlueprintGroup], **options: Any):
+    """Register a blueprint on the application.
+
+        :param blueprint: Blueprint object or (list, tuple) thereof
+        :param options: option dictionary with blueprint defaults
+        :return: Nothing
+        """
+    if isinstance(blueprint, (Iterable, BlueprintGroup)):
+        for item in blueprint:
+            params = {**options}
+            if isinstance(blueprint, BlueprintGroup):
+                merge_from = [options.get('url_prefix', ''), blueprint.url_prefix or '']
+                if not isinstance(item, BlueprintGroup):
+                    merge_from.append(item.url_prefix or '')
+                merged_prefix = '/'.join((u.strip('/') for u in merge_from if u)).rstrip('/')
+                params['url_prefix'] = f'/{merged_prefix}'
+                for _attr in ['version', 'strict_slashes']:
+                    if getattr(item, _attr) is None:
+                        params[_attr] = getattr(blueprint, _attr) or options.get(_attr)
+                if item.version_prefix == '/v':
+                    if blueprint.version_prefix == '/v':
+                        params['version_prefix'] = options.get('version_prefix')
+                    else:
+                        params['version_prefix'] = blueprint.version_prefix
+            self.blueprint(item, **params)
+        return
+    if blueprint.name in self.blueprints:
+        assert self.blueprints[blueprint.name] is blueprint, 'A blueprint with the name "%s" is already registered.  Blueprint names must be unique.' % (blueprint.name,)
+    else:
+        self.blueprints[blueprint.name] = blueprint
+        self._blueprint_order.append(blueprint)
+    if self.strict_slashes is not None and blueprint.strict_slashes is None:
+        blueprint.strict_slashes = self.strict_slashes
+    blueprint.register(self, options)
+
+----------
+
+def test_websocket_route(app: Sanic):
+    event = asyncio.Event()
+
+    async def websocket_handler(request, ws):
+        assert ws.subprotocol is None
+        event.set()
+    bp = Blueprint(name='handler', url_prefix='/ws')
+    bp.add_websocket_route(websocket_handler, '/test', name='test')
+    app.blueprint(bp)
+    (_, response) = app.test_client.websocket('/ws/test')
+    assert response.opened is True
+    assert event.is_set()
+
+----------
+
+
+
+Test Class Name: Error

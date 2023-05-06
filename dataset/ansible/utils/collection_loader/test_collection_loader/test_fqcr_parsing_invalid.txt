@@ -1,0 +1,46 @@
+@staticmethod
+def from_fqcr(ref, ref_type):
+    """
+        Parse a string as a fully-qualified collection reference, raises ValueError if invalid
+        :param ref: collection reference to parse (a valid ref is of the form 'ns.coll.resource' or 'ns.coll.subdir1.subdir2.resource')
+        :param ref_type: the type of the reference, eg 'module', 'role', 'doc_fragment'
+        :return: a populated AnsibleCollectionRef object
+        """
+    if not AnsibleCollectionRef.is_valid_fqcr(ref):
+        raise ValueError('{0} is not a valid collection reference'.format(to_native(ref)))
+    ref = to_text(ref, errors='strict')
+    ref_type = to_text(ref_type, errors='strict')
+    ext = ''
+    if ref_type == u'playbook' and ref.endswith(PB_EXTENSIONS):
+        resource_splitname = ref.rsplit(u'.', 2)
+        package_remnant = resource_splitname[0]
+        resource = resource_splitname[1]
+        ext = '.' + resource_splitname[2]
+    else:
+        resource_splitname = ref.rsplit(u'.', 1)
+        package_remnant = resource_splitname[0]
+        resource = resource_splitname[1]
+    package_splitname = package_remnant.split(u'.', 2)
+    if len(package_splitname) == 3:
+        subdirs = package_splitname[2]
+    else:
+        subdirs = u''
+    collection_name = u'.'.join(package_splitname[0:2])
+    return AnsibleCollectionRef(collection_name, subdirs, resource + ext, ref_type)
+
+----------
+
+@pytest.mark.parametrize('ref,ref_type,expected_error_type,expected_error_expression', [('no_dots_at_all_action', 'action', ValueError, 'is not a valid collection reference'), ('no_nscoll.myaction', 'action', ValueError, 'is not a valid collection reference'), ('no_nscoll%myaction', 'action', ValueError, 'is not a valid collection reference'), ('ns.coll.myaction', 'bogus', ValueError, 'invalid collection ref_type')])
+def test_fqcr_parsing_invalid(ref, ref_type, expected_error_type, expected_error_expression):
+    assert not AnsibleCollectionRef.is_valid_fqcr(ref, ref_type)
+    with pytest.raises(expected_error_type) as curerr:
+        AnsibleCollectionRef.from_fqcr(ref, ref_type)
+    assert re.search(expected_error_expression, str(curerr.value))
+    r = AnsibleCollectionRef.try_parse_fqcr(ref, ref_type)
+    assert r is None
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,43 @@
+def run() -> None:
+    try:
+        result = func()
+        if result is not None:
+            from tornado.gen import convert_yielded
+            result = convert_yielded(result)
+    except Exception:
+        fut = Future()
+        future_cell[0] = fut
+        future_set_exc_info(fut, sys.exc_info())
+    else:
+        if is_future(result):
+            future_cell[0] = result
+        else:
+            fut = Future()
+            future_cell[0] = fut
+            fut.set_result(result)
+    assert future_cell[0] is not None
+    self.add_future(future_cell[0], lambda future: self.stop())
+
+----------
+
+def test_tear_down_releases_app_and_http_server(self):
+    result = unittest.TestResult()
+
+    class SetUpTearDown(AsyncHTTPTestCase):
+
+        def get_app(self):
+            return Application()
+
+        def test(self):
+            self.assertTrue(hasattr(self, '_app'))
+            self.assertTrue(hasattr(self, 'http_server'))
+    test = SetUpTearDown('test')
+    test.run(result)
+    self.assertFalse(hasattr(test, '_app'))
+    self.assertFalse(hasattr(test, 'http_server'))
+
+----------
+
+
+
+Test Class Name: AsyncHTTPTestCaseSetUpTearDownTest

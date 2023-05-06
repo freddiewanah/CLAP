@@ -1,0 +1,36 @@
+def extract_links(self, response):
+    """Returns a list of :class:`~scrapy.link.Link` objects from the
+        specified :class:`response <scrapy.http.Response>`.
+
+        Only links that match the settings passed to the ``__init__`` method of
+        the link extractor are returned.
+
+        Duplicate links are omitted if the ``unique`` attribute is set to ``True``,
+        otherwise they are returned.
+        """
+    base_url = get_base_url(response)
+    if self.restrict_xpaths:
+        docs = [subdoc for x in self.restrict_xpaths for subdoc in response.xpath(x)]
+    else:
+        docs = [response.selector]
+    all_links = []
+    for doc in docs:
+        links = self._extract_links(doc, response.url, response.encoding, base_url)
+        all_links.extend(self._process_links(links))
+    if self.link_extractor.unique:
+        return unique_list(all_links)
+    return all_links
+
+----------
+
+def test_encoded_url(self):
+    body = b'<html><body><div><a href="?page=2">BinB</a></body></html>'
+    response = HtmlResponse('http://known.fm/AC%2FDC/', body=body, encoding='utf8')
+    lx = self.extractor_cls()
+    self.assertEqual(lx.extract_links(response), [Link(url='http://known.fm/AC%2FDC/?page=2', text='BinB', fragment='', nofollow=False)])
+
+----------
+
+
+
+Test Class Name: LinkExtractorTestCase

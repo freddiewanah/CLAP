@@ -1,0 +1,18 @@
+def currency_symbol(self) -> str:
+    """Get a currency symbol for current locale.
+
+        :return: Currency symbol.
+        """
+    return CURRENCY_SYMBOLS[self.locale]
+
+----------
+
+def test_base_finance(self, generic):
+    result = generic.finance.currency_symbol()
+    assert result is not None
+
+----------
+
+
+
+Test Class Name: TestGeneric

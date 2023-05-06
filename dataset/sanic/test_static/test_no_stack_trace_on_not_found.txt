@@ -1,0 +1,36 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_no_stack_trace_on_not_found(app, static_file_directory, caplog):
+    app.static('/static', static_file_directory)
+
+    @app.exception(FileNotFound)
+    async def file_not_found(request, exception):
+        return text(f'No file: {request.path}', status=404)
+    with caplog.at_level(logging.INFO):
+        (_, response) = app.test_client.get('/static/non_existing_file.file')
+    counter = Counter([(r[0], r[1]) for r in caplog.record_tuples])
+    assert response.status == 404
+    assert counter['sanic.root', logging.INFO] == 9
+    assert counter['sanic.root', logging.ERROR] == 0
+    assert counter['sanic.error', logging.ERROR] == 0
+    assert counter['sanic.server', logging.INFO] == 2
+    assert response.text == 'No file: /static/non_existing_file.file'
+
+----------
+
+
+
+Test Class Name: default

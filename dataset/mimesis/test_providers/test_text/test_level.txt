@@ -1,0 +1,23 @@
+def level(self) -> str:
+    """Generate a random level of danger or something else.
+
+        :return: Level.
+
+        :Example:
+            critical.
+        """
+    levels: t.List[str] = self.extract(['level'])
+    return self.random.choice(levels)
+
+----------
+
+def test_level(self, text):
+    result = text.level()
+    assert result is not None
+    assert isinstance(result, str)
+
+----------
+
+
+
+Test Class Name: TestText

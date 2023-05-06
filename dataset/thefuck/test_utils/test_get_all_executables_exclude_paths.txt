@@ -1,0 +1,33 @@
+@memoize
+def get_all_executables():
+    from thefuck.shells import shell
+
+    def _safe(fn, fallback):
+        try:
+            return fn()
+        except OSError:
+            return fallback
+    tf_alias = get_alias()
+    tf_entry_points = ['thefuck', 'fuck']
+    bins = [exe.name.decode('utf8') if six.PY2 else exe.name for path in os.environ.get('PATH', '').split(os.pathsep) if include_path_in_search(path) for exe in _safe(lambda : list(Path(path).iterdir()), []) if not _safe(exe.is_dir, True) and exe.name not in tf_entry_points]
+    aliases = [alias.decode('utf8') if six.PY2 else alias for alias in shell.get_aliases() if alias != tf_alias]
+    return bins + aliases
+
+----------
+
+@pytest.mark.usefixtures('no_memoize', 'os_environ_pathsep')
+@pytest.mark.parametrize('path, pathsep, excluded', [('/foo:/bar:/baz:/foo/bar:/mnt/foo', ':', '/mnt/foo'), ('C:\\\\foo;C:\\\\bar;C:\\\\baz;C:\\\\foo\\\\bar;Z:\\\\foo', ';', 'Z:\\\\foo')])
+def test_get_all_executables_exclude_paths(path, pathsep, excluded, settings):
+    settings.init()
+    settings.excluded_search_path_prefixes = [excluded]
+    with patch('thefuck.utils.Path') as Path_mock:
+        get_all_executables()
+        path_list = path.split(pathsep)
+        assert call(path_list[-1]) not in Path_mock.mock_calls
+        assert all((call(p) in Path_mock.mock_calls for p in path_list[:-1]))
+
+----------
+
+
+
+Test Class Name: TestGetCloseMatches

@@ -1,0 +1,20 @@
+@pytest.fixture
+@pytest.mark.usefixtures('isfile')
+def history_lines(mocker):
+
+    def aux(lines):
+        mock = mocker.patch('io.open')
+        mock.return_value.__enter__.return_value.readlines.return_value = lines
+    return aux
+
+----------
+
+def test_get_history(self, history_lines, shell):
+    history_lines(['ls', 'rm'])
+    assert list(shell.get_history()) == ['ls', 'rm']
+
+----------
+
+
+
+Test Class Name: TestBash

@@ -1,0 +1,60 @@
+def prompt_for_config(context, no_input=False):
+    """Prompt user to enter a new config.
+
+    :param dict context: Source for field names and sample values.
+    :param no_input: Do not prompt for user input and use only values from context.
+    """
+    cookiecutter_dict = OrderedDict([])
+    env = StrictEnvironment(context=context)
+    for (key, raw) in context['cookiecutter'].items():
+        if key.startswith('_') and (not key.startswith('__')):
+            cookiecutter_dict[key] = raw
+            continue
+        elif key.startswith('__'):
+            cookiecutter_dict[key] = render_variable(env, raw, cookiecutter_dict)
+            continue
+        try:
+            if isinstance(raw, list):
+                val = prompt_choice_for_config(cookiecutter_dict, env, key, raw, no_input)
+                cookiecutter_dict[key] = val
+            elif isinstance(raw, bool):
+                if no_input:
+                    cookiecutter_dict[key] = render_variable(env, raw, cookiecutter_dict)
+                else:
+                    cookiecutter_dict[key] = read_user_yes_no(key, raw)
+            elif not isinstance(raw, dict):
+                val = render_variable(env, raw, cookiecutter_dict)
+                if not no_input:
+                    val = read_user_variable(key, val)
+                cookiecutter_dict[key] = val
+        except UndefinedError as err:
+            msg = f"Unable to render variable '{key}'"
+            raise UndefinedVariableInTemplate(msg, err, context) from err
+    for (key, raw) in context['cookiecutter'].items():
+        if key.startswith('_') and (not key.startswith('__')):
+            continue
+        try:
+            if isinstance(raw, dict):
+                val = render_variable(env, raw, cookiecutter_dict)
+                if not no_input and (not key.startswith('__')):
+                    val = read_user_dict(key, val)
+                cookiecutter_dict[key] = val
+        except UndefinedError as err:
+            msg = f"Unable to render variable '{key}'"
+            raise UndefinedVariableInTemplate(msg, err, context) from err
+    return cookiecutter_dict
+
+----------
+
+@pytest.mark.parametrize('context', [{'cookiecutter': {'full_name': 'Your Name'}}, {'cookiecutter': {'full_name': 'Řekni či napiš své jméno'}}], ids=['ASCII default prompt/input', 'Unicode default prompt/input'])
+def test_prompt_for_config(self, monkeypatch, context):
+    """Verify `prompt_for_config` call `read_user_variable` on text request."""
+    monkeypatch.setattr('cookiecutter.prompt.read_user_variable', lambda var, default: default)
+    cookiecutter_dict = prompt.prompt_for_config(context)
+    assert cookiecutter_dict == context['cookiecutter']
+
+----------
+
+
+
+Test Class Name: TestPrompt

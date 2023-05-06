@@ -1,0 +1,41 @@
+def parse_codecs(codecs_str):
+    if not codecs_str:
+        return {}
+    split_codecs = list(filter(None, map(lambda str: str.strip(), codecs_str.strip().strip(',').split(','))))
+    (vcodec, acodec) = (None, None)
+    for full_codec in split_codecs:
+        codec = full_codec.split('.')[0]
+        if codec in ('avc1', 'avc2', 'avc3', 'avc4', 'vp9', 'vp8', 'hev1', 'hev2', 'h263', 'h264', 'mp4v', 'hvc1', 'av01', 'theora'):
+            if not vcodec:
+                vcodec = full_codec
+        elif codec in ('mp4a', 'opus', 'vorbis', 'mp3', 'aac', 'ac-3', 'ec-3', 'eac3', 'dtsc', 'dtse', 'dtsh', 'dtsl'):
+            if not acodec:
+                acodec = full_codec
+        else:
+            write_string('WARNING: Unknown codec %s\n' % full_codec, sys.stderr)
+    if not vcodec and (not acodec):
+        if len(split_codecs) == 2:
+            return {'vcodec': split_codecs[0], 'acodec': split_codecs[1]}
+    else:
+        return {'vcodec': vcodec or 'none', 'acodec': acodec or 'none'}
+    return {}
+
+----------
+
+def test_parse_codecs(self):
+    self.assertEqual(parse_codecs(''), {})
+    self.assertEqual(parse_codecs('avc1.77.30, mp4a.40.2'), {'vcodec': 'avc1.77.30', 'acodec': 'mp4a.40.2'})
+    self.assertEqual(parse_codecs('mp4a.40.2'), {'vcodec': 'none', 'acodec': 'mp4a.40.2'})
+    self.assertEqual(parse_codecs('mp4a.40.5,avc1.42001e'), {'vcodec': 'avc1.42001e', 'acodec': 'mp4a.40.5'})
+    self.assertEqual(parse_codecs('avc3.640028'), {'vcodec': 'avc3.640028', 'acodec': 'none'})
+    self.assertEqual(parse_codecs(', h264,,newcodec,aac'), {'vcodec': 'h264', 'acodec': 'aac'})
+    self.assertEqual(parse_codecs('av01.0.05M.08'), {'vcodec': 'av01.0.05M.08', 'acodec': 'none'})
+    self.assertEqual(parse_codecs('theora, vorbis'), {'vcodec': 'theora', 'acodec': 'vorbis'})
+    self.assertEqual(parse_codecs('unknownvcodec, unknownacodec'), {'vcodec': 'unknownvcodec', 'acodec': 'unknownacodec'})
+    self.assertEqual(parse_codecs('unknown'), {})
+
+----------
+
+
+
+Test Class Name: TestUtil

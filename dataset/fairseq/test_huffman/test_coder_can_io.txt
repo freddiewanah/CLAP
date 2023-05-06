@@ -1,0 +1,21 @@
+@classmethod
+def from_file(cls, filename: str, bos='<s>', pad='<pad>', eos='</s>', unk='<unk>') -> 'HuffmanCoder':
+    builder = HuffmanCodeBuilder.from_file(filename)
+    return builder.build_code(bos=bos, pad=pad, eos=eos, unk=unk)
+
+----------
+
+def test_coder_can_io(self):
+    data = make_data()
+    builder = make_code_builder(data)
+    coder = builder.build_code()
+    with NamedTemporaryFile() as tmp_fp:
+        coder.to_file(tmp_fp.name)
+        other_coder = HuffmanCoder.from_file(tmp_fp.name)
+        self.assertEqual(coder, other_coder)
+
+----------
+
+
+
+Test Class Name: TestCoder

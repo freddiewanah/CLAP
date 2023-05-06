@@ -1,0 +1,23 @@
+def get(self, name: str, default: Optional[Any]=None) -> Optional[Any]:
+    """Return the first value, either the default or actual"""
+    return super().get(name, [default])[0]
+
+----------
+
+def test_query_string(app):
+
+    @app.route('/')
+    async def handler(request):
+        return text('OK')
+    (request, response) = app.test_client.get('/', params=[('test1', '1'), ('test2', 'false'), ('test2', 'true')])
+    assert request.args.get('test1') == '1'
+    assert request.args.get('test2') == 'false'
+    assert request.args.getlist('test2') == ['false', 'true']
+    assert request.args.getlist('test1') == ['1']
+    assert request.args.get('test3', default='My value') == 'My value'
+
+----------
+
+
+
+Test Class Name: Bar

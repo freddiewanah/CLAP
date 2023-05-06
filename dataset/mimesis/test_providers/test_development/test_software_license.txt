@@ -1,0 +1,20 @@
+def software_license(self) -> str:
+    """Get a random software license.
+
+        :return: License name.
+
+        :Example:
+            The BSD 3-Clause License.
+        """
+    return self.random.choice(LICENSES)
+
+----------
+
+def test_software_license(self, dv1, dv2):
+    assert dv1.software_license() == dv2.software_license()
+
+----------
+
+
+
+Test Class Name: TestSeededDevelopment

@@ -1,0 +1,20 @@
+def to_masklen(val):
+    """ converts a netmask to a masklen """
+    if not is_netmask(val):
+        raise ValueError('invalid value for netmask: %s' % val)
+    bits = list()
+    for x in val.split('.'):
+        octet = bin(int(x)).count('1')
+        bits.append(octet)
+    return sum(bits)
+
+----------
+
+def test_to_masklen():
+    assert 24 == to_masklen('255.255.255.0')
+
+----------
+
+
+
+Test Class Name: default

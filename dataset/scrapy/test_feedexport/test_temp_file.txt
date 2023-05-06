@@ -1,0 +1,19 @@
+def open(spider):
+    """Open the storage for the given spider. It must return a file-like
+        object that will be used for the exporters"""
+
+----------
+
+def test_temp_file(self):
+    b = BlockingFeedStorage()
+    tests_path = Path(__file__).resolve().parent
+    spider = self.get_test_spider({'FEED_TEMPDIR': str(tests_path)})
+    tmp = b.open(spider)
+    tmp_path = Path(tmp.name).parent
+    self.assertEqual(tmp_path, tests_path)
+
+----------
+
+
+
+Test Class Name: TestSpider

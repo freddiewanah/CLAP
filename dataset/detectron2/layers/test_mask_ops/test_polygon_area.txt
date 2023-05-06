@@ -1,0 +1,36 @@
+def area(self):
+    """
+        Computes area of the mask.
+        Only works with Polygons, using the shoelace formula:
+        https://stackoverflow.com/questions/24467972/calculate-area-of-polygon-given-x-y-coordinates
+
+        Returns:
+            Tensor: a vector, area for each instance
+        """
+    area = []
+    for polygons_per_instance in self.polygons:
+        area_per_instance = 0
+        for p in polygons_per_instance:
+            area_per_instance += polygon_area(p[0::2], p[1::2])
+        area.append(area_per_instance)
+    return torch.tensor(area)
+
+----------
+
+def test_polygon_area(self):
+    for d in [5.0, 10.0, 1000.0]:
+        polygon = PolygonMasks([[[0, 0, 0, d, d, d, d, 0]]])
+        area = polygon.area()[0]
+        target = d ** 2
+        self.assertEqual(area, target)
+    for d in [5.0, 10.0, 1000.0]:
+        polygon = PolygonMasks([[[0, 0, 0, d, d, d]]])
+        area = polygon.area()[0]
+        target = d ** 2 / 2
+        self.assertEqual(area, target)
+
+----------
+
+
+
+Test Class Name: TestMaskCropPaste

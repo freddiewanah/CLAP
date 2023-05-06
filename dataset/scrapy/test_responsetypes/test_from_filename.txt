@@ -1,0 +1,20 @@
+def from_filename(self, filename):
+    """Return the most appropriate Response class from a file name"""
+    (mimetype, encoding) = self.mimetypes.guess_type(filename)
+    if mimetype and (not encoding):
+        return self.from_mimetype(mimetype)
+    return Response
+
+----------
+
+def test_from_filename(self):
+    mappings = [('data.bin', Response), ('file.txt', TextResponse), ('file.xml.gz', Response), ('file.xml', XmlResponse), ('file.html', HtmlResponse), ('file.unknownext', Response)]
+    for (source, cls) in mappings:
+        retcls = responsetypes.from_filename(source)
+        assert retcls is cls, f'{source} ==> {retcls} != {cls}'
+
+----------
+
+
+
+Test Class Name: ResponseTypesTest

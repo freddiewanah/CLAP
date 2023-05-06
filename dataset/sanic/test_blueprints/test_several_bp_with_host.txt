@@ -1,0 +1,48 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_several_bp_with_host(app: Sanic):
+    bp = Blueprint('test_text', url_prefix='/test', host='example.com', strict_slashes=True)
+    bp2 = Blueprint('test_text2', url_prefix='/test', host='sub.example.com', strict_slashes=True)
+
+    @bp.route('/')
+    def handler(request):
+        return text('Hello')
+
+    @bp2.route('/')
+    def handler1(request):
+        return text('Hello2')
+
+    @bp2.route('/other/')
+    def handler2(request):
+        return text('Hello3')
+    app.blueprint(bp)
+    app.blueprint(bp2)
+    assert bp.host == 'example.com'
+    headers = {'Host': 'example.com'}
+    (request, response) = app.test_client.get('/test/', headers=headers)
+    assert response.text == 'Hello'
+    assert bp2.host == 'sub.example.com'
+    headers = {'Host': 'sub.example.com'}
+    (request, response) = app.test_client.get('/test/', headers=headers)
+    assert response.text == 'Hello2'
+    (request, response) = app.test_client.get('/test/other/', headers=headers)
+    assert response.text == 'Hello3'
+
+----------
+
+
+
+Test Class Name: default

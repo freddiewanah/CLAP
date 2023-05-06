@@ -1,0 +1,26 @@
+def ogrn(self) -> str:
+    """Generate random valid ``OGRN``.
+
+        :return: OGRN.
+
+        :Example:
+            4715113303725.
+        """
+    numbers = []
+    for _ in range(0, 12):
+        numbers.append(self.random.randint(1 if _ == 0 else 0, 9))
+    ogrn = ''.join(map(str, numbers))
+    check_sum = str(int(ogrn) % 11 % 10)
+    return f'{ogrn}{check_sum}'
+
+----------
+
+def test_ogrn(russia):
+    result = russia.ogrn()
+    assert len(result) == 13
+
+----------
+
+
+
+Test Class Name: default

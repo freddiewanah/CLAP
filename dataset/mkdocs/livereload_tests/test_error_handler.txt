@@ -1,0 +1,28 @@
+def do_request(server, content):
+    request = FakeRequest(content + ' HTTP/1.1')
+    server.RequestHandlerClass(request, ('127.0.0.1', 0), server)
+    response = request.out_file.getvalue()
+    (headers, _, content) = response.partition(b'\r\n\r\n')
+    (status, _, headers) = headers.partition(b'\r\n')
+    status = status.split(None, 1)[1].decode()
+    headers = email.message_from_bytes(headers)
+    headers['_status'] = status
+    return (headers, content.decode())
+
+----------
+
+@tempdir()
+def test_error_handler(self, site_dir):
+    with testing_server(site_dir) as server:
+        server.error_handler = lambda code: b'[%d]' % code
+        with self.assertLogs('mkdocs.livereload') as cm:
+            (headers, output) = do_request(server, 'GET /missing')
+        self.assertEqual(headers['_status'], '404 Not Found')
+        self.assertEqual(output, '[404]')
+        self.assertRegex('\n'.join(cm.output), '^WARNING:mkdocs.livereload:.*"GET /missing HTTP/1.1" code 404')
+
+----------
+
+
+
+Test Class Name: BuildTests

@@ -1,0 +1,25 @@
+def validate(self) -> Tuple[ConfigErrors, ConfigWarnings]:
+    (failed, warnings) = self._pre_validate()
+    (run_failed, run_warnings) = self._validate()
+    failed.extend(run_failed)
+    warnings.extend(run_warnings)
+    if len(failed) == 0:
+        (post_failed, post_warnings) = self._post_validate()
+        failed.extend(post_failed)
+        warnings.extend(post_warnings)
+    return (failed, warnings)
+
+----------
+
+def test_missing_site_name(self):
+    conf = defaults.MkDocsConfig()
+    conf.load_dict({})
+    (errors, warnings) = conf.validate()
+    self.assertEqual(errors, [('site_name', ValidationError('Required configuration not provided.'))])
+    self.assertEqual(warnings, [])
+
+----------
+
+
+
+Test Class Name: ConfigTests

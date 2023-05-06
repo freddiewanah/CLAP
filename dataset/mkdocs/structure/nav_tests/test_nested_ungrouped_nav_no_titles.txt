@@ -1,0 +1,45 @@
+def get_navigation(files: Files, config: Union[MkDocsConfig, Mapping[str, Any]]) -> Navigation:
+    """Build site navigation from config and files."""
+    nav_config = config['nav'] or nest_paths((f.src_uri for f in files.documentation_pages()))
+    items = _data_to_navigation(nav_config, files, config)
+    if not isinstance(items, list):
+        items = [items]
+    pages = _get_by_type(items, Page)
+    _add_previous_and_next_links(pages)
+    _add_parent_links(items)
+    missing_from_config = [file for file in files.documentation_pages() if file.page is None]
+    if missing_from_config:
+        log.info('The following pages exist in the docs directory, but are not included in the "nav" configuration:\n  - {}'.format('\n  - '.join((file.src_path for file in missing_from_config))))
+        for file in missing_from_config:
+            Page(None, file, config)
+    links = _get_by_type(items, Link)
+    for link in links:
+        (scheme, netloc, path, query, fragment) = urlsplit(link.url)
+        if scheme or netloc:
+            log.debug(f"An external link to '{link.url}' is included in the 'nav' configuration.")
+        elif link.url.startswith('/'):
+            log.debug(f"An absolute path to '{link.url}' is included in the 'nav' configuration, which presumably points to an external resource.")
+        else:
+            msg = f"A relative path to '{link.url}' is included in the 'nav' configuration, which is not found in the documentation files"
+            log.warning(msg)
+    return Navigation(items, pages)
+
+----------
+
+def test_nested_ungrouped_nav_no_titles(self):
+    nav_cfg = ['index.md', 'about/contact.md', 'about/sub/license.md']
+    expected = dedent("\n            Page(title=[blank], url='/')\n            Page(title=[blank], url='/about/contact/')\n            Page(title=[blank], url='/about/sub/license/')\n            ")
+    cfg = load_config(nav=nav_cfg, site_url='http://example.com/')
+    fs = [File(item, cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls']) for item in nav_cfg]
+    files = Files(fs)
+    site_navigation = get_navigation(files, cfg)
+    self.assertEqual(str(site_navigation).strip(), expected)
+    self.assertEqual(len(site_navigation.items), 3)
+    self.assertEqual(len(site_navigation.pages), 3)
+    self.assertEqual(repr(site_navigation.homepage), "Page(title=[blank], url='/')")
+
+----------
+
+
+
+Test Class Name: SiteNavigationTests

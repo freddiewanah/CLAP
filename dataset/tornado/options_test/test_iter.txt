@@ -1,0 +1,28 @@
+def set(self, value: Any) -> None:
+    if self.multiple:
+        if not isinstance(value, list):
+            raise Error('Option %r is required to be a list of %s' % (self.name, self.type.__name__))
+        for item in value:
+            if item is not None and (not isinstance(item, self.type)):
+                raise Error('Option %r is required to be a list of %s' % (self.name, self.type.__name__))
+    elif value is not None and (not isinstance(value, self.type)):
+        raise Error('Option %r is required to be a %s (%s given)' % (self.name, self.type.__name__, type(value)))
+    self._value = value
+    if self.callback is not None:
+        self.callback(self._value)
+
+----------
+
+def test_iter(self):
+    options = self._sample_options()
+    self.assertEqual(set(['a', 'b', 'help']), set(iter(options)))
+
+----------
+
+def _sample_options(self):
+    options = OptionParser()
+    options.define('a', default=1)
+    options.define('b', default=2)
+    return options
+
+Test Class Name: OptionsTest

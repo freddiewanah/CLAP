@@ -1,0 +1,13 @@
+def get(self):
+    return self.config.get('token', None)
+
+----------
+
+def test_token_from_file_missing(b_token_file):
+    assert GalaxyToken().get() is None
+
+----------
+
+
+
+Test Class Name: default

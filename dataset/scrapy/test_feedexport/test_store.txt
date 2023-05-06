@@ -1,0 +1,19 @@
+def store(file):
+    """Store the given file stream"""
+
+----------
+
+@defer.inlineCallbacks
+def test_store(self):
+    out = BytesIO()
+    storage = StdoutFeedStorage('stdout:', _stdout=out)
+    file = storage.open(scrapy.Spider('default'))
+    file.write(b'content')
+    yield storage.store(file)
+    self.assertEqual(out.getvalue(), b'content')
+
+----------
+
+
+
+Test Class Name: StdoutFeedStorageTest

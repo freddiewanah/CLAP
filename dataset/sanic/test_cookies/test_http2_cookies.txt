@@ -1,0 +1,31 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_http2_cookies(app):
+
+    @app.route('/')
+    async def handler(request):
+        cookie_value = request.cookies['test']
+        response = text(f'Cookies are: {cookie_value}')
+        return response
+    headers = {'cookie': 'test=working!'}
+    (request, response) = app.test_client.get('/', headers=headers)
+    assert response.text == 'Cookies are: working!'
+
+----------
+
+
+
+Test Class Name: default

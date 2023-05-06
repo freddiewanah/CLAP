@@ -1,0 +1,26 @@
+def item(tensor):
+    if torch.is_tensor(tensor) and tensor.device.type == 'xla':
+        return tensor.detach()
+    if hasattr(tensor, 'item'):
+        return tensor.item()
+    if hasattr(tensor, '__getitem__'):
+        return tensor[0]
+    return tensor
+
+----------
+
+def test_load_full_checkpoint(self):
+    with contextlib.redirect_stdout(StringIO()):
+        (trainer, epoch_itr) = get_trainer_and_epoch_itr(2, 150, 300, 150)
+        trainer.get_train_iterator = MagicMock(return_value=epoch_itr)
+        (_, epoch_itr) = checkpoint_utils.load_checkpoint(self.cfg_mock.checkpoint, trainer)
+        itr = epoch_itr.next_epoch_itr(shuffle=False)
+        self.assertEqual(epoch_itr.epoch, 3)
+        self.assertEqual(epoch_itr.iterations_in_epoch, 0)
+        self.assertEqual(next(itr)['net_input']['src_tokens'][0].item(), 0)
+
+----------
+
+
+
+Test Class Name: TestLoadCheckpoint

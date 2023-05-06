@@ -1,0 +1,39 @@
+def banner(self, msg, color=None, cows=True):
+    """
+        Prints a header-looking line with cowsay or stars with length depending on terminal width (3 minimum)
+        """
+    msg = to_text(msg)
+    if self.b_cowsay and cows:
+        try:
+            self.banner_cowsay(msg)
+            return
+        except OSError:
+            self.warning('somebody cleverly deleted cowsay or something during the PB run.  heh.')
+    msg = msg.strip()
+    try:
+        star_len = self.columns - get_text_width(msg)
+    except EnvironmentError:
+        star_len = self.columns - len(msg)
+    if star_len <= 3:
+        star_len = 3
+    stars = u'*' * star_len
+    self.display(u'\n%s %s' % (msg, stars), color=color)
+
+----------
+
+def test_Display_banner_get_text_width(monkeypatch):
+    locale.setlocale(locale.LC_ALL, '')
+    display = Display()
+    display_mock = MagicMock()
+    monkeypatch.setattr(display, 'display', display_mock)
+    display.banner(u'🚀🐮', color=False, cows=False)
+    (args, kwargs) = display_mock.call_args
+    msg = args[0]
+    stars = u' %s' % (75 * u'*')
+    assert msg.endswith(stars)
+
+----------
+
+
+
+Test Class Name: default

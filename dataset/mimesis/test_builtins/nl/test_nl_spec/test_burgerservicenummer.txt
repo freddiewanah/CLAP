@@ -1,0 +1,17 @@
+def burgerservicenummer(self) -> str:
+    """Generate a random, but valid ``Burgerservicenummer``.
+
+        An alias for self.bsn()
+        """
+    return self.bsn()
+
+----------
+
+def test_burgerservicenummer(nl):
+    assert nl.burgerservicenummer()
+
+----------
+
+
+
+Test Class Name: default

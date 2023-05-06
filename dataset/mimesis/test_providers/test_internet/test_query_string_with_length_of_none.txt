@@ -1,0 +1,19 @@
+def query_string(self, length: t.Optional[int]=None) -> str:
+    """Generate arbitrary query string of given length.
+
+        :param length: Length of query string.
+        :return: Query string.
+        """
+    return urllib.parse.urlencode(self.query_parameters(length))
+
+----------
+
+def test_query_string_with_length_of_none(self, net):
+    query_params_count = len(net.query_string().split('&'))
+    assert 1 <= query_params_count <= 10
+
+----------
+
+
+
+Test Class Name: TestInternet

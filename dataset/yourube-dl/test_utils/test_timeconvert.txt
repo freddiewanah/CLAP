@@ -1,0 +1,19 @@
+def timeconvert(timestr):
+    """Convert RFC 2822 defined time string into system timestamp"""
+    timestamp = None
+    timetuple = email.utils.parsedate_tz(timestr)
+    if timetuple is not None:
+        timestamp = email.utils.mktime_tz(timetuple)
+    return timestamp
+
+----------
+
+def test_timeconvert(self):
+    self.assertTrue(timeconvert('') is None)
+    self.assertTrue(timeconvert('bougrg') is None)
+
+----------
+
+
+
+Test Class Name: TestUtil

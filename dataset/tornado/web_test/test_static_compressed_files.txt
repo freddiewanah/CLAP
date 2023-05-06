@@ -1,0 +1,26 @@
+def set(self) -> None:
+    """Set the internal flag to ``True``. All waiters are awakened.
+
+        Calling `.wait` once the flag is set will not block.
+        """
+    if not self._value:
+        self._value = True
+        for fut in self._waiters:
+            if not fut.done():
+                fut.set_result(None)
+
+----------
+
+def test_static_compressed_files(self):
+    response = self.fetch('/static/sample.xml.gz')
+    self.assertEqual(response.headers.get('Content-Type'), 'application/gzip')
+    response = self.fetch('/static/sample.xml.bz2')
+    self.assertEqual(response.headers.get('Content-Type'), 'application/octet-stream')
+    response = self.fetch('/static/sample.xml')
+    self.assertTrue(response.headers.get('Content-Type') in set(('text/xml', 'application/xml')))
+
+----------
+
+
+
+Test Class Name: OverrideStaticUrlHandler

@@ -1,0 +1,28 @@
+@decorator
+def sudo_support(fn, command):
+    """Removes sudo before calling fn and adds it after."""
+    if not command.script.startswith('sudo '):
+        return fn(command)
+    result = fn(command.update(script=command.script[5:]))
+    if result and isinstance(result, six.string_types):
+        return u'sudo {}'.format(result)
+    elif isinstance(result, list):
+        return [u'sudo {}'.format(x) for x in result]
+    else:
+        return result
+
+----------
+
+@pytest.mark.parametrize('return_value, command, called, result', [('ls -lah', 'sudo ls', 'ls', 'sudo ls -lah'), ('ls -lah', 'ls', 'ls', 'ls -lah'), (['ls -lah'], 'sudo ls', 'ls', ['sudo ls -lah']), (True, 'sudo ls', 'ls', True), (True, 'ls', 'ls', True), (False, 'sudo ls', 'ls', False), (False, 'ls', 'ls', False)])
+def test_sudo_support(return_value, command, called, result):
+
+    def fn(command):
+        assert command == Command(called, '')
+        return return_value
+    assert sudo_support(fn)(Command(command, '')) == result
+
+----------
+
+
+
+Test Class Name: default

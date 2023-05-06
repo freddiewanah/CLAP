@@ -1,0 +1,22 @@
+def index(self, sym):
+    """Returns the index of the specified symbol"""
+    assert isinstance(sym, str)
+    if sym in self.indices:
+        return self.indices[sym]
+    return self.unk_index
+
+----------
+
+def test_space(self):
+    dict_file = io.StringIO('  999\na 999\nb 999\n')
+    d = Dictionary()
+    d.add_from_file(dict_file)
+    self.assertEqual(d.index(' '), 4)
+    self.assertEqual(d.index('a'), 5)
+    self.assertEqual(d.index('b'), 6)
+
+----------
+
+
+
+Test Class Name: TestDictionary

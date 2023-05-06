@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, output', [('terraform appyl', 'Terraform has no command named "appyl". Did you mean "apply"?'), ('terraform destory', 'Terraform has no command named "destory". Did you mean "destroy"?')])
+def test_match(script, output):
+    assert match(Command(script, output))
+
+----------
+
+
+
+Test Class Name: default

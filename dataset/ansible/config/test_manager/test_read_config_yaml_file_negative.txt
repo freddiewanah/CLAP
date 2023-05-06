@@ -1,0 +1,15 @@
+def join(self, seq):
+    return self.data.join(seq)
+
+----------
+
+def test_read_config_yaml_file_negative(self):
+    with pytest.raises(AnsibleError) as exec_info:
+        self.manager._read_config_yaml_file(os.path.join(curdir, 'test_non_existent.yml'))
+    assert 'Missing base YAML definition file (bad install?)' in str(exec_info.value)
+
+----------
+
+
+
+Test Class Name: TestConfigManager

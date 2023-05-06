@@ -1,0 +1,24 @@
+def get_signature_key_version(value: Union[str, bytes]) -> Optional[int]:
+    value = utf8(value)
+    version = _get_version(value)
+    if version < 2:
+        return None
+    try:
+        (key_version, _, _, _, _) = _decode_fields_v2(value)
+    except ValueError:
+        return None
+    return key_version
+
+----------
+
+def test_key_version_retrieval(self):
+    value = b'\xe9'
+    signed = create_signed_value(SignedValueTest.SECRET_DICT, 'key', value, clock=self.present, key_version=1)
+    key_version = get_signature_key_version(signed)
+    self.assertEqual(1, key_version)
+
+----------
+
+
+
+Test Class Name: SignedValueTest

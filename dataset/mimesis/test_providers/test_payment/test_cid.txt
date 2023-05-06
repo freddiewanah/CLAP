@@ -1,0 +1,22 @@
+def cid(self) -> str:
+    """Generate a random CID.
+
+        :return: CID code.
+
+        :Example:
+            7452
+        """
+    return f'{self.random.randint(1, 9999):04d}'
+
+----------
+
+def test_cid(self, payment):
+    result = payment.cid()
+    assert isinstance(result, str)
+    assert len(result) == 4
+
+----------
+
+
+
+Test Class Name: TestPayment

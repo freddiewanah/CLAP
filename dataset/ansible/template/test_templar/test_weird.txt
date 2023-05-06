@@ -1,0 +1,14 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_weird(self):
+    data = u'1 2 #}huh{# %}ddfg{% }}dfdfg{{  {%what%} {{#foo#}} {%{bar}%} {#%blip%#} {{asdfsd%} 3 4 {{foo}} 5 6 7'
+    self.assertRaisesRegex(AnsibleError, 'template error while templating string', self.templar.template, data)
+
+----------
+
+
+
+Test Class Name: TestTemplarTemplate

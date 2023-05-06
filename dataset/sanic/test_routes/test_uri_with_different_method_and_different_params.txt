@@ -1,0 +1,33 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_uri_with_different_method_and_different_params(app):
+
+    @app.route('/ads/<ad_id>', methods=['GET'])
+    async def ad_get(request, ad_id):
+        return json({'ad_id': ad_id})
+
+    @app.route('/ads/<action>', methods=['POST'])
+    async def ad_post(request, action):
+        return json({'action': action})
+    (request, response) = app.test_client.get('/ads/1234')
+    assert response.status == 200
+    assert response.json == {'ad_id': '1234'}
+    (request, response) = app.test_client.post('/ads/post')
+    assert response.status == 200
+    assert response.json == {'action': 'post'}
+
+----------
+
+
+
+Test Class Name: default

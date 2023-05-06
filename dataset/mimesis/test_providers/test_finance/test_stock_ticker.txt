@@ -1,0 +1,18 @@
+def stock_ticker(self) -> str:
+    """Returns random stock ticker.
+
+        :return: Ticker.
+        """
+    return self.random.choice(STOCK_TICKERS)
+
+----------
+
+def test_stock_ticker(self, finance):
+    result = finance.stock_ticker()
+    assert result in STOCK_TICKERS
+
+----------
+
+
+
+Test Class Name: TestFinance

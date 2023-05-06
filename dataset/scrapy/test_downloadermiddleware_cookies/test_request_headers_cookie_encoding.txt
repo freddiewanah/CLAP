@@ -1,0 +1,30 @@
+def process_request(self, request, spider):
+    if request.meta.get('dont_merge_cookies', False):
+        return
+    cookiejarkey = request.meta.get('cookiejar')
+    jar = self.jars[cookiejarkey]
+    cookies = self._get_request_cookies(jar, request)
+    self._process_cookies(cookies, jar=jar, request=request)
+    request.headers.pop('Cookie', None)
+    jar.add_cookie_header(request)
+    self._debug_cookie(request, spider)
+
+----------
+
+@pytest.mark.xfail(reason='Cookie header is not currently being processed')
+def test_request_headers_cookie_encoding(self):
+    req1 = Request('http://example.org', headers={'Cookie': 'a=á'.encode('utf8')})
+    assert self.mw.process_request(req1, self.spider) is None
+    self.assertCookieValEqual(req1.headers['Cookie'], b'a=\xc3\xa1')
+    req2 = Request('http://example.org', headers={'Cookie': 'a=á'.encode('latin1')})
+    assert self.mw.process_request(req2, self.spider) is None
+    self.assertCookieValEqual(req2.headers['Cookie'], b'a=\xc3\xa1')
+    req3 = Request('http://example.org', headers={'Cookie': 'a=á'})
+    assert self.mw.process_request(req3, self.spider) is None
+    self.assertCookieValEqual(req3.headers['Cookie'], b'a=\xc3\xa1')
+
+----------
+
+
+
+Test Class Name: CookiesMiddlewareTest

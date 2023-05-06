@@ -1,0 +1,42 @@
+def stop(self) -> None:
+    """Stop the I/O loop.
+
+        If the event loop is not currently running, the next call to `start()`
+        will return immediately.
+
+        Note that even after `stop` has been called, the `IOLoop` is not
+        completely stopped until `IOLoop.start` has also returned.
+        Some work that was scheduled before the call to `stop` may still
+        be run before the `IOLoop` shuts down.
+        """
+    raise NotImplementedError()
+
+----------
+
+def test_sigchild_signal(self):
+    Subprocess.initialize()
+    self.addCleanup(Subprocess.uninitialize)
+    subproc = Subprocess([sys.executable, '-c', 'import time; time.sleep(30)'], stdout=Subprocess.STREAM)
+    self.addCleanup(subproc.stdout.close)
+    subproc.set_exit_callback(self.stop)
+    time.sleep(0.1)
+    os.kill(subproc.pid, signal.SIGTERM)
+    try:
+        ret = self.wait()
+    except AssertionError:
+        fut = subproc.stdout.read_until_close()
+        fut.add_done_callback(lambda f: self.stop())
+        try:
+            self.wait()
+        except AssertionError:
+            raise AssertionError('subprocess failed to terminate')
+        else:
+            raise AssertionError('subprocess closed stdout but failed to get termination signal')
+    self.assertEqual(subproc.returncode, ret)
+    self.assertEqual(ret, -signal.SIGTERM)
+
+----------
+
+
+
+Test Class Name: SubprocessTest

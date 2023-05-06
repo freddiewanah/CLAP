@@ -1,0 +1,38 @@
+def extract_links(self, response):
+    """Returns a list of :class:`~scrapy.link.Link` objects from the
+        specified :class:`response <scrapy.http.Response>`.
+
+        Only links that match the settings passed to the ``__init__`` method of
+        the link extractor are returned.
+
+        Duplicate links are omitted if the ``unique`` attribute is set to ``True``,
+        otherwise they are returned.
+        """
+    base_url = get_base_url(response)
+    if self.restrict_xpaths:
+        docs = [subdoc for x in self.restrict_xpaths for subdoc in response.xpath(x)]
+    else:
+        docs = [response.selector]
+    all_links = []
+    for doc in docs:
+        links = self._extract_links(doc, response.url, response.encoding, base_url)
+        all_links.extend(self._process_links(links))
+    if self.link_extractor.unique:
+        return unique_list(all_links)
+    return all_links
+
+----------
+
+def test_tags_attrs(self):
+    html = b'\n            <html><body>\n            <div id="item1" data-url="get?id=1"><a href="#">Item 1</a></div>\n            <div id="item2" data-url="get?id=2"><a href="#">Item 2</a></div>\n            </body></html>\n            '
+    response = HtmlResponse('http://example.com/index.html', body=html)
+    lx = self.extractor_cls(tags='div', attrs='data-url')
+    self.assertEqual(lx.extract_links(response), [Link(url='http://example.com/get?id=1', text='Item 1', fragment='', nofollow=False), Link(url='http://example.com/get?id=2', text='Item 2', fragment='', nofollow=False)])
+    lx = self.extractor_cls(tags=('div',), attrs=('data-url',))
+    self.assertEqual(lx.extract_links(response), [Link(url='http://example.com/get?id=1', text='Item 1', fragment='', nofollow=False), Link(url='http://example.com/get?id=2', text='Item 2', fragment='', nofollow=False)])
+
+----------
+
+
+
+Test Class Name: LinkExtractorTestCase

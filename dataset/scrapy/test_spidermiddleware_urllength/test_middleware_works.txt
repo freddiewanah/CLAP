@@ -1,0 +1,13 @@
+def process_spider_output(self, response, result, spider):
+    return (r for r in result or () if self._filter(r, spider))
+
+----------
+
+def test_middleware_works(self):
+    self.assertEqual(self.process_spider_output(), [self.short_url_req])
+
+----------
+
+
+
+Test Class Name: TestUrlLengthMiddleware

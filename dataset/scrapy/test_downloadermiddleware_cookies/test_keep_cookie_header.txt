@@ -1,0 +1,30 @@
+def process_request(self, request, spider):
+    if request.meta.get('dont_merge_cookies', False):
+        return
+    cookiejarkey = request.meta.get('cookiejar')
+    jar = self.jars[cookiejarkey]
+    cookies = self._get_request_cookies(jar, request)
+    self._process_cookies(cookies, jar=jar, request=request)
+    request.headers.pop('Cookie', None)
+    jar.add_cookie_header(request)
+    self._debug_cookie(request, spider)
+
+----------
+
+@pytest.mark.xfail(reason='Cookie header is not currently being processed')
+def test_keep_cookie_header(self):
+    req1 = Request('http://scrapytest.org', headers={'Cookie': 'a=b; c=d'})
+    assert self.mw.process_request(req1, self.spider) is None
+    self.assertCookieValEqual(req1.headers['Cookie'], 'a=b; c=d')
+    req2 = Request('http://scrapytest.org', headers={'Cookie': 'a=b; c=d'}, cookies={'e': 'f'})
+    assert self.mw.process_request(req2, self.spider) is None
+    self.assertCookieValEqual(req2.headers['Cookie'], 'a=b; c=d; e=f')
+    req3 = Request('http://scrapytest.org', headers={'Cookie': 'a=b; c=d'}, cookies={'a': 'new', 'e': 'f'})
+    assert self.mw.process_request(req3, self.spider) is None
+    self.assertCookieValEqual(req3.headers['Cookie'], 'a=new; c=d; e=f')
+
+----------
+
+
+
+Test Class Name: CookiesMiddlewareTest

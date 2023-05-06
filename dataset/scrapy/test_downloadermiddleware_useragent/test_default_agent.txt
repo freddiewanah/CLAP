@@ -1,0 +1,17 @@
+def process_request(self, request, spider):
+    if self.user_agent:
+        request.headers.setdefault(b'User-Agent', self.user_agent)
+
+----------
+
+def test_default_agent(self):
+    (spider, mw) = self.get_spider_and_mw('default_useragent')
+    req = Request('http://scrapytest.org/')
+    assert mw.process_request(req, spider) is None
+    self.assertEqual(req.headers['User-Agent'], b'default_useragent')
+
+----------
+
+
+
+Test Class Name: UserAgentMiddlewareTest

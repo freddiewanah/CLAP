@@ -1,0 +1,43 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.parametrize('headers, expect_raise_exception', [({'EXPECT': '100-continue'}, False)])
+def test_request_stream_100_continue(app, headers, expect_raise_exception):
+
+    class SimpleView(HTTPMethodView):
+
+        @stream_decorator
+        async def post(self, request):
+            result = ''
+            while True:
+                body = await request.stream.read()
+                if body is None:
+                    break
+                result += body.decode('utf-8')
+            return text(result)
+    app.add_route(SimpleView.as_view(), '/method_view')
+    if not expect_raise_exception:
+        (request, response) = app.test_client.post('/method_view', data=data, headers=headers)
+        assert response.status == 200
+        assert response.text == data
+    else:
+        (request, response) = app.test_client.post('/method_view', data=data, headers=headers)
+        assert response.status == 417
+
+----------
+
+
+
+Test Class Name: SimpleView

@@ -1,0 +1,30 @@
+def organize_commands(corrected_commands):
+    """Yields sorted commands without duplicates.
+
+    :type corrected_commands: Iterable[thefuck.types.CorrectedCommand]
+    :rtype: Iterable[thefuck.types.CorrectedCommand]
+
+    """
+    try:
+        first_command = next(corrected_commands)
+        yield first_command
+    except StopIteration:
+        return
+    without_duplicates = {command for command in sorted(corrected_commands, key=lambda command: command.priority) if command != first_command}
+    sorted_commands = sorted(without_duplicates, key=lambda corrected_command: corrected_command.priority)
+    logs.debug(u'Corrected commands: {}'.format(', '.join((u'{}'.format(cmd) for cmd in [first_command] + sorted_commands))))
+    for command in sorted_commands:
+        yield command
+
+----------
+
+def test_organize_commands():
+    """Ensures that the function removes duplicates and sorts commands."""
+    commands = [CorrectedCommand('ls'), CorrectedCommand('ls -la', priority=9000), CorrectedCommand('ls -lh', priority=100), CorrectedCommand(u'echo café', priority=200), CorrectedCommand('ls -lh', priority=9999)]
+    assert list(organize_commands(iter(commands))) == [CorrectedCommand('ls'), CorrectedCommand('ls -lh', priority=100), CorrectedCommand(u'echo café', priority=200), CorrectedCommand('ls -la', priority=9000)]
+
+----------
+
+
+
+Test Class Name: TestGetRules

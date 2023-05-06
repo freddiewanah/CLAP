@@ -1,0 +1,16 @@
+@pytest.fixture
+def seed():
+    return 'mimesis'
+
+----------
+
+@pytest.mark.parametrize('seed, expected', [(32, 'C239'), (255, 'B670'), ('👽', 'B806')])
+def test_custom_code_with_seed(random, seed, expected):
+    random.seed(seed)
+    assert random.custom_code() == expected
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,20 @@
+def selinux_mls_enabled(self):
+    if self._selinux_mls_enabled is None:
+        self._selinux_mls_enabled = HAVE_SELINUX and selinux.is_selinux_mls_enabled() == 1
+    return self._selinux_mls_enabled
+
+----------
+
+def test_selinux_mls_enabled(self):
+    with patch.object(basic, 'HAVE_SELINUX', False):
+        assert no_args_module().selinux_mls_enabled() is False
+    with patch('ansible.module_utils.compat.selinux.is_selinux_mls_enabled', return_value=0):
+        assert no_args_module(selinux_enabled=False).selinux_mls_enabled() is False
+    with patch('ansible.module_utils.compat.selinux.is_selinux_mls_enabled', return_value=1):
+        assert no_args_module(selinux_enabled=True).selinux_mls_enabled() is True
+
+----------
+
+
+
+Test Class Name: TestSELinuxMU

@@ -1,0 +1,15 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_invaid_gather_subset(self):
+    valid_subsets = frozenset(['my_fact', 'something_else'])
+    minimal_gather_subset = frozenset(['my_fact'])
+    self.assertRaisesRegex(TypeError, 'Bad subset .* given to Ansible.*allowed\\:.*all,.*my_fact.*', collector.get_collector_names, valid_subsets=valid_subsets, minimal_gather_subset=minimal_gather_subset, gather_subset=['my_fact', 'not_a_valid_gather_subset'])
+
+----------
+
+
+
+Test Class Name: TestGetCollectorNames

@@ -1,0 +1,41 @@
+@contextlib.contextmanager
+def override_locale(self, locale: Locale) -> t.Generator['BaseDataProvider', None, None]:
+    """Context manager which allows overriding current locale.
+
+        Temporarily overrides current locale for
+        locale-dependent providers.
+
+        :param locale: Locale.
+        :return: Provider with overridden locale.
+        """
+    try:
+        origin_locale = Locale(self.locale)
+        self._override_locale(locale)
+        try:
+            yield self
+        finally:
+            self._override_locale(origin_locale)
+    except AttributeError:
+        raise ValueError(f'«{self.__class__.__name__}» has not locale dependent')
+
+----------
+
+@pytest.mark.parametrize('locale, new_locale', [(Locale.EN, Locale.RU)])
+def test_override_locale(self, locale, new_locale):
+    provider = Person(locale)
+    assert Locale(provider.locale) == locale
+    with provider.override_locale(new_locale):
+        assert 'Жен.' in provider._data['gender']
+        assert Locale(provider.locale) == new_locale
+    assert Locale(provider.locale) == locale
+    assert 'Жен.' not in provider._data['gender']
+    del provider.locale
+    with pytest.raises(ValueError):
+        with provider.override_locale(new_locale):
+            pass
+
+----------
+
+
+
+Test Class Name: TestBase

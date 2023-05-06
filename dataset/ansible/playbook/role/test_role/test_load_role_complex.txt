@@ -1,0 +1,21 @@
+def get_name(self, include_role_fqcn=True):
+    if include_role_fqcn:
+        return '.'.join((x for x in (self._role_collection, self._role_name) if x))
+    return self._role_name
+
+----------
+
+@patch('ansible.playbook.role.definition.unfrackpath', mock_unfrackpath_noop)
+def test_load_role_complex(self):
+    fake_loader = DictDataLoader({'/etc/ansible/roles/foo_complex/tasks/main.yml': "\n            - shell: echo 'hello world'\n            "})
+    mock_play = MagicMock()
+    mock_play.role_cache = {}
+    i = RoleInclude.load(dict(role='foo_complex'), play=mock_play, loader=fake_loader)
+    r = Role.load(i, play=mock_play)
+    self.assertEqual(r.get_name(), 'foo_complex')
+
+----------
+
+
+
+Test Class Name: TestRole

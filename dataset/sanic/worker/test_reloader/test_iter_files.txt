@@ -1,0 +1,21 @@
+def files(self):
+    return chain(self.python_files(), *(d.glob('**/*') for d in self.reload_dirs))
+
+----------
+
+def test_iter_files():
+    reloader = Reloader(Mock(), 0.1, set(), Mock())
+    len_python_files = len(list(reloader.files()))
+    assert len_python_files > 0
+    static_dir = Path(__file__).parent.parent / 'static'
+    len_static_files = len(list(static_dir.glob('**/*')))
+    reloader = Reloader(Mock(), 0.1, set({static_dir}), Mock())
+    len_total_files = len(list(reloader.files()))
+    assert len_static_files > 0
+    assert len_total_files == len_python_files + len_static_files
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,20 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+def test_payload(self):
+    body = b'1' * 100
+    request = Request(self.getURL('payload'), method='POST', body=body)
+    d = self.download_request(request, Spider('foo'))
+    d.addCallback(lambda r: r.body)
+    d.addCallback(self.assertEqual, body)
+    return d
+
+----------
+
+
+
+Test Class Name: HttpTestCase

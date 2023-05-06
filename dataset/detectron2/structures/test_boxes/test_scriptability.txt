@@ -1,0 +1,31 @@
+@property
+def device(self) -> device:
+    return self.tensor.device
+
+----------
+
+def test_scriptability(self):
+
+    def func(x):
+        boxes = Boxes(x)
+        test = boxes.to(torch.device('cpu')).tensor
+        return (boxes.area(), test)
+    f = torch.jit.script(func)
+    f = reload_script_model(f)
+    f(torch.rand((3, 4)))
+    data = torch.rand((3, 4))
+
+    def func_cat(x: torch.Tensor):
+        boxes1 = Boxes(x)
+        boxes2 = Boxes(x)
+        boxes3 = boxes1.cat([boxes1, boxes2])
+        return boxes3
+    f = torch.jit.script(func_cat)
+    script_box = f(data)
+    self.assertTrue(torch.equal(torch.cat([data, data]), script_box.tensor))
+
+----------
+
+
+
+Test Class Name: TestBoxes

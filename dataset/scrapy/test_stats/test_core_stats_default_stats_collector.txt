@@ -1,0 +1,28 @@
+def spider_closed(self, spider, reason):
+    finish_time = datetime.utcnow()
+    elapsed_time = finish_time - self.start_time
+    elapsed_time_seconds = elapsed_time.total_seconds()
+    self.stats.set_value('elapsed_time_seconds', elapsed_time_seconds, spider=spider)
+    self.stats.set_value('finish_time', finish_time, spider=spider)
+    self.stats.set_value('finish_reason', reason, spider=spider)
+
+----------
+
+@mock.patch('scrapy.extensions.corestats.datetime')
+def test_core_stats_default_stats_collector(self, mock_datetime):
+    fixed_datetime = datetime(2019, 12, 1, 11, 38)
+    mock_datetime.utcnow = mock.Mock(return_value=fixed_datetime)
+    self.crawler.stats = StatsCollector(self.crawler)
+    ext = CoreStats.from_crawler(self.crawler)
+    ext.spider_opened(self.spider)
+    ext.item_scraped({}, self.spider)
+    ext.response_received(self.spider)
+    ext.item_dropped({}, self.spider, ZeroDivisionError())
+    ext.spider_closed(self.spider, 'finished')
+    self.assertEqual(ext.stats._stats, {'start_time': fixed_datetime, 'finish_time': fixed_datetime, 'item_scraped_count': 1, 'response_received_count': 1, 'item_dropped_count': 1, 'item_dropped_reasons_count/ZeroDivisionError': 1, 'finish_reason': 'finished', 'elapsed_time_seconds': 0.0})
+
+----------
+
+
+
+Test Class Name: CoreStatsExtensionTest

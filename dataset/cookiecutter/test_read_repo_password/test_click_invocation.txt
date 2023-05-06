@@ -1,0 +1,24 @@
+def read_repo_password(question):
+    """Prompt the user to enter a password.
+
+    :param str question: Question to the user
+    """
+    return click.prompt(question, hide_input=True)
+
+----------
+
+def test_click_invocation(mocker):
+    """Test click function called correctly by cookiecutter.
+
+    Test for password (hidden input) type invocation.
+    """
+    prompt = mocker.patch('click.prompt')
+    prompt.return_value = 'sekrit'
+    assert read_repo_password('Password') == 'sekrit'
+    prompt.assert_called_once_with('Password', hide_input=True)
+
+----------
+
+
+
+Test Class Name: default

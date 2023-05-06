@@ -1,0 +1,33 @@
+def request_scheduled(self, request, spider):
+    redirected_urls = request.meta.get('redirect_urls', [])
+    if redirected_urls:
+        request_referrer = request.headers.get('Referer')
+        if request_referrer is not None:
+            parent_url = safe_url_string(request_referrer)
+            policy_referrer = self.policy(parent_url, request).referrer(parent_url, request.url)
+            if policy_referrer != request_referrer:
+                if policy_referrer is None:
+                    request.headers.pop('Referer')
+                else:
+                    request.headers['Referer'] = policy_referrer
+
+----------
+
+def test(self):
+    for (parent, target, redirections, init_referrer, final_referrer) in self.scenarii:
+        response = self.get_response(parent)
+        request = self.get_request(target)
+        out = list(self.referrermw.process_spider_output(response, [request], self.spider))
+        self.assertEqual(out[0].headers.get('Referer'), init_referrer)
+        for (status, url) in redirections:
+            response = Response(request.url, headers={'Location': url}, status=status)
+            request = self.redirectmw.process_response(request, response, self.spider)
+            self.referrermw.request_scheduled(request, self.spider)
+        assert isinstance(request, Request)
+        self.assertEqual(request.headers.get('Referer'), final_referrer)
+
+----------
+
+
+
+Test Class Name: TestReferrerOnRedirect

@@ -1,0 +1,33 @@
+def find_module(self, fullname, path=None):
+    finder = self._get_finder(fullname)
+    if finder is None:
+        return None
+    elif HAS_FILE_FINDER and isinstance(finder, FileFinder):
+        return finder.find_module(fullname)
+    else:
+        return finder.find_module(fullname, path=[self._pathctx])
+
+----------
+
+def test_finder_ns():
+    f = _AnsibleCollectionFinder(paths=['/bogus/bogus'])
+    loader = f.find_module('ansible_collections')
+    assert isinstance(loader, _AnsibleCollectionRootPkgLoader)
+    loader = f.find_module('ansible_collections.ansible', path=['/bogus/bogus'])
+    assert isinstance(loader, _AnsibleCollectionNSPkgLoader)
+    f = get_default_finder()
+    loader = f.find_module('ansible_collections')
+    assert isinstance(loader, _AnsibleCollectionRootPkgLoader)
+    with pytest.raises(ValueError):
+        f.find_module('ansible_collections', path=['whatever'])
+    with pytest.raises(ValueError):
+        f.find_module('ansible_collections.whatever', path=None)
+    paths = [os.path.join(p, 'ansible_collections/nonexistns') for p in default_test_collection_paths]
+    loader = f.find_module('ansible_collections.nonexistns', paths)
+    assert loader is None
+
+----------
+
+
+
+Test Class Name: default

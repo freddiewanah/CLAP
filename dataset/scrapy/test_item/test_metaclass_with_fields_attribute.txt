@@ -1,0 +1,18 @@
+def keys(self):
+    return self._values.keys()
+
+----------
+
+def test_metaclass_with_fields_attribute(self):
+
+    class TestItem(Item):
+        fields = {'new': Field(default='X')}
+    item = TestItem(new='New')
+    self.assertSortedEqual(list(item.keys()), ['new'])
+    self.assertSortedEqual(list(item.values()), ['New'])
+
+----------
+
+
+
+Test Class Name: TestItem

@@ -1,0 +1,67 @@
+def get_next_task_for_host(self, host, peek=False):
+    display.debug('getting the next task for host %s' % host.name)
+    s = self.get_host_state(host)
+    task = None
+    if s.run_state == IteratingStates.COMPLETE:
+        display.debug('host %s is done iterating, returning' % host.name)
+        return (s, None)
+    (s, task) = self._get_next_task_from_state(s, host=host)
+    if not peek:
+        self.set_state_for_host(host.name, s)
+    display.debug('done getting next task for host %s' % host.name)
+    display.debug(' ^ task is: %s' % task)
+    display.debug(' ^ state is: %s' % s)
+    return (s, task)
+
+----------
+
+def test_play_iterator_nested_blocks(self):
+    init_plugin_loader()
+    fake_loader = DictDataLoader({'test_play.yml': '\n            - hosts: all\n              gather_facts: false\n              tasks:\n              - block:\n                - block:\n                  - block:\n                    - block:\n                      - block:\n                        - debug: msg="this is the first task"\n                        - ping:\n                      rescue:\n                      - block:\n                        - block:\n                          - block:\n                            - block:\n                              - debug: msg="this is the rescue task"\n                  always:\n                  - block:\n                    - block:\n                      - block:\n                        - block:\n                          - debug: msg="this is the always task"\n            '})
+    mock_var_manager = MagicMock()
+    mock_var_manager._fact_cache = dict()
+    mock_var_manager.get_vars.return_value = dict()
+    p = Playbook.load('test_play.yml', loader=fake_loader, variable_manager=mock_var_manager)
+    hosts = []
+    for i in range(0, 10):
+        host = MagicMock()
+        host.name = host.get_name.return_value = 'host%02d' % i
+        hosts.append(host)
+    inventory = MagicMock()
+    inventory.get_hosts.return_value = hosts
+    inventory.filter_hosts.return_value = hosts
+    play_context = PlayContext(play=p._entries[0])
+    itr = PlayIterator(inventory=inventory, play=p._entries[0], play_context=play_context, variable_manager=mock_var_manager, all_vars=dict())
+    (host_state, task) = itr.get_next_task_for_host(hosts[0])
+    self.assertIsNotNone(task)
+    self.assertEqual(task.action, 'meta')
+    self.assertEqual(task.args, dict(_raw_params='flush_handlers'))
+    (host_state, task) = itr.get_next_task_for_host(hosts[0])
+    self.assertIsNotNone(task)
+    self.assertEqual(task.action, 'debug')
+    self.assertEqual(task.args, dict(msg='this is the first task'))
+    itr.mark_host_failed(hosts[0])
+    (host_state, task) = itr.get_next_task_for_host(hosts[0])
+    self.assertIsNotNone(task)
+    self.assertEqual(task.action, 'debug')
+    self.assertEqual(task.args, dict(msg='this is the rescue task'))
+    (host_state, task) = itr.get_next_task_for_host(hosts[0])
+    self.assertIsNotNone(task)
+    self.assertEqual(task.action, 'debug')
+    self.assertEqual(task.args, dict(msg='this is the always task'))
+    (host_state, task) = itr.get_next_task_for_host(hosts[0])
+    self.assertIsNotNone(task)
+    self.assertEqual(task.action, 'meta')
+    self.assertEqual(task.args, dict(_raw_params='flush_handlers'))
+    (host_state, task) = itr.get_next_task_for_host(hosts[0])
+    self.assertIsNotNone(task)
+    self.assertEqual(task.action, 'meta')
+    self.assertEqual(task.args, dict(_raw_params='flush_handlers'))
+    (host_state, task) = itr.get_next_task_for_host(hosts[0])
+    self.assertIsNone(task)
+
+----------
+
+
+
+Test Class Name: TestPlayIterator

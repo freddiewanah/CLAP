@@ -1,0 +1,62 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_routes_with_and_without_slash_definitions(app):
+    bar = Blueprint('bar', url_prefix='bar')
+    baz = Blueprint('baz', url_prefix='/baz')
+    fizz = Blueprint('fizz', url_prefix='fizz/')
+    buzz = Blueprint('buzz', url_prefix='/buzz/')
+    instances = ((app, 'foo'), (bar, 'bar'), (baz, 'baz'), (fizz, 'fizz'), (buzz, 'buzz'))
+    for (instance, term) in instances:
+        route = f'/{term}' if isinstance(instance, Sanic) else ''
+
+        @instance.get(route, strict_slashes=True)
+        def get_without(request):
+            return text(f'{term}_without')
+
+        @instance.get(f'{route}/', strict_slashes=True)
+        def get_with(request):
+            return text(f'{term}_with')
+
+        @instance.post(route, strict_slashes=True)
+        def post_without(request):
+            return text(f'{term}_without')
+
+        @instance.post(f'{route}/', strict_slashes=True)
+        def post_with(request):
+            return text(f'{term}_with')
+    app.blueprint(bar)
+    app.blueprint(baz)
+    app.blueprint(fizz)
+    app.blueprint(buzz)
+    for (_, term) in instances:
+        (_, response) = app.test_client.get(f'/{term}')
+        assert response.status == 200
+        assert response.text == f'{term}_without'
+        (_, response) = app.test_client.get(f'/{term}/')
+        assert response.status == 200
+        assert response.text == f'{term}_with'
+        (_, response) = app.test_client.post(f'/{term}')
+        assert response.status == 200
+        assert response.text == f'{term}_without'
+        (_, response) = app.test_client.post(f'/{term}/')
+        assert response.status == 200
+        assert response.text == f'{term}_with'
+
+----------
+
+
+
+Test Class Name: default

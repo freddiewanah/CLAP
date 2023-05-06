@@ -1,0 +1,18 @@
+def get(self, *args: Any, **kwargs: Any) -> None:
+    to_url = self._url.format(*args, **kwargs)
+    if self.request.query_arguments:
+        to_url = httputil.url_concat(to_url, list(httputil.qs_to_qsl(self.request.query_arguments)))
+    self.redirect(to_url, permanent=self._permanent)
+
+----------
+
+def test_static_unsatisfiable_range_end_less_than_start(self):
+    response = self.get_and_head('/static/robots.txt', headers={'Range': 'bytes=10-3'})
+    self.assertEqual(response.code, 416)
+    self.assertEqual(response.headers.get('Content-Range'), 'bytes */26')
+
+----------
+
+
+
+Test Class Name: OverrideStaticUrlHandler

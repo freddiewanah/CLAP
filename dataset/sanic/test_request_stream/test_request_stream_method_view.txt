@@ -1,0 +1,44 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_request_stream_method_view(app):
+
+    class SimpleView(HTTPMethodView):
+
+        def get(self, request):
+            return text('OK')
+
+        @stream_decorator
+        async def post(self, request):
+            result = b''
+            while True:
+                body = await request.stream.read()
+                if body is None:
+                    break
+                result += body
+            return text(result.decode())
+    app.add_route(SimpleView.as_view(), '/method_view')
+    (request, response) = app.test_client.get('/method_view')
+    assert response.status == 200
+    assert response.text == 'OK'
+    (request, response) = app.test_client.post('/method_view', data=data)
+    assert response.status == 200
+    assert response.text == data
+
+----------
+
+
+
+Test Class Name: default

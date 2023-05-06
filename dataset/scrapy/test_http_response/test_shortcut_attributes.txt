@@ -1,0 +1,22 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_shortcut_attributes(self):
+    r = self.response_class('http://example.com', body=b'hello')
+    if self.response_class == Response:
+        msg = "Response content isn't text"
+        self.assertRaisesRegex(AttributeError, msg, getattr, r, 'text')
+        self.assertRaisesRegex(NotSupported, msg, r.css, 'body')
+        self.assertRaisesRegex(NotSupported, msg, r.xpath, '//body')
+    else:
+        r.text
+        r.css('body')
+        r.xpath('//body')
+
+----------
+
+
+
+Test Class Name: CustomResponse

@@ -1,0 +1,28 @@
+def set_queue(self, queue):
+    """Set the _final_q on Display, so that we know to proxy display over the queue
+        instead of directly writing to stdout/stderr from forks
+
+        This is only needed in ansible.executor.process.worker:WorkerProcess._run
+        """
+    if multiprocessing_context.parent_process() is None:
+        raise RuntimeError('queue cannot be set in parent process')
+    self._final_q = queue
+
+----------
+
+def test_Display_set_queue_fork():
+
+    def test():
+        display = Display()
+        display.set_queue('foo')
+        assert display._final_q == 'foo'
+    p = multiprocessing_context.Process(target=test)
+    p.start()
+    p.join()
+    assert p.exitcode == 0
+
+----------
+
+
+
+Test Class Name: default

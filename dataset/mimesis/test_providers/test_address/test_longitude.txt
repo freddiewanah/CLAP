@@ -1,0 +1,23 @@
+def longitude(self, dms: bool=False) -> t.Union[str, float]:
+    """Generate a random value of longitude.
+
+        :param dms: DMS format.
+        :return: Value of longitude.
+        """
+    return self._get_fs('lg', dms)
+
+----------
+
+def test_longitude(self, _address):
+    result = _address.longitude()
+    assert isinstance(result, float)
+    assert result <= 180
+    assert result >= -180
+    dms = _address.longitude(dms=True)
+    assert isinstance(dms, str)
+
+----------
+
+
+
+Test Class Name: TestAddress

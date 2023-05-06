@@ -1,0 +1,20 @@
+def get_logo(full=False, coffee=False):
+    logo = (FULL_COLOR_LOGO if full else COFFEE_LOGO if coffee else COLOR_LOGO) if is_atty() else BASE_LOGO
+    if sys.platform == 'darwin' and environ.get('TERM_PROGRAM') == 'Apple_Terminal':
+        logo = ansi_pattern.sub('', logo)
+    return logo
+
+----------
+
+@pytest.mark.parametrize('tty,full,expected', ((True, False, COLOR_LOGO), (True, True, FULL_COLOR_LOGO), (False, False, BASE_LOGO), (False, True, BASE_LOGO)))
+def test_get_logo_returns_expected_logo(tty, full, expected):
+    with patch('sys.stdout.isatty') as isatty:
+        isatty.return_value = tty
+        logo = get_logo(full=full)
+    assert logo is expected
+
+----------
+
+
+
+Test Class Name: default

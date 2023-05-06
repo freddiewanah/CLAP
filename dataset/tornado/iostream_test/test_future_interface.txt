@@ -1,0 +1,31 @@
+def get_http_port(self) -> int:
+    """Returns the port used by the server.
+
+        A new port is chosen for each test.
+        """
+    return self.__port
+
+----------
+
+@gen_test
+def test_future_interface(self: typing.Any):
+    """Basic test of IOStream's ability to return Futures."""
+    stream = self._make_client_iostream()
+    connect_result = (yield stream.connect(('127.0.0.1', self.get_http_port())))
+    self.assertIs(connect_result, stream)
+    yield stream.write(b'GET / HTTP/1.0\r\n\r\n')
+    first_line = (yield stream.read_until(b'\r\n'))
+    self.assertEqual(first_line, b'HTTP/1.1 200 OK\r\n')
+    header_data = (yield stream.read_until(b'\r\n\r\n'))
+    headers = HTTPHeaders.parse(header_data.decode('latin1'))
+    content_length = int(headers['Content-Length'])
+    body = (yield stream.read_bytes(content_length))
+    self.assertEqual(body, b'Hello')
+    stream.close()
+
+----------
+
+def _make_client_iostream(self):
+    raise NotImplementedError()
+
+Test Class Name: TestIOStreamWebMixin

@@ -1,0 +1,32 @@
+def close(self):
+    active = []
+    for (p, q) in self.queues.items():
+        active.append(p)
+        q.close()
+    return active
+
+----------
+
+def test_queue_push_pop_priorities(self):
+    temp_dir = tempfile.mkdtemp()
+    queue = ScrapyPriorityQueue.from_crawler(self.crawler, FifoMemoryQueue, temp_dir, [-1, -2, -3])
+    self.assertIsNone(queue.pop())
+    self.assertEqual(len(queue), 0)
+    req1 = Request('https://example.org/1', priority=1)
+    req2 = Request('https://example.org/2', priority=2)
+    req3 = Request('https://example.org/3', priority=3)
+    queue.push(req1)
+    queue.push(req2)
+    queue.push(req3)
+    self.assertEqual(len(queue), 3)
+    dequeued = queue.pop()
+    self.assertEqual(len(queue), 2)
+    self.assertEqual(dequeued.url, req3.url)
+    self.assertEqual(dequeued.priority, req3.priority)
+    self.assertEqual(queue.close(), [-1, -2])
+
+----------
+
+
+
+Test Class Name: PriorityQueueTest

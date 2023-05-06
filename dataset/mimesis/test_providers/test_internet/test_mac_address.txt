@@ -1,0 +1,23 @@
+def mac_address(self) -> str:
+    """Generate a random MAC address.
+
+        :return: Random MAC address.
+
+        :Example:
+            00:16:3e:25:e7:f1
+        """
+    mac_hex = [0, 22, 62, self.random.randint(0, 127), self.random.randint(0, 255), self.random.randint(0, 255)]
+    mac = [f'{x:02x}' for x in mac_hex]
+    return ':'.join(mac)
+
+----------
+
+def test_mac_address(self, net):
+    mac = net.mac_address()
+    assert re.match(patterns.MAC_ADDRESS_REGEX, mac)
+
+----------
+
+
+
+Test Class Name: TestInternet

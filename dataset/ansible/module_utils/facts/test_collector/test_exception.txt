@@ -1,0 +1,27 @@
+def resolve_requires(unresolved_requires, all_fact_subsets):
+    new_names = set()
+    failed = []
+    for unresolved in unresolved_requires:
+        if unresolved in all_fact_subsets:
+            new_names.add(unresolved)
+        else:
+            failed.append(unresolved)
+    if failed:
+        raise UnresolvedFactDep('unresolved fact dep %s' % ','.join(failed))
+    return new_names
+
+----------
+
+def test_exception(self):
+    unresolved = ['required_thing1']
+    all_fact_subsets = {}
+    try:
+        collector.resolve_requires(unresolved, all_fact_subsets)
+    except collector.UnresolvedFactDep as exc:
+        self.assertIn(unresolved[0], '%s' % exc)
+
+----------
+
+
+
+Test Class Name: TestResolveRequires

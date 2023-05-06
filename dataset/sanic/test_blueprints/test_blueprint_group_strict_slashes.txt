@@ -1,0 +1,50 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_blueprint_group_strict_slashes():
+    app = Sanic(name='blueprint-group-test')
+    bp1 = Blueprint(name='bp1', url_prefix=None, strict_slashes=False)
+    bp2 = Blueprint(name='bp2', version=3, url_prefix='/bp2', strict_slashes=None)
+    bp3 = Blueprint(name='bp3', version=None, url_prefix='/bp3/', strict_slashes=None)
+
+    @bp1.get('/r1')
+    async def bp1_r1(request):
+        return json({'from': 'bp1/r1'})
+
+    @bp2.get('/r1')
+    async def bp2_r1(request):
+        return json({'from': 'bp2/r1'})
+
+    @bp2.get('/r2/')
+    async def bp2_r2(request):
+        return json({'from': 'bp2/r2'})
+
+    @bp3.get('/r1')
+    async def bp3_r1(request):
+        return json({'from': 'bp3/r1'})
+    group = Blueprint.group([bp1, bp2], url_prefix='/slash-check/', version=1.3, strict_slashes=True)
+    group2 = Blueprint.group([bp3], url_prefix='/other-prefix/', version='v2', strict_slashes=False)
+    app.blueprint(group)
+    app.blueprint(group2)
+    assert app.test_client.get('/v1.3/slash-check/r1')[1].status == 200
+    assert app.test_client.get('/v1.3/slash-check/r1/')[1].status == 200
+    assert app.test_client.get('/v3/slash-check/bp2/r1')[1].status == 200
+    assert app.test_client.get('/v3/slash-check/bp2/r1/')[1].status == 404
+    assert app.test_client.get('/v3/slash-check/bp2/r2')[1].status == 404
+    assert app.test_client.get('/v3/slash-check/bp2/r2/')[1].status == 200
+    assert app.test_client.get('/v2/other-prefix/bp3/r1')[1].status == 200
+
+----------
+
+
+
+Test Class Name: Error

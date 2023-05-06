@@ -1,0 +1,20 @@
+def shell_quote(args):
+    quoted_args = []
+    encoding = get_filesystem_encoding()
+    for a in args:
+        if isinstance(a, bytes):
+            a = a.decode(encoding)
+        quoted_args.append(compat_shlex_quote(a))
+    return ' '.join(quoted_args)
+
+----------
+
+def test_shell_quote(self):
+    args = ['ffmpeg', '-i', encodeFilename("ñ€ß'.mp4")]
+    self.assertEqual(shell_quote(args), 'ffmpeg -i \'ñ€ß\'"\'"\'.mp4\'' if compat_os_name != 'nt' else 'ffmpeg -i "ñ€ß\'.mp4"')
+
+----------
+
+
+
+Test Class Name: TestUtil

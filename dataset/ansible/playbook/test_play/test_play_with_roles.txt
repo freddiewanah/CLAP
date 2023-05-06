@@ -1,0 +1,21 @@
+def get_roles(self):
+    return self.roles[:]
+
+----------
+
+def test_play_with_roles(mocker):
+    mocker.patch('ansible.playbook.role.definition.RoleDefinition._load_role_path', return_value=('foo', '/etc/ansible/roles/foo'))
+    fake_loader = DictDataLoader({'/etc/ansible/roles/foo/tasks.yml': '\n        - name: role task\n          shell: echo "hello world"\n        '})
+    mock_var_manager = mocker.MagicMock()
+    mock_var_manager.get_vars.return_value = {}
+    p = Play.load(dict(name='test play', hosts=['foo'], gather_facts=False, roles=['foo']), loader=fake_loader, variable_manager=mock_var_manager)
+    blocks = p.compile()
+    assert len(blocks) > 1
+    assert all((isinstance(block, Block) for block in blocks))
+    assert isinstance(p.get_roles()[0], Role)
+
+----------
+
+
+
+Test Class Name: default

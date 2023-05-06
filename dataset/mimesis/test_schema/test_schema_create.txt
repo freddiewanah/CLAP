@@ -1,0 +1,33 @@
+def create(self, iterations: int=1) -> t.List[JSON]:
+    """Creates a list of a fulfilled schemas.
+
+        .. note::
+            This method evaluates immediately, so be careful on creating
+            large datasets otherwise you're risking running out of memory.
+
+            If you need a lazy version of this method, see :meth:`iterator`.
+
+        :param iterations: Number of iterations.
+        :return: List of fulfilled schemas.
+        """
+    if iterations < self._MIN_ITERATIONS_VALUE:
+        raise ValueError('The number of iterations must be greater than 0.')
+    return [self._schema() for _ in range(iterations)]
+
+----------
+
+def test_schema_create(schema):
+    result = schema.create(5)
+    assert len(result) == 5
+    assert isinstance(result, list)
+    (first, *mid, last) = result
+    assert first['timestamp'] != last['timestamp']
+    assert first['owner']['creator'] != last['owner']['creator']
+    with pytest.raises(ValueError):
+        schema.create(0)
+
+----------
+
+
+
+Test Class Name: default

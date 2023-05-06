@@ -1,0 +1,50 @@
+def do_request(server, content):
+    request = FakeRequest(content + ' HTTP/1.1')
+    server.RequestHandlerClass(request, ('127.0.0.1', 0), server)
+    response = request.out_file.getvalue()
+    (headers, _, content) = response.partition(b'\r\n\r\n')
+    (status, _, headers) = headers.partition(b'\r\n')
+    status = status.split(None, 1)[1].decode()
+    headers = email.message_from_bytes(headers)
+    headers['_status'] = status
+    return (headers, content.decode())
+
+----------
+
+@tempdir(['file_dest_1.md', 'file_dest_2.md', 'file_dest_unused.md'], prefix='tmp_dir')
+@tempdir(['file_under.md'], prefix='dir_to_link_to')
+@tempdir()
+def test_watches_through_symlinks(self, docs_dir, dir_to_link_to, tmp_dir):
+    try:
+        Path(docs_dir, 'link1.md').symlink_to(Path(tmp_dir, 'file_dest_1.md'))
+        Path(docs_dir, 'linked_dir').symlink_to(dir_to_link_to, target_is_directory=True)
+        Path(dir_to_link_to, 'sublink.md').symlink_to(Path(tmp_dir, 'file_dest_2.md'))
+    except NotImplementedError:
+        self.skipTest('Creating symlinks not supported')
+    started_building = threading.Event()
+
+    def wait_for_build():
+        result = started_building.wait(timeout=10)
+        started_building.clear()
+        with self.assertLogs('mkdocs.livereload'):
+            do_request(server, 'GET /')
+        return result
+    with testing_server(docs_dir, started_building.set) as server:
+        server.watch(docs_dir)
+        time.sleep(0.01)
+        Path(tmp_dir, 'file_dest_1.md').write_text('edited')
+        self.assertTrue(wait_for_build())
+        Path(dir_to_link_to, 'file_under.md').write_text('edited')
+        self.assertTrue(wait_for_build())
+        Path(tmp_dir, 'file_dest_2.md').write_text('edited')
+        self.assertTrue(wait_for_build())
+        Path(docs_dir, 'link1.md').unlink()
+        self.assertTrue(wait_for_build())
+        Path(tmp_dir, 'file_dest_unused.md').write_text('edited')
+        self.assertFalse(started_building.wait(timeout=0.5))
+
+----------
+
+
+
+Test Class Name: BuildTests

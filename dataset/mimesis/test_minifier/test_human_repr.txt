@@ -1,0 +1,23 @@
+def human_repr(num: float) -> str:
+    for unit in ['B', 'KB', 'MB']:
+        if abs(num) < 1024.0:
+            return f'{num:3.1f}{unit}'
+        num /= 1024.0
+    return f'{num:.1f}'
+
+----------
+
+def test_human_repr():
+    assert human_repr(0) == '0.0B'
+    assert human_repr(1) == '1.0B'
+    assert human_repr(100.1) == '100.1B'
+    assert human_repr(1024) == '1.0KB'
+    assert human_repr(1024 * 100.1) == '100.1KB'
+    assert human_repr(1024 ** 2) == '1.0MB'
+    assert human_repr(1024 ** 2 * 100.1) == '100.1MB'
+
+----------
+
+
+
+Test Class Name: default

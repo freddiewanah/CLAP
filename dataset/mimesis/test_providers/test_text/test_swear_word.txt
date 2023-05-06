@@ -1,0 +1,22 @@
+def swear_word(self) -> str:
+    """Get a random swear word.
+
+        :return: Swear word.
+
+        :Example:
+            Damn.
+        """
+    words: t.List[str] = self.extract(['words', 'bad'])
+    return self.random.choice(words)
+
+----------
+
+def test_swear_word(self, text):
+    result = text.swear_word()
+    assert result in text._data['words']['bad']
+
+----------
+
+
+
+Test Class Name: TestText

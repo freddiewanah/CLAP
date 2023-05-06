@@ -1,0 +1,19 @@
+def inversepower(x, base=2):
+    try:
+        if base == 2:
+            return math.sqrt(x)
+        else:
+            return math.pow(x, 1.0 / float(base))
+    except (ValueError, TypeError) as e:
+        raise AnsibleFilterTypeError('root() can only be used on numbers: %s' % to_native(e))
+
+----------
+
+def test_cube_root(self):
+    assert ms.inversepower(27, 3) == 3
+
+----------
+
+
+
+Test Class Name: TestInversePower

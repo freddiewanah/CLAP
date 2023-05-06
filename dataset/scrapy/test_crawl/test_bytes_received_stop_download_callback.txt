@@ -1,0 +1,22 @@
+def get(self, key, def_val=None):
+    try:
+        return super().get(key, def_val)[-1]
+    except IndexError:
+        return None
+
+----------
+
+@defer.inlineCallbacks
+def test_bytes_received_stop_download_callback(self):
+    crawler = get_crawler(BytesReceivedCallbackSpider)
+    yield crawler.crawl(mockserver=self.mockserver)
+    self.assertIsNone(crawler.spider.meta.get('failure'))
+    self.assertIsInstance(crawler.spider.meta['response'], Response)
+    self.assertEqual(crawler.spider.meta['response'].body, crawler.spider.meta.get('bytes_received'))
+    self.assertLess(len(crawler.spider.meta['response'].body), crawler.spider.full_response_length)
+
+----------
+
+
+
+Test Class Name: CrawlSpiderTestCase

@@ -1,0 +1,20 @@
+def get_websocket_connection(self) -> WebSocketConnection:
+    try:
+        return self._websocket_connection
+    except AttributeError:
+        raise BadRequest('Improper websocket connection.')
+
+----------
+
+def test_improper_websocket_connection(transport, send, receive):
+    with pytest.raises(BadRequest):
+        transport.get_websocket_connection()
+    transport.create_websocket_connection(send, receive)
+    connection = transport.get_websocket_connection()
+    assert isinstance(connection, WebSocketConnection)
+
+----------
+
+
+
+Test Class Name: CustomServer

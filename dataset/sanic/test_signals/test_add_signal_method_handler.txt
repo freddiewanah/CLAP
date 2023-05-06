@@ -1,0 +1,37 @@
+def empty(status: int=204, headers: Optional[Dict[str, str]]=None) -> HTTPResponse:
+    """
+    Returns an empty response to the client.
+
+    :param status Response code.
+    :param headers Custom Headers.
+    """
+    return HTTPResponse(body=b'', status=status, headers=headers)
+
+----------
+
+def test_add_signal_method_handler(app):
+    counter = 0
+
+    class TestSanic(Sanic):
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.add_signal(self.after_routing_signal_handler, 'http.routing.after')
+
+        def after_routing_signal_handler(self, *args, **kwargs):
+            nonlocal counter
+            counter += 1
+    app = TestSanic('Test')
+    assert len(app.signal_router.routes) == 1
+
+    @app.route('/')
+    async def handler(_):
+        return empty()
+    app.test_client.get('/')
+    assert counter == 1
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,32 @@
+def format_timestamp(ts: Union[int, float, tuple, time.struct_time, datetime.datetime]) -> str:
+    """Formats a timestamp in the format used by HTTP.
+
+    The argument may be a numeric timestamp as returned by `time.time`,
+    a time tuple as returned by `time.gmtime`, or a `datetime.datetime`
+    object.
+
+    >>> format_timestamp(1359312200)
+    'Sun, 27 Jan 2013 18:43:20 GMT'
+    """
+    if isinstance(ts, (int, float)):
+        time_num = ts
+    elif isinstance(ts, (tuple, time.struct_time)):
+        time_num = calendar.timegm(ts)
+    elif isinstance(ts, datetime.datetime):
+        time_num = calendar.timegm(ts.utctimetuple())
+    else:
+        raise TypeError('unknown timestamp type: %r' % ts)
+    return email.utils.formatdate(time_num, usegmt=True)
+
+----------
+
+def test_if_modified_since(self):
+    http_date = datetime.datetime.utcnow()
+    request = HTTPRequest('http://example.com', if_modified_since=http_date)
+    self.assertEqual(request.headers, {'If-Modified-Since': format_timestamp(http_date)})
+
+----------
+
+
+
+Test Class Name: HTTPRequestTestCase

@@ -1,0 +1,22 @@
+@memoize
+def is_app(command, *app_names, **kwargs):
+    """Returns `True` if command is call to one of passed app names."""
+    at_least = kwargs.pop('at_least', 0)
+    if kwargs:
+        raise TypeError("got an unexpected keyword argument '{}'".format(kwargs.keys()))
+    if len(command.script_parts) > at_least:
+        return os.path.basename(command.script_parts[0]) in app_names
+    return False
+
+----------
+
+@pytest.mark.usefixtures('no_memoize')
+@pytest.mark.parametrize('script, names, result', [('/usr/bin/git diff', ['git', 'hub'], True), ('/bin/hdfs dfs -rm foo', ['hdfs'], True), ('git diff', ['git', 'hub'], True), ('hub diff', ['git', 'hub'], True), ('hg diff', ['git', 'hub'], False)])
+def test_is_app(script, names, result):
+    assert is_app(Command(script, ''), *names) == result
+
+----------
+
+
+
+Test Class Name: TestGetCloseMatches

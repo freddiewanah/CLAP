@@ -1,0 +1,25 @@
+def get_tasks(self):
+    tasklist = []
+    for task in self.pre_tasks + self.tasks + self.post_tasks:
+        if isinstance(task, Block):
+            tasklist.append(task.block + task.rescue + task.always)
+        else:
+            tasklist.append(task)
+    return tasklist
+
+----------
+
+def test_play_with_pre_tasks():
+    p = Play.load(dict(name='test play', hosts=['foo'], gather_facts=False, pre_tasks=[dict(action='shell echo "hello world"')]))
+    assert len(p.pre_tasks) >= 1
+    assert isinstance(p.pre_tasks[0], Block)
+    assert p.pre_tasks[0].has_tasks() is True
+    assert len(p.get_tasks()) >= 1
+    assert isinstance(p.get_tasks()[0][0], Task)
+    assert p.get_tasks()[0][0].action == 'shell'
+
+----------
+
+
+
+Test Class Name: default

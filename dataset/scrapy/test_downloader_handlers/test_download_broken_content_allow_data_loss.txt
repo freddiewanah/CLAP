@@ -1,0 +1,19 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+def test_download_broken_content_allow_data_loss(self, url='broken'):
+    request = Request(self.getURL(url), meta={'download_fail_on_dataloss': False})
+    d = self.download_request(request, Spider('foo'))
+    d.addCallback(lambda r: r.flags)
+    d.addCallback(self.assertEqual, ['dataloss'])
+    return d
+
+----------
+
+
+
+Test Class Name: Http11TestCase

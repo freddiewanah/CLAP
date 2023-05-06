@@ -1,0 +1,53 @@
+def is_special_selinux_path(self, path):
+    """
+        Returns a tuple containing (True, selinux_context) if the given path is on a
+        NFS or other 'special' fs  mount point, otherwise the return will be (False, None).
+        """
+    try:
+        f = open('/proc/mounts', 'r')
+        mount_data = f.readlines()
+        f.close()
+    except Exception:
+        return (False, None)
+    path_mount_point = self.find_mount_point(path)
+    for line in mount_data:
+        (device, mount_point, fstype, options, rest) = line.split(' ', 4)
+        if to_bytes(path_mount_point) == to_bytes(mount_point):
+            for fs in self._selinux_special_fs:
+                if fs in fstype:
+                    special_context = self.selinux_context(path_mount_point)
+                    return (True, special_context)
+    return (False, None)
+
+----------
+
+def test_is_special_selinux_path(self):
+    args = to_bytes(json.dumps(dict(ANSIBLE_MODULE_ARGS={'_ansible_selinux_special_fs': 'nfs,nfsd,foos', '_ansible_remote_tmp': '/tmp', '_ansible_keep_remote_files': False})))
+    with patch.object(basic, '_ANSIBLE_ARGS', args):
+        am = basic.AnsibleModule(argument_spec=dict())
+
+        def _mock_find_mount_point(path):
+            if path.startswith('/some/path'):
+                return '/some/path'
+            elif path.startswith('/weird/random/fstype'):
+                return '/weird/random/fstype'
+            return '/'
+        am.find_mount_point = _mock_find_mount_point
+        am.selinux_context = lambda path: ['foo_u', 'foo_r', 'foo_t', 's0']
+        m = mock_open()
+        m.side_effect = OSError
+        with patch.object(builtins, 'open', m, create=True):
+            assert am.is_special_selinux_path('/some/path/that/should/be/nfs') == (False, None)
+        mount_data = ['/dev/disk1 / ext4 rw,seclabel,relatime,data=ordered 0 0\n', '10.1.1.1:/path/to/nfs /some/path nfs ro 0 0\n', 'whatever /weird/random/fstype foos rw 0 0\n']
+        m = mock_open(read_data=''.join(mount_data))
+        m.return_value.readlines.return_value = mount_data
+        with patch.object(builtins, 'open', m, create=True):
+            assert am.is_special_selinux_path('/some/random/path') == (False, None)
+            assert am.is_special_selinux_path('/some/path/that/should/be/nfs') == (True, ['foo_u', 'foo_r', 'foo_t', 's0'])
+            assert am.is_special_selinux_path('/weird/random/fstype/path') == (True, ['foo_u', 'foo_r', 'foo_t', 's0'])
+
+----------
+
+
+
+Test Class Name: TestSELinuxMU

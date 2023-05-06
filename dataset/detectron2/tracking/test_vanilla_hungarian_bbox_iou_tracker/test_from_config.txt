@@ -1,0 +1,34 @@
+def build_tracker_head(cfg: CfgNode_) -> BaseTracker:
+    """
+    Build a tracker head from `cfg.TRACKER_HEADS.TRACKER_NAME`.
+
+    Args:
+        cfg: D2 CfgNode, config file with tracker information
+    Return:
+        tracker object
+    """
+    name = cfg.TRACKER_HEADS.TRACKER_NAME
+    tracker_class = TRACKER_HEADS_REGISTRY.get(name)
+    return tracker_class(cfg)
+
+----------
+
+def test_from_config(self):
+    cfg = CfgNode_()
+    cfg.TRACKER_HEADS = CfgNode_()
+    cfg.TRACKER_HEADS.TRACKER_NAME = 'VanillaHungarianBBoxIOUTracker'
+    cfg.TRACKER_HEADS.VIDEO_HEIGHT = int(self._img_size[0])
+    cfg.TRACKER_HEADS.VIDEO_WIDTH = int(self._img_size[1])
+    cfg.TRACKER_HEADS.MAX_NUM_INSTANCES = self._max_num_instances
+    cfg.TRACKER_HEADS.MAX_LOST_FRAME_COUNT = self._max_lost_frame_count
+    cfg.TRACKER_HEADS.MIN_BOX_REL_DIM = self._min_box_rel_dim
+    cfg.TRACKER_HEADS.MIN_INSTANCE_PERIOD = self._min_instance_period
+    cfg.TRACKER_HEADS.TRACK_IOU_THRESHOLD = self._track_iou_threshold
+    tracker = build_tracker_head(cfg)
+    self.assertTrue(tracker._video_height == self._img_size[0])
+
+----------
+
+
+
+Test Class Name: TestVanillaHungarianBBoxIOUTracker

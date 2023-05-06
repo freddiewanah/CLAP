@@ -1,0 +1,21 @@
+def phone_model(self) -> str:
+    """Get a random phone model.
+
+        :return: Phone model.
+
+        :Example:
+            Nokia Lumia 920.
+        """
+    return self.random.choice(PHONE_MODELS)
+
+----------
+
+def test_phone_model(self, hard):
+    result = hard.phone_model()
+    assert result in PHONE_MODELS
+
+----------
+
+
+
+Test Class Name: TestHardware

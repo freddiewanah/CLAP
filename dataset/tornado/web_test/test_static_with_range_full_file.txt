@@ -1,0 +1,28 @@
+def utf8(value: Union[None, str, bytes]) -> Optional[bytes]:
+    """Converts a string argument to a byte string.
+
+    If the argument is already a byte string or None, it is returned unchanged.
+    Otherwise it must be a unicode string and is encoded as utf8.
+    """
+    if isinstance(value, _UTF8_TYPES):
+        return value
+    if not isinstance(value, unicode_type):
+        raise TypeError('Expected bytes, unicode, or None; got %r' % type(value))
+    return value.encode('utf-8')
+
+----------
+
+def test_static_with_range_full_file(self):
+    response = self.get_and_head('/static/robots.txt', headers={'Range': 'bytes=0-'})
+    self.assertEqual(response.code, 200)
+    robots_file_path = os.path.join(self.static_dir, 'robots.txt')
+    with open(robots_file_path) as f:
+        self.assertEqual(response.body, utf8(f.read()))
+    self.assertEqual(response.headers.get('Content-Length'), '26')
+    self.assertEqual(response.headers.get('Content-Range'), None)
+
+----------
+
+
+
+Test Class Name: OverrideStaticUrlHandler

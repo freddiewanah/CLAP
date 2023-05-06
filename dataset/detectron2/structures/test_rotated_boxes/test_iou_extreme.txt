@@ -1,0 +1,31 @@
+def pairwise_iou_rotated(boxes1, boxes2):
+    """
+    Return intersection-over-union (Jaccard index) of boxes.
+
+    Both sets of boxes are expected to be in
+    (x_center, y_center, width, height, angle) format.
+
+    Arguments:
+        boxes1 (Tensor[N, 5])
+        boxes2 (Tensor[M, 5])
+
+    Returns:
+        iou (Tensor[N, M]): the NxM matrix containing the pairwise
+            IoU values for every element in boxes1 and boxes2
+    """
+    return torch.ops.detectron2.box_iou_rotated(boxes1, boxes2)
+
+----------
+
+def test_iou_extreme(self):
+    for device in ['cpu'] + (['cuda'] if torch.cuda.is_available() else []):
+        boxes1 = torch.tensor([[160.0, 153.0, 230.0, 23.0, -37.0]], device=device)
+        boxes2 = torch.tensor([[-1.117407639806935e+17, 1.3858420478349148e+18, 1000.0000610351562, 1000.0000610351562, 1612.0]], device=device)
+        ious = pairwise_iou_rotated(boxes1, boxes2)
+        self.assertTrue(ious.min() >= 0, ious)
+
+----------
+
+
+
+Test Class Name: TestRotatedBoxesLayer

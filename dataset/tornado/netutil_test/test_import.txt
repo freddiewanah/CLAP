@@ -1,0 +1,38 @@
+def sleep(duration: float) -> 'Future[None]':
+    """Return a `.Future` that resolves after the given number of seconds.
+
+    When used with ``yield`` in a coroutine, this is a non-blocking
+    analogue to `time.sleep` (which should not be used in coroutines
+    because it is blocking)::
+
+        yield gen.sleep(0.5)
+
+    Note that calling this function on its own does nothing; you must
+    wait on the `.Future` it returns (usually by yielding it).
+
+    .. versionadded:: 4.1
+    """
+    f = _create_future()
+    IOLoop.current().call_later(duration, lambda : future_set_result_unless_cancelled(f, None))
+    return f
+
+----------
+
+def test_import(self):
+    TIMEOUT = 5
+    command = [sys.executable, '-c', 'import tornado.test.resolve_test_helper']
+    start = time.time()
+    popen = Popen(command, preexec_fn=lambda : signal.alarm(TIMEOUT))
+    while time.time() - start < TIMEOUT:
+        return_code = popen.poll()
+        if return_code is not None:
+            self.assertEqual(0, return_code)
+            return
+        time.sleep(0.05)
+    self.fail('import timed out')
+
+----------
+
+
+
+Test Class Name: ThreadedResolverImportTest

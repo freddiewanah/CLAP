@@ -1,0 +1,36 @@
+def get(self, key, def_val=None):
+    try:
+        return super().get(key, def_val)[-1]
+    except IndexError:
+        return None
+
+----------
+
+@defer.inlineCallbacks
+def test_referer_header(self):
+    """Referer header is set by RefererMiddleware unless it is already set"""
+    req0 = Request(self.mockserver.url('/echo?headers=1&body=0'), dont_filter=1)
+    req1 = req0.replace()
+    req2 = req0.replace(headers={'Referer': None})
+    req3 = req0.replace(headers={'Referer': 'http://example.com'})
+    req0.meta['next'] = req1
+    req1.meta['next'] = req2
+    req2.meta['next'] = req3
+    crawler = get_crawler(SingleRequestSpider)
+    yield crawler.crawl(seed=req0, mockserver=self.mockserver)
+    self.assertIn('responses', crawler.spider.meta)
+    self.assertNotIn('failures', crawler.spider.meta)
+    echo0 = json.loads(to_unicode(crawler.spider.meta['responses'][2].body))
+    self.assertNotIn('Referer', echo0['headers'])
+    echo1 = json.loads(to_unicode(crawler.spider.meta['responses'][1].body))
+    self.assertEqual(echo1['headers'].get('Referer'), [req0.url])
+    echo2 = json.loads(to_unicode(crawler.spider.meta['responses'][2].body))
+    self.assertNotIn('Referer', echo2['headers'])
+    echo3 = json.loads(to_unicode(crawler.spider.meta['responses'][3].body))
+    self.assertEqual(echo3['headers'].get('Referer'), ['http://example.com'])
+
+----------
+
+
+
+Test Class Name: CrawlTestCase

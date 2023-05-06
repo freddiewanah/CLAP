@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_for_loop_break(self):
+    jsi = JSInterpreter('\n        function x() { a=0; for (i=0; i-10; i++) { break; a++ } return a }\n        ')
+    self.assertEqual(jsi.call_function('x'), 0)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

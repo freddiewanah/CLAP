@@ -1,0 +1,63 @@
+def save(self, filename=None, ignore_discard=False, ignore_expires=False):
+    """
+        Save cookies to a file.
+
+        Most of the code is taken from CPython 3.8 and slightly adapted
+        to support cookie files with UTF-8 in both python 2 and 3.
+        """
+    if filename is None:
+        if self.filename is not None:
+            filename = self.filename
+        else:
+            raise ValueError(compat_cookiejar.MISSING_FILENAME_TEXT)
+    for cookie in self:
+        if cookie.expires is None:
+            cookie.expires = 0
+    with io.open(filename, 'w', encoding='utf-8') as f:
+        f.write(self._HEADER)
+        now = time.time()
+        for cookie in self:
+            if not ignore_discard and cookie.discard:
+                continue
+            if not ignore_expires and cookie.is_expired(now):
+                continue
+            if cookie.secure:
+                secure = 'TRUE'
+            else:
+                secure = 'FALSE'
+            if cookie.domain.startswith('.'):
+                initial_dot = 'TRUE'
+            else:
+                initial_dot = 'FALSE'
+            if cookie.expires is not None:
+                expires = compat_str(cookie.expires)
+            else:
+                expires = ''
+            if cookie.value is None:
+                name = ''
+                value = cookie.name
+            else:
+                name = cookie.name
+                value = cookie.value
+            f.write('\t'.join([cookie.domain, initial_dot, cookie.path, secure, expires, name, value]) + '\n')
+
+----------
+
+def test_keep_session_cookies(self):
+    cookiejar = YoutubeDLCookieJar('./test/testdata/cookies/session_cookies.txt')
+    cookiejar.load(ignore_discard=True, ignore_expires=True)
+    tf = tempfile.NamedTemporaryFile(delete=False)
+    try:
+        cookiejar.save(filename=tf.name, ignore_discard=True, ignore_expires=True)
+        temp = tf.read().decode('utf-8')
+        self.assertTrue(re.search('www\\.foobar\\.foobar\\s+FALSE\\s+/\\s+TRUE\\s+0\\s+YoutubeDLExpiresEmpty\\s+YoutubeDLExpiresEmptyValue', temp))
+        self.assertTrue(re.search('www\\.foobar\\.foobar\\s+FALSE\\s+/\\s+TRUE\\s+0\\s+YoutubeDLExpires0\\s+YoutubeDLExpires0Value', temp))
+    finally:
+        tf.close()
+        os.remove(tf.name)
+
+----------
+
+
+
+Test Class Name: TestYoutubeDLCookieJar

@@ -1,0 +1,25 @@
+def user(self) -> str:
+    """Generate a random user.
+
+        :return: Path to user.
+
+        :Example:
+            /home/oretha
+        """
+    user = self.random.choice(USERNAMES)
+    user = user.capitalize() if 'win' in self.platform else user.lower()
+    return str(self._pathlib_home / user)
+
+----------
+
+def test_user(self, path):
+    user = path.user()
+    pattern = 'C:\\\\Users\\\\[A-Z].*' if path.platform == 'win32' else '/home/[a-z].'
+    result = re.search(pattern, user)
+    assert result
+
+----------
+
+
+
+Test Class Name: TestPath

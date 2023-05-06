@@ -1,0 +1,54 @@
+def info(pretty=False, best=False):
+    """
+    Return certain machine-readable information items about the current OS
+    distribution in a dictionary, as shown in the following example:
+
+    .. sourcecode:: python
+
+        {
+            'id': 'rhel',
+            'version': '7.0',
+            'version_parts': {
+                'major': '7',
+                'minor': '0',
+                'build_number': ''
+            },
+            'like': 'fedora',
+            'codename': 'Maipo'
+        }
+
+    The dictionary structure and keys are always the same, regardless of which
+    information items are available in the underlying data sources. The values
+    for the various keys are as follows:
+
+    * ``id``:  The result of :func:`distro.id`.
+
+    * ``version``:  The result of :func:`distro.version`.
+
+    * ``version_parts -> major``:  The result of :func:`distro.major_version`.
+
+    * ``version_parts -> minor``:  The result of :func:`distro.minor_version`.
+
+    * ``version_parts -> build_number``:  The result of
+      :func:`distro.build_number`.
+
+    * ``like``:  The result of :func:`distro.like`.
+
+    * ``codename``:  The result of :func:`distro.codename`.
+
+    For a description of the *pretty* and *best* parameters, see the
+    :func:`distro.version` method.
+    """
+    return _distro.info(pretty, best)
+
+----------
+
+def test_info(self):
+    info = distro.info()
+    assert isinstance(info, dict), 'distro.info() returned %s (%s) which is not a dist' % (info, type(info))
+
+----------
+
+
+
+Test Class Name: TestDistro

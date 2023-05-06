@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('mv foo bar/foo', "mv: cannot move 'foo' to 'bar/foo': No such file or directory"), Command('mv foo bar/', "mv: cannot move 'foo' to 'bar/': No such file or directory")])
+def test_match(command):
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

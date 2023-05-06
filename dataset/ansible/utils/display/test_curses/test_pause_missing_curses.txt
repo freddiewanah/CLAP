@@ -1,0 +1,38 @@
+def setupterm():
+    try:
+        curses.setupterm()
+    except (curses.error, TypeError, io.UnsupportedOperation):
+        global HAS_CURSES
+        HAS_CURSES = False
+    else:
+        global MOVE_TO_BOL
+        global CLEAR_TO_EOL
+        MOVE_TO_BOL = curses.tigetstr('cr') or MOVE_TO_BOL
+        CLEAR_TO_EOL = curses.tigetstr('el') or CLEAR_TO_EOL
+
+----------
+
+def test_pause_missing_curses(mocker, monkeypatch):
+    monkeypatch.delitem(sys.modules, 'ansible.utils.display')
+    dunder_import = __import__
+
+    def _import(*args, **kwargs):
+        if args[0] == 'curses':
+            raise ImportError
+        else:
+            return dunder_import(*args, **kwargs)
+    mocker.patch(builtin_import, _import)
+    mod = importlib.import_module('ansible.utils.display')
+    if mod.HAS_CURSES:
+        mod.setupterm()
+    with pytest.raises(AttributeError):
+        mod.curses
+    assert mod.HAS_CURSES is False
+    assert mod.MOVE_TO_BOL == b'\r'
+    assert mod.CLEAR_TO_EOL == b'\x1b[K'
+
+----------
+
+
+
+Test Class Name: default

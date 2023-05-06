@@ -1,0 +1,27 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_valid_plugin_options(self) -> None:
+    test_dir = 'test'
+    options = {'foo': 'some value', 'dir': test_dir}
+    cfg_fname = os.path.join('tmp', 'test', 'fname.yml')
+    cfg_fname = os.path.abspath(cfg_fname)
+    cfg_dirname = os.path.dirname(cfg_fname)
+    expected = {'foo': 'some value', 'bar': 0, 'dir': os.path.join(cfg_dirname, test_dir)}
+    plugin = DummyPlugin()
+    (errors, warnings) = plugin.load_config(options, config_file_path=cfg_fname)
+    self.assertEqual(errors, [])
+    self.assertEqual(warnings, [])
+    assert_type(plugin.config, _DummyPluginConfig)
+    self.assertEqual(plugin.config, expected)
+    assert_type(plugin.config.bar, int)
+    self.assertEqual(plugin.config.bar, 0)
+    assert_type(plugin.config.dir, Optional[str])
+
+----------
+
+
+
+Test Class Name: TestPluginClass

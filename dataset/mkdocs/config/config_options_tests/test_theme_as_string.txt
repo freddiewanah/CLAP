@@ -1,0 +1,19 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_theme_as_string(self) -> None:
+
+    class Schema(Config):
+        option = c.Theme()
+    conf = self.get_config(Schema, {'option': 'mkdocs'})
+    assert_type(conf.option, Theme)
+    assert_type(conf.option.name, Optional[str])
+    self.assertEqual(conf.option.name, 'mkdocs')
+
+----------
+
+
+
+Test Class Name: ThemeTest

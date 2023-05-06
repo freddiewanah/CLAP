@@ -1,0 +1,19 @@
+def issn(self, mask: str='####-####') -> str:
+    """Generate a random ISSN.
+
+        :param mask: Mask of ISSN.
+        :return: ISSN.
+        """
+    return self.random.custom_code(mask=mask)
+
+----------
+
+def test_issn(self, code):
+    result = code.issn()
+    assert len(result) == 9
+
+----------
+
+
+
+Test Class Name: TestCode

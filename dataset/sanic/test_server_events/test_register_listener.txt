@@ -1,0 +1,38 @@
+def register_listener(self, listener: ListenerType[SanicVar], event: str) -> ListenerType[SanicVar]:
+    """
+        Register the listener for a given event.
+
+        :param listener: callable i.e. setup_db(app, loop)
+        :param event: when to register listener i.e. 'before_server_start'
+        :return: listener
+        """
+    try:
+        _event = ListenerEvent[event.upper()]
+    except (ValueError, AttributeError):
+        valid = ', '.join(map(lambda x: x.lower(), ListenerEvent.__members__.keys()))
+        raise BadRequest(f'Invalid event: {event}. Use one of: {valid}')
+    if '.' in _event:
+        self.signal(_event.value)(partial(self._listener, listener=listener))
+    else:
+        self.listeners[_event.value].append(listener)
+    return listener
+
+----------
+
+@pytest.mark.parametrize('listener_name', AVAILABLE_LISTENERS)
+def test_register_listener(app, listener_name):
+    """
+    Test that listeners on their own work with
+    app.register_listener method
+    """
+    output = []
+    listener = create_listener(listener_name, output)
+    app.register_listener(listener, event=listener_name)
+    start_stop_app(app)
+    assert app.name + listener_name == output.pop()
+
+----------
+
+
+
+Test Class Name: default

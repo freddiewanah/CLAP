@@ -1,0 +1,53 @@
+@keras_export('keras.backend.constant')
+@tf.__internal__.dispatch.add_dispatch_support
+@doc_controls.do_not_generate_docs
+def constant(value, dtype=None, shape=None, name=None):
+    """Creates a constant tensor.
+
+    Args:
+        value: A constant value (or list)
+        dtype: The type of the elements of the resulting tensor.
+        shape: Optional dimensions of resulting tensor.
+        name: Optional name for the tensor.
+
+    Returns:
+        A Constant Tensor.
+    """
+    if dtype is None:
+        dtype = floatx()
+    return tf.constant(value, dtype=dtype, shape=shape, name=name)
+
+----------
+
+@test_combinations.generate(test_combinations.combine(mode=['graph', 'eager']))
+def test_sequential(self):
+    with self.test_session():
+        model = sequential.Sequential()
+        checkpoint = tf.train.Checkpoint(model=model)
+        model.add(core.Dense(4))
+        second_dense = core.Dense(5)
+        model.add(second_dense)
+        model(tf.constant([[1.0]]))
+        checkpoint.restore(None).initialize_or_restore()
+        self.evaluate(second_dense.bias.assign(tf.constant([1.0, 2.0, 3.0, 4.0, 5.0])))
+        checkpoint_directory = self.get_temp_dir()
+        checkpoint_prefix = os.path.join(checkpoint_directory, 'ckpt')
+        save_path = checkpoint.save(checkpoint_prefix)
+        self.evaluate(second_dense.bias.assign(tf.constant([5.0, 6.0, 7.0, 8.0, 9.0])))
+        checkpoint.restore(save_path).assert_consumed().run_restore_ops()
+        self.assertAllEqual([1.0, 2.0, 3.0, 4.0, 5.0], self.evaluate(second_dense.bias))
+        deferred_sequential = sequential.Sequential()
+        deferred_sequential_checkpoint = tf.train.Checkpoint(model=deferred_sequential)
+        status = deferred_sequential_checkpoint.restore(save_path)
+        deferred_sequential.add(core.Dense(4))
+        deferred_second_dense = core.Dense(5)
+        deferred_sequential.add(deferred_second_dense)
+        deferred_sequential(tf.constant([[1.0]]))
+        status.run_restore_ops()
+        self.assertAllEqual([1.0, 2.0, 3.0, 4.0, 5.0], self.evaluate(deferred_second_dense.bias))
+
+----------
+
+
+
+Test Class Name: default

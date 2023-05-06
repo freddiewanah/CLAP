@@ -1,0 +1,41 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_method_not_allowed():
+    app = Sanic('app')
+
+    @app.get('/')
+    async def test_get(request: Request):
+        return response.json({'hello': 'world'})
+    (request, response) = app.test_client.head('/')
+    assert set(response.headers['Allow'].split(', ')) == {'GET'}
+    (request, response) = app.test_client.post('/')
+    assert set(response.headers['Allow'].split(', ')) == {'GET'}
+    app.router.reset()
+
+    @app.post('/')
+    async def test_post(request: Request):
+        return response.json({'hello': 'world'})
+    (request, response) = app.test_client.head('/')
+    assert response.status == 405
+    assert set(response.headers['Allow'].split(', ')) == {'GET', 'POST'}
+    assert response.headers['Content-Length'] == '0'
+    (request, response) = app.test_client.patch('/')
+    assert response.status == 405
+    assert set(response.headers['Allow'].split(', ')) == {'GET', 'POST'}
+    assert response.headers['Content-Length'] == '0'
+
+----------
+
+
+
+Test Class Name: default

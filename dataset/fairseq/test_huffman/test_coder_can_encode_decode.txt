@@ -1,0 +1,27 @@
+def decode(self, bits: bytes) -> tp.Iterator['HuffmanNode']:
+    """
+        take bitpadded bytes and decode it to a set of leaves. You can then use each node to find the symbol/id
+        """
+    a = bitarray()
+    a.frombytes(bits)
+    return self.root.decode(self._unpad(a))
+
+----------
+
+def test_coder_can_encode_decode(self):
+    data = make_data()
+    builder = make_code_builder(data)
+    coder = builder.build_code()
+    encoded = [coder.encode(sentence) for sentence in data]
+    decoded = [[n.symbol for n in coder.decode(enc)] for enc in encoded]
+    self.assertEqual(decoded, data)
+    unseen_data = make_data()
+    unseen_encoded = [coder.encode(sentence) for sentence in unseen_data]
+    unseen_decoded = [[n.symbol for n in coder.decode(enc)] for enc in unseen_encoded]
+    self.assertEqual(unseen_decoded, unseen_data)
+
+----------
+
+
+
+Test Class Name: TestCoder

@@ -1,0 +1,37 @@
+def time(self) -> float:
+    """Returns the current time according to the `IOLoop`'s clock.
+
+        The return value is a floating-point number relative to an
+        unspecified time in the past.
+
+        Historically, the IOLoop could be customized to use e.g.
+        `time.monotonic` instead of `time.time`, but this is not
+        currently supported and so this method is equivalent to
+        `time.time`.
+
+        """
+    return time.time()
+
+----------
+
+@skipOnTravis
+def test_add_callback_wakeup(self):
+
+    def callback():
+        self.called = True
+        self.stop()
+
+    def schedule_callback():
+        self.called = False
+        self.io_loop.add_callback(callback)
+        self.start_time = time.time()
+    self.io_loop.add_timeout(self.io_loop.time(), schedule_callback)
+    self.wait()
+    self.assertAlmostEqual(time.time(), self.start_time, places=2)
+    self.assertTrue(self.called)
+
+----------
+
+
+
+Test Class Name: TestIOLoop

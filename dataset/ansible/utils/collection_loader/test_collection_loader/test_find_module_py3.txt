@@ -1,0 +1,23 @@
+def find_module(self, fullname, path=None):
+    finder = self._get_finder(fullname)
+    if finder is None:
+        return None
+    elif HAS_FILE_FINDER and isinstance(finder, FileFinder):
+        return finder.find_module(fullname)
+    else:
+        return finder.find_module(fullname, path=[self._pathctx])
+
+----------
+
+@pytest.mark.skipif(not PY3, reason='Testing Python 2 codepath (find_module) on Python 3')
+def test_find_module_py3():
+    dir_to_a_file = os.path.dirname(ping_module.__file__)
+    path_hook_finder = _AnsiblePathHookFinder(_AnsibleCollectionFinder(), dir_to_a_file)
+    assert path_hook_finder.find_spec('missing') is None
+    assert path_hook_finder.find_module('missing') is None
+
+----------
+
+
+
+Test Class Name: default

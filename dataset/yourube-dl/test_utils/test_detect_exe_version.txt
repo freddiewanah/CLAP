@@ -1,0 +1,22 @@
+def detect_exe_version(output, version_re=None, unrecognized='present'):
+    assert isinstance(output, compat_str)
+    if version_re is None:
+        version_re = 'version\\s+([-0-9._a-zA-Z]+)'
+    m = re.search(version_re, output)
+    if m:
+        return m.group(1)
+    else:
+        return unrecognized
+
+----------
+
+def test_detect_exe_version(self):
+    self.assertEqual(detect_exe_version('ffmpeg version 1.2.1\nbuilt on May 27 2013 08:37:26 with gcc 4.7 (Debian 4.7.3-4)\nconfiguration: --prefix=/usr --extra-'), '1.2.1')
+    self.assertEqual(detect_exe_version('ffmpeg version N-63176-g1fb4685\nbuilt on May 15 2014 22:09:06 with gcc 4.8.2 (GCC)'), 'N-63176-g1fb4685')
+    self.assertEqual(detect_exe_version('X server found. dri2 connection failed!\nTrying to open render node...\nSuccess at /dev/dri/renderD128.\nffmpeg version 2.4.4 Copyright (c) 2000-2014 the FFmpeg ...'), '2.4.4')
+
+----------
+
+
+
+Test Class Name: TestUtil

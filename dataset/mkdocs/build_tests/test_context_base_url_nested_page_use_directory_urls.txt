@@ -1,0 +1,28 @@
+def get_context(nav: Navigation, files: Union[Sequence[File], Files], config: MkDocsConfig, page: Optional[Page]=None, base_url: str='') -> Dict[str, Any]:
+    """
+    Return the template context for a given page or template.
+    """
+    if page is not None:
+        base_url = utils.get_relative_url('.', page.url)
+    extra_javascript = utils.create_media_urls(config.extra_javascript, page, base_url)
+    extra_css = utils.create_media_urls(config.extra_css, page, base_url)
+    if isinstance(files, Files):
+        files = files.documentation_pages()
+    return {'nav': nav, 'pages': files, 'base_url': base_url, 'extra_css': extra_css, 'extra_javascript': extra_javascript, 'mkdocs_version': mkdocs.__version__, 'build_date_utc': utils.get_build_datetime(), 'config': config, 'page': page}
+
+----------
+
+def test_context_base_url_nested_page_use_directory_urls(self):
+    nav_cfg = [{'Home': 'index.md'}, {'Nested': 'foo/bar.md'}]
+    cfg = load_config(nav=nav_cfg)
+    fs = [File('index.md', cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls']), File('foo/bar.md', cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls'])]
+    files = Files(fs)
+    nav = get_navigation(files, cfg)
+    context = build.get_context(nav, files, cfg, nav.pages[1])
+    self.assertEqual(context['base_url'], '../..')
+
+----------
+
+
+
+Test Class Name: BuildTests

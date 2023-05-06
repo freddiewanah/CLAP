@@ -1,0 +1,19 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+def test_get_duplicate_header(self):
+
+    def _test(response):
+        self.assertEqual(response.headers.getlist(b'Set-Cookie'), [b'a=b', b'c=d'])
+    request = Request(self.getURL('duplicate-header'))
+    return self.download_request(request, Spider('foo')).addCallback(_test)
+
+----------
+
+
+
+Test Class Name: HttpTestCase

@@ -1,0 +1,26 @@
+def getlist(self, key, def_val=None):
+    try:
+        return super().__getitem__(key)
+    except KeyError:
+        if def_val is not None:
+            return self.normvalue(def_val)
+        return []
+
+----------
+
+def test_basics(self):
+    h = Headers({'Content-Type': 'text/html', 'Content-Length': 1234})
+    assert h['Content-Type']
+    assert h['Content-Length']
+    self.assertRaises(KeyError, h.__getitem__, 'Accept')
+    self.assertEqual(h.get('Accept'), None)
+    self.assertEqual(h.getlist('Accept'), [])
+    self.assertEqual(h.get('Accept', '*/*'), b'*/*')
+    self.assertEqual(h.getlist('Accept', '*/*'), [b'*/*'])
+    self.assertEqual(h.getlist('Accept', ['text/html', 'images/jpeg']), [b'text/html', b'images/jpeg'])
+
+----------
+
+
+
+Test Class Name: HeadersTest

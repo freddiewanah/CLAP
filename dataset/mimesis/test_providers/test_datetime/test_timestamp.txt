@@ -1,0 +1,25 @@
+def timestamp(self, posix: bool=True, **kwargs: t.Any) -> t.Union[str, int]:
+    """Generate random timestamp.
+
+        :param posix: POSIX time.
+        :param kwargs: Kwargs for :meth:`~Datetime.datetime()`.
+        :return: Timestamp.
+        """
+    stamp = self.datetime(**kwargs)
+    if posix:
+        return timegm(stamp.utctimetuple())
+    return stamp.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+----------
+
+@pytest.mark.parametrize('posix, _type', [(False, str), (True, int)])
+def test_timestamp(self, _datetime, posix, _type):
+    result = _datetime.timestamp(posix)
+    assert result is not None
+    assert isinstance(result, _type)
+
+----------
+
+
+
+Test Class Name: TestDatetime

@@ -1,0 +1,17 @@
+def start_requests(self):
+    for url in self.sitemap_urls:
+        yield Request(url, self._parse_sitemap)
+
+----------
+
+def test_start_url(self):
+    spider = self.spider_class('example.com')
+    spider.start_url = 'https://www.example.com'
+    with self.assertRaisesRegex(AttributeError, '^Crawling could not start.*$'):
+        list(spider.start_requests())
+
+----------
+
+
+
+Test Class Name: _CrawlSpider

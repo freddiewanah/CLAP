@@ -1,0 +1,22 @@
+def worldview(self) -> str:
+    """Get a random worldview.
+
+        :return: Worldview.
+
+        :Example:
+            Pantheism.
+        """
+    views: t.List[str] = self.extract(['worldview'])
+    return self.random.choice(views)
+
+----------
+
+def test_worldview(self, person):
+    result = person.worldview()
+    assert result in person._data['worldview']
+
+----------
+
+
+
+Test Class Name: TestPerson

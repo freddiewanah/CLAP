@@ -1,0 +1,30 @@
+def process_request(self, request, spider):
+    (creds, proxy_url) = (None, None)
+    if 'proxy' in request.meta:
+        if request.meta['proxy'] is not None:
+            (creds, proxy_url) = self._get_proxy(request.meta['proxy'], '')
+    elif self.proxies:
+        parsed = urlparse_cached(request)
+        scheme = parsed.scheme
+        if (scheme not in ('http', 'https') or not proxy_bypass(parsed.hostname)) and scheme in self.proxies:
+            (creds, proxy_url) = self.proxies[scheme]
+    self._set_proxy_and_creds(request, proxy_url, creds)
+
+----------
+
+def test_environment_proxies(self):
+    os.environ['http_proxy'] = http_proxy = 'https://proxy.for.http:3128'
+    os.environ['https_proxy'] = https_proxy = 'http://proxy.for.https:8080'
+    os.environ.pop('file_proxy', None)
+    mw = HttpProxyMiddleware()
+    for (url, proxy) in [('http://e.com', http_proxy), ('https://e.com', https_proxy), ('file://tmp/a', None)]:
+        req = Request(url)
+        assert mw.process_request(req, spider) is None
+        self.assertEqual(req.url, url)
+        self.assertEqual(req.meta.get('proxy'), proxy)
+
+----------
+
+
+
+Test Class Name: TestHttpProxyMiddleware

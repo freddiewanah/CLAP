@@ -1,0 +1,78 @@
+def connect(self: _IOStreamType, address: Any, server_hostname: Optional[str]=None) -> 'Future[_IOStreamType]':
+    """Connects the socket to a remote address without blocking.
+
+        May only be called if the socket passed to the constructor was
+        not previously connected.  The address parameter is in the
+        same format as for `socket.connect <socket.socket.connect>` for
+        the type of socket passed to the IOStream constructor,
+        e.g. an ``(ip, port)`` tuple.  Hostnames are accepted here,
+        but will be resolved synchronously and block the IOLoop.
+        If you have a hostname instead of an IP address, the `.TCPClient`
+        class is recommended instead of calling this method directly.
+        `.TCPClient` will do asynchronous DNS resolution and handle
+        both IPv4 and IPv6.
+
+        If ``callback`` is specified, it will be called with no
+        arguments when the connection is completed; if not this method
+        returns a `.Future` (whose result after a successful
+        connection will be the stream itself).
+
+        In SSL mode, the ``server_hostname`` parameter will be used
+        for certificate validation (unless disabled in the
+        ``ssl_options``) and SNI (if supported; requires Python
+        2.7.9+).
+
+        Note that it is safe to call `IOStream.write
+        <BaseIOStream.write>` while the connection is pending, in
+        which case the data will be written as soon as the connection
+        is ready.  Calling `IOStream` read methods before the socket is
+        connected works on some platforms but is non-portable.
+
+        .. versionchanged:: 4.0
+            If no callback is given, returns a `.Future`.
+
+        .. versionchanged:: 4.2
+           SSL certificates are validated by default; pass
+           ``ssl_options=dict(cert_reqs=ssl.CERT_NONE)`` or a
+           suitably-configured `ssl.SSLContext` to the
+           `SSLIOStream` constructor to disable.
+
+        .. versionchanged:: 6.0
+
+           The ``callback`` argument was removed. Use the returned
+           `.Future` instead.
+
+        """
+    self._connecting = True
+    future = Future()
+    self._connect_future = typing.cast('Future[IOStream]', future)
+    try:
+        self.socket.connect(address)
+    except BlockingIOError:
+        pass
+    except socket.error as e:
+        if future is None:
+            gen_log.warning('Connect error on fd %s: %s', self.socket.fileno(), e)
+        self.close(exc_info=e)
+        return future
+    self._add_io_state(self.io_loop.WRITE)
+    return future
+
+----------
+
+@gen_test
+def test_connection_refused(self: typing.Any):
+    (cleanup_func, port) = refusing_port()
+    self.addCleanup(cleanup_func)
+    stream = IOStream(socket.socket())
+    stream.set_close_callback(self.stop)
+    with ExpectLog(gen_log, '.*', required=False):
+        with self.assertRaises(StreamClosedError):
+            yield stream.connect(('127.0.0.1', port))
+    self.assertTrue(isinstance(stream.error, ConnectionRefusedError), stream.error)
+
+----------
+
+
+
+Test Class Name: TestIOStreamMixin

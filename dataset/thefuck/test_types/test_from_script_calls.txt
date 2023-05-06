@@ -1,0 +1,28 @@
+@classmethod
+def from_raw_script(cls, raw_script):
+    """Creates instance of `Command` from a list of script parts.
+
+        :type raw_script: [basestring]
+        :rtype: Command
+        :raises: EmptyCommand
+
+        """
+    script = format_raw_script(raw_script)
+    if not script:
+        raise EmptyCommand
+    expanded = shell.from_shell(script)
+    output = get_output(script, expanded)
+    return cls(expanded, output)
+
+----------
+
+def test_from_script_calls(self, Popen, settings, os_environ):
+    settings.env = {}
+    assert Command.from_raw_script(['apt-get', 'search', 'vim']) == Command('apt-get search vim', 'output')
+    Popen.assert_called_once_with('apt-get search vim', shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, env=os_environ)
+
+----------
+
+
+
+Test Class Name: TestCommand

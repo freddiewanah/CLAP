@@ -1,0 +1,23 @@
+def clean_html(html):
+    """Clean an HTML snippet into a readable string"""
+    if html is None:
+        return html
+    html = html.replace('\n', ' ')
+    html = re.sub('(?u)\\s*<\\s*br\\s*/?\\s*>\\s*', '\n', html)
+    html = re.sub('(?u)<\\s*/\\s*p\\s*>\\s*<\\s*p[^>]*>', '\n', html)
+    html = re.sub('<.*?>', '', html)
+    html = unescapeHTML(html)
+    return html.strip()
+
+----------
+
+def test_clean_html(self):
+    self.assertEqual(clean_html('a:\nb'), 'a: b')
+    self.assertEqual(clean_html('a:\n   "b"'), 'a:    "b"')
+    self.assertEqual(clean_html('a<br>\xa0b'), 'a\nb')
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,25 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+def test_response_class_choosing_request(self):
+    """Tests choosing of correct response type
+         in case of Content-Type is empty but body contains text.
+        """
+    body = b'Some plain text\ndata with tabs\t and null bytes\x00'
+
+    def _test_type(response):
+        self.assertEqual(type(response), TextResponse)
+    request = Request(self.getURL('nocontenttype'), body=body)
+    d = self.download_request(request, Spider('foo'))
+    d.addCallback(_test_type)
+    return d
+
+----------
+
+
+
+Test Class Name: Http11TestCase

@@ -1,0 +1,26 @@
+@classmethod
+def unregister_app(cls, app: 'Sanic') -> None:
+    """
+        Unregister a Sanic instance
+        """
+    if not isinstance(app, cls):
+        raise SanicException('Registered app must be an instance of Sanic')
+    name = app.name
+    if name in cls._app_registry:
+        del cls._app_registry[name]
+
+----------
+
+def test_app_registry():
+    assert len(Sanic._app_registry) == 0
+    instance = Sanic('test')
+    assert len(Sanic._app_registry) == 1
+    assert Sanic._app_registry['test'] is instance
+    Sanic.unregister_app(instance)
+    assert len(Sanic._app_registry) == 0
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,55 @@
+def build_model(cfg: FairseqDataclass, task, from_checkpoint=False):
+    model = None
+    model_type = getattr(cfg, '_name', None) or getattr(cfg, 'arch', None)
+    if not model_type and len(cfg) == 1:
+        model_type = next(iter(cfg))
+        if model_type in MODEL_DATACLASS_REGISTRY:
+            cfg = cfg[model_type]
+        else:
+            raise Exception('Could not infer model type from directory. Please add _name field to indicate model type. Available models: ' + str(MODEL_DATACLASS_REGISTRY.keys()) + ' Requested model type: ' + model_type)
+    if model_type in ARCH_MODEL_REGISTRY:
+        model = ARCH_MODEL_REGISTRY[model_type]
+    elif model_type in MODEL_DATACLASS_REGISTRY:
+        model = MODEL_REGISTRY[model_type]
+    if model_type in MODEL_DATACLASS_REGISTRY:
+        dc = MODEL_DATACLASS_REGISTRY[model_type]
+        if isinstance(cfg, argparse.Namespace):
+            cfg = dc.from_namespace(cfg)
+        else:
+            cfg = merge_with_parent(dc(), cfg, from_checkpoint)
+    elif model_type in ARCH_CONFIG_REGISTRY:
+        with open_dict(cfg) if OmegaConf.is_config(cfg) else ExitStack():
+            ARCH_CONFIG_REGISTRY[model_type](cfg)
+    assert model is not None, f'Could not infer model type from {cfg}. Available models: {{}}'.format(MODEL_DATACLASS_REGISTRY.keys()) + f' Requested model type: {model_type}'
+    return model.build_model(cfg, task)
+
+----------
+
+def test_sequence_scorer(self):
+    d = test_utils.dummy_dictionary(vocab_size=2)
+    self.assertEqual(d.pad(), 1)
+    self.assertEqual(d.eos(), 2)
+    self.assertEqual(d.unk(), 3)
+    eos = d.eos()
+    w1 = 4
+    w2 = 5
+    data = [{'source': torch.LongTensor([w1, w2, eos]), 'target': torch.LongTensor([w1, w2, w1, eos])}, {'source': torch.LongTensor([w2, eos]), 'target': torch.LongTensor([w2, w1, eos])}, {'source': torch.LongTensor([w2, eos]), 'target': torch.LongTensor([w2, eos])}]
+    data_itr = test_utils.dummy_dataloader(data)
+    args = argparse.Namespace()
+    unk = 0.0
+    args.beam_probs = [torch.FloatTensor([[0.0, unk, 0.6, 0.4], [0.0, unk, 0.4, 0.6], [0.0, unk, 0.7, 0.3]]), torch.FloatTensor([[0.0, unk, 0.2, 0.7], [0.0, unk, 0.8, 0.2], [0.7, unk, 0.1, 0.2]]), torch.FloatTensor([[0.1, unk, 0.5, 0.4], [0.15, unk, 0.15, 0.7], [0.0, unk, 0.0, 0.0]]), torch.FloatTensor([[0.9, unk, 0.05, 0.05], [0.0, unk, 0.0, 0.0], [0.0, unk, 0.0, 0.0]])]
+    expected_scores = [[0.6, 0.7, 0.5, 0.9], [0.6, 0.8, 0.15], [0.3, 0.7]]
+    task = test_utils.TestTranslationTask.setup_task(args, d, d)
+    model = task.build_model(args)
+    scorer = SequenceScorer(task.target_dictionary)
+    for sample in data_itr:
+        hypos = task.inference_step(scorer, [model], sample)
+        for (id, hypos_id) in zip(sample['id'].tolist(), hypos):
+            self.assertHypoTokens(hypos_id[0], data[id]['target'])
+            self.assertHypoScore(hypos_id[0], expected_scores[id])
+
+----------
+
+
+
+Test Class Name: TestSequenceScorer

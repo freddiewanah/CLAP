@@ -1,0 +1,14 @@
+def get_full_url(self):
+    return self.request.url
+
+----------
+
+def test_get_full_url(self):
+    self.assertEqual(self.wrapped.get_full_url(), self.request.url)
+    self.assertEqual(self.wrapped.full_url, self.request.url)
+
+----------
+
+
+
+Test Class Name: WrappedRequestTest

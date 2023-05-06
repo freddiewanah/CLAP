@@ -1,0 +1,31 @@
+def get_method(self):
+    if self._method:
+        return self._method
+    else:
+        return urllib_request.Request.get_method(self)
+
+----------
+
+def test_Request_fallback(urlopen_mock, install_opener_mock, mocker):
+    here = os.path.dirname(__file__)
+    pem = os.path.join(here, 'fixtures/client.pem')
+    cookies = cookiejar.CookieJar()
+    request = Request(headers={'foo': 'bar'}, use_proxy=False, force=True, timeout=100, validate_certs=False, url_username='user', url_password='passwd', http_agent='ansible-tests', force_basic_auth=True, follow_redirects='all', client_cert='/tmp/client.pem', client_key='/tmp/client.key', cookies=cookies, unix_socket='/foo/bar/baz.sock', ca_path=pem, ciphers=['ECDHE-RSA-AES128-SHA256'], use_netrc=True)
+    fallback_mock = mocker.spy(request, '_fallback')
+    r = request.open('GET', 'https://ansible.com')
+    calls = [call(None, False), call(None, True), call(None, 100), call(None, False), call(None, 'user'), call(None, 'passwd'), call(None, 'ansible-tests'), call(None, True), call(None, 'all'), call(None, '/tmp/client.pem'), call(None, '/tmp/client.key'), call(None, cookies), call(None, '/foo/bar/baz.sock'), call(None, pem), call(None, None), call(None, True), call(None, ['ECDHE-RSA-AES128-SHA256']), call(None, True)]
+    fallback_mock.assert_has_calls(calls)
+    assert fallback_mock.call_count == 18
+    args = urlopen_mock.call_args[0]
+    assert args[1] is None
+    assert args[2] == 100
+    req = args[0]
+    assert req.headers == {'Authorization': b'Basic dXNlcjpwYXNzd2Q=', 'Cache-control': 'no-cache', 'Foo': 'bar', 'User-agent': 'ansible-tests'}
+    assert req.data is None
+    assert req.get_method() == 'GET'
+
+----------
+
+
+
+Test Class Name: default

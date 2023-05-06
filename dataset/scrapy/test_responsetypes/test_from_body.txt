@@ -1,0 +1,31 @@
+def from_body(self, body):
+    """Try to guess the appropriate response based on the body content.
+        This method is a bit magic and could be improved in the future, but
+        it's not meant to be used except for special cases where response types
+        cannot be guess using more straightforward methods."""
+    chunk = body[:5000]
+    chunk = to_bytes(chunk)
+    if not binary_is_text(chunk):
+        return self.from_mimetype('application/octet-stream')
+    lowercase_chunk = chunk.lower()
+    if b'<html>' in lowercase_chunk:
+        return self.from_mimetype('text/html')
+    if b'<?xml' in lowercase_chunk:
+        return self.from_mimetype('text/xml')
+    if b'<!doctype html>' in lowercase_chunk:
+        return self.from_mimetype('text/html')
+    return self.from_mimetype('text')
+
+----------
+
+def test_from_body(self):
+    mappings = [(b'\x03\x02\xdf\xdd#', Response), (b'Some plain text\ndata with tabs\t and null bytes\x00', TextResponse), (b'<html><head><title>Hello</title></head>', HtmlResponse), (b'<!DOCTYPE html>\n<title>.</title>', HtmlResponse), (b'<?xml version="1.0" encoding="utf-8"', XmlResponse)]
+    for (source, cls) in mappings:
+        retcls = responsetypes.from_body(source)
+        assert retcls is cls, f'{source} ==> {retcls} != {cls}'
+
+----------
+
+
+
+Test Class Name: ResponseTypesTest

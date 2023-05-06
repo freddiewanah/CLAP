@@ -1,0 +1,21 @@
+def root(self) -> str:
+    """Generate a root dir path.
+
+        :return: Root dir.
+
+        :Example:
+            /
+        """
+    return str(self._pathlib_home.parent)
+
+----------
+
+def test_root(self, path):
+    result = path.root()
+    assert result == 'C:\\' or result == '/'
+
+----------
+
+
+
+Test Class Name: TestPath

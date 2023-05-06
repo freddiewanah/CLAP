@@ -1,0 +1,19 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+def test_anon_request(self):
+    req = Request('s3://aws-publicdatasets/')
+    httpreq = self.download_request(req, self.spider)
+    self.assertEqual(hasattr(self.s3reqh, 'anon'), True)
+    self.assertEqual(self.s3reqh.anon, True)
+    self.assertEqual(httpreq.url, 'http://aws-publicdatasets.s3.amazonaws.com/')
+
+----------
+
+
+
+Test Class Name: S3AnonTestCase

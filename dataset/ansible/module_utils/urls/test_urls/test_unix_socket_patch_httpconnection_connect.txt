@@ -1,0 +1,23 @@
+def connect(self):
+    self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        self.sock.connect(self._unix_socket)
+    except OSError as e:
+        raise OSError('Invalid Socket File (%s): %s' % (self._unix_socket, e))
+    if self.timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
+        self.sock.settimeout(self.timeout)
+
+----------
+
+def test_unix_socket_patch_httpconnection_connect(mocker):
+    unix_conn = mocker.patch.object(urls.UnixHTTPConnection, 'connect')
+    conn = urls.httplib.HTTPConnection('ansible.com')
+    with urls.unix_socket_patch_httpconnection_connect():
+        conn.connect()
+    assert unix_conn.call_count == 1
+
+----------
+
+
+
+Test Class Name: default

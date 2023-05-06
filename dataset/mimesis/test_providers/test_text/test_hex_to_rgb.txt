@@ -1,0 +1,25 @@
+def hex_color(self, safe: bool=False) -> str:
+    """Generate a random hex color.
+
+        :param safe: Get safe Flat UI hex color.
+        :return: Hex color code.
+
+        :Example:
+            #d8346b
+        """
+    if safe:
+        return self.random.choice(SAFE_COLORS)
+    return f'#{self.random.randint(0, 16777215):06x}'
+
+----------
+
+def test_hex_to_rgb(self, _text):
+    color = _text.hex_color()
+    rgb = _text._hex_to_rgb(color)
+    assert isinstance(rgb, tuple)
+
+----------
+
+
+
+Test Class Name: TestText

@@ -1,0 +1,17 @@
+def join(self, seq):
+    return self.data.join(seq)
+
+----------
+
+def test_AnsibleJSONDecoder_vault():
+    with open(os.path.join(os.path.dirname(__file__), 'fixtures/ajson.json')) as f:
+        data = json.load(f, cls=AnsibleJSONDecoder)
+    assert isinstance(data['password'], AnsibleVaultEncryptedUnicode)
+    assert isinstance(data['bar']['baz'][0]['password'], AnsibleVaultEncryptedUnicode)
+    assert isinstance(data['foo']['password'], AnsibleVaultEncryptedUnicode)
+
+----------
+
+
+
+Test Class Name: default

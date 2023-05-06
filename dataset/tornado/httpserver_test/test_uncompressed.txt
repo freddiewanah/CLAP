@@ -1,0 +1,18 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_uncompressed(self):
+    response = self.fetch('/', method='POST', body='foo=bar')
+    self.assertEqual(json_decode(response.body), {'foo': ['bar']})
+
+----------
+
+
+
+Test Class Name: GzipBaseTest

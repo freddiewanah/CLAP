@@ -1,0 +1,20 @@
+def manufacturer(self) -> str:
+    """Get a random car manufacturer.
+
+        :return: A car manufacturer
+
+        :Example:
+            Tesla.
+        """
+    return self.random.choice(AUTO_MANUFACTURERS)
+
+----------
+
+def test_manufacturer(self, transport):
+    assert transport.manufacturer() in AUTO_MANUFACTURERS
+
+----------
+
+
+
+Test Class Name: TestTransport

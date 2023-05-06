@@ -1,0 +1,28 @@
+@staticmethod
+def token_bytes(entropy: int=32) -> bytes:
+    """Generate byte string containing ``entropy`` bytes.
+
+        The string has ``entropy`` random bytes, each byte
+        converted to two hex digits.
+
+        .. warning:: Seed is not applicable to this method,
+            because of its cryptographic-safe nature.
+
+        :param entropy: Number of bytes (default: 32).
+        :return: Random bytes.
+        """
+    return secrets.token_bytes(entropy)
+
+----------
+
+@pytest.mark.parametrize('entropy', [32, 64, 128])
+def test_token_bytes(self, crypto, entropy):
+    result = crypto.token_bytes(entropy=entropy)
+    assert len(result) == entropy
+    assert isinstance(result, bytes)
+
+----------
+
+
+
+Test Class Name: TestCryptographic

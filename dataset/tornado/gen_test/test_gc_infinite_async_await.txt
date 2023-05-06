@@ -1,0 +1,54 @@
+def sleep(duration: float) -> 'Future[None]':
+    """Return a `.Future` that resolves after the given number of seconds.
+
+    When used with ``yield`` in a coroutine, this is a non-blocking
+    analogue to `time.sleep` (which should not be used in coroutines
+    because it is blocking)::
+
+        yield gen.sleep(0.5)
+
+    Note that calling this function on its own does nothing; you must
+    wait on the `.Future` it returns (usually by yielding it).
+
+    .. versionadded:: 4.1
+    """
+    f = _create_future()
+    IOLoop.current().call_later(duration, lambda : future_set_result_unless_cancelled(f, None))
+    return f
+
+----------
+
+def test_gc_infinite_async_await(self):
+    import asyncio
+
+    async def infinite_coro(result):
+        try:
+            while True:
+                await gen.sleep(0.001)
+                result.append(True)
+        finally:
+            result.append(None)
+    loop = self.get_new_ioloop()
+    result = []
+    wfut = []
+
+    @gen.coroutine
+    def do_something():
+        fut = asyncio.get_event_loop().create_task(infinite_coro(result))
+        fut._refcycle = fut
+        wfut.append(weakref.ref(fut))
+        yield gen.sleep(0.2)
+    loop.run_sync(do_something)
+    with ExpectLog('asyncio', 'Task was destroyed but it is pending'):
+        loop.close()
+        gc.collect()
+    self.assertIs(wfut[0](), None)
+    self.assertGreaterEqual(len(result), 2)
+    if not self.is_pypy3():
+        self.assertIs(result[-1], None)
+
+----------
+
+
+
+Test Class Name: RunnerGCTest

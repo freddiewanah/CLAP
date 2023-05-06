@@ -1,0 +1,24 @@
+def name(self, gender: t.Optional[Gender]=None) -> str:
+    """Generate a random name.
+
+        :param gender: Gender's enum object.
+        :return: Name.
+
+        :Example:
+            John.
+        """
+    key = self.validate_enum(gender, Gender)
+    names: t.List[str] = self.extract(['names', key])
+    return self.random.choice(names)
+
+----------
+
+def test_generic_person(self, g1, g2):
+    assert g1.person.age() == g2.person.age()
+    assert g1.person.name() == g2.person.name()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

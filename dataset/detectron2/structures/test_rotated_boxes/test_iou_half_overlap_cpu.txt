@@ -1,0 +1,31 @@
+def pairwise_iou_rotated(boxes1, boxes2):
+    """
+    Return intersection-over-union (Jaccard index) of boxes.
+
+    Both sets of boxes are expected to be in
+    (x_center, y_center, width, height, angle) format.
+
+    Arguments:
+        boxes1 (Tensor[N, 5])
+        boxes2 (Tensor[M, 5])
+
+    Returns:
+        iou (Tensor[N, M]): the NxM matrix containing the pairwise
+            IoU values for every element in boxes1 and boxes2
+    """
+    return torch.ops.detectron2.box_iou_rotated(boxes1, boxes2)
+
+----------
+
+def test_iou_half_overlap_cpu(self):
+    boxes1 = torch.tensor([[0.5, 0.5, 1.0, 1.0, 0.0]], dtype=torch.float32)
+    boxes2 = torch.tensor([[0.25, 0.5, 0.5, 1.0, 0.0]], dtype=torch.float32)
+    expected_ious = torch.tensor([[0.5]], dtype=torch.float32)
+    ious = pairwise_iou_rotated(boxes1, boxes2)
+    self.assertTrue(torch.allclose(ious, expected_ious))
+
+----------
+
+
+
+Test Class Name: TestRotatedBoxesLayer

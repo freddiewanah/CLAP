@@ -1,0 +1,31 @@
+def json(body: Any, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='application/json', dumps: Optional[Callable[..., str]]=None, **kwargs: Any) -> JSONResponse:
+    """
+    Returns response object with body in json format.
+
+    :param body: Response data to be serialized.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param kwargs: Remaining arguments that are passed to the json encoder.
+    """
+    return JSONResponse(body, status=status, headers=headers, content_type=content_type, dumps=dumps, **kwargs)
+
+----------
+
+@pytest.mark.skipif(NO_UJSON is True or ujson_version >= (5, 4, 0), reason='ujson not installed or version is 5.4.0 or newer, which can handle arbitrary size integers')
+def test_json_response_json():
+    """One of the easiest ways to tell the difference is that ujson cannot
+    serialize over 64 bits"""
+    too_big_for_ujson = 111111111111111111111
+    with pytest.raises(OverflowError, match='int too big to convert'):
+        json(too_big_for_ujson)
+    response = json(too_big_for_ujson, dumps=sdumps)
+    assert sys.getsizeof(response.body) == 54
+    Sanic('Test', dumps=sdumps)
+    response = json(too_big_for_ujson)
+    assert sys.getsizeof(response.body) == 54
+
+----------
+
+
+
+Test Class Name: Foo

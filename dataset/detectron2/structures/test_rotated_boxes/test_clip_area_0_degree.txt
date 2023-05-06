@@ -1,0 +1,43 @@
+def area(self) -> torch.Tensor:
+    """
+        Computes the area of all the boxes.
+
+        Returns:
+            torch.Tensor: a vector with areas of each box.
+        """
+    box = self.tensor
+    area = box[:, 2] * box[:, 3]
+    return area
+
+----------
+
+def test_clip_area_0_degree(self):
+    for _ in range(50):
+        num_boxes = 100
+        boxes_5d = torch.zeros(num_boxes, 5)
+        boxes_5d[:, 0] = torch.FloatTensor(num_boxes).uniform_(-100, 500)
+        boxes_5d[:, 1] = torch.FloatTensor(num_boxes).uniform_(-100, 500)
+        boxes_5d[:, 2] = torch.FloatTensor(num_boxes).uniform_(0, 500)
+        boxes_5d[:, 3] = torch.FloatTensor(num_boxes).uniform_(0, 500)
+        boxes_4d = torch.zeros(num_boxes, 4)
+        boxes_4d[:, 0] = boxes_5d[:, 0] - boxes_5d[:, 2] / 2.0
+        boxes_4d[:, 1] = boxes_5d[:, 1] - boxes_5d[:, 3] / 2.0
+        boxes_4d[:, 2] = boxes_5d[:, 0] + boxes_5d[:, 2] / 2.0
+        boxes_4d[:, 3] = boxes_5d[:, 1] + boxes_5d[:, 3] / 2.0
+        image_size = (500, 600)
+        test_boxes_4d = Boxes(boxes_4d)
+        test_boxes_5d = RotatedBoxes(boxes_5d)
+        areas_4d = test_boxes_4d.area()
+        areas_5d = test_boxes_5d.area()
+        self.assertTrue(torch.allclose(areas_4d, areas_5d, atol=0.1, rtol=1e-05))
+        test_boxes_4d.clip(image_size)
+        test_boxes_5d.clip(image_size)
+        areas_4d = test_boxes_4d.area()
+        areas_5d = test_boxes_5d.area()
+        self.assertTrue(torch.allclose(areas_4d, areas_5d, atol=0.1, rtol=1e-05))
+
+----------
+
+
+
+Test Class Name: TestRotatedBoxesStructure

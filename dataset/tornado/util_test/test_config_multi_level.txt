@@ -1,0 +1,34 @@
+@classmethod
+def configure(cls, impl, **kwargs):
+    """Sets the class to use when the base class is instantiated.
+
+        Keyword arguments will be saved and added to the arguments passed
+        to the constructor.  This can be used to set global defaults for
+        some parameters.
+        """
+    base = cls.configurable_base()
+    if isinstance(impl, str):
+        impl = typing.cast(Type[Configurable], import_object(impl))
+    if impl is not None and (not issubclass(impl, cls)):
+        raise ValueError('Invalid subclass of %s' % cls)
+    base.__impl_class = impl
+    base.__impl_kwargs = kwargs
+
+----------
+
+def test_config_multi_level(self):
+    TestConfigurable.configure(TestConfig3, a=1)
+    obj = cast(TestConfig3A, TestConfigurable())
+    self.assertIsInstance(obj, TestConfig3A)
+    self.assertEqual(obj.a, 1)
+    TestConfigurable.configure(TestConfig3)
+    TestConfig3.configure(TestConfig3B, b=2)
+    obj2 = cast(TestConfig3B, TestConfigurable())
+    self.assertIsInstance(obj2, TestConfig3B)
+    self.assertEqual(obj2.b, 2)
+
+----------
+
+
+
+Test Class Name: ConfigurableTest

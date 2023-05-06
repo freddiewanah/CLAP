@@ -1,0 +1,32 @@
+def close(self):
+    """ terminate the connection; nothing to do here """
+    self._connected = False
+
+----------
+
+def test_plugins_connection_ssh_basic(self):
+    pc = PlayContext()
+    new_stdin = StringIO()
+    conn = ssh.Connection(pc, new_stdin)
+    res = conn._connect()
+    self.assertEqual(conn, res)
+    ssh.SSHPASS_AVAILABLE = False
+    self.assertFalse(conn._sshpass_available())
+    ssh.SSHPASS_AVAILABLE = True
+    self.assertTrue(conn._sshpass_available())
+    with patch('subprocess.Popen') as p:
+        ssh.SSHPASS_AVAILABLE = None
+        p.return_value = MagicMock()
+        self.assertTrue(conn._sshpass_available())
+        ssh.SSHPASS_AVAILABLE = None
+        p.return_value = None
+        p.side_effect = OSError()
+        self.assertFalse(conn._sshpass_available())
+    conn.close()
+    self.assertFalse(conn._connected)
+
+----------
+
+
+
+Test Class Name: TestConnectionBaseClass

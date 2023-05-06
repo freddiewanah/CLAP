@@ -1,0 +1,30 @@
+def query_parameters(self, length: t.Optional[int]=None) -> t.Dict[str, str]:
+    """Generate arbitrary query parameters as a dict.
+
+        :param length: Length of query parameters dictionary (maximum is 32).
+        :return: Dict of query parameters.
+        """
+
+    def pick_unique_words(quantity: int=5) -> t.List[str]:
+        words: t.Set[str] = set()
+        while len(words) != quantity:
+            words.add(self._text.word())
+        return list(words)
+    if not length:
+        length = self.random.randint(1, 10)
+    if length > 32:
+        raise ValueError('Maximum allowed length of query parameters is 32.')
+    return dict(zip(pick_unique_words(length), self._text.words(length)))
+
+----------
+
+@pytest.mark.repeat(10)
+@pytest.mark.parametrize('length', [5, 10, 15])
+def test_query_parameters(self, net, length):
+    assert len(net.query_parameters(length)) == length
+
+----------
+
+
+
+Test Class Name: TestInternet

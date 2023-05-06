@@ -1,0 +1,27 @@
+def ip_v4_with_port(self, port_range: PortRange=PortRange.ALL) -> str:
+    """Generate a random IPv4 address as string.
+
+        :param port_range: PortRange enum object.
+        :return: IPv4 address as string.
+
+        :Example:
+            19.121.223.58:8000
+        """
+    addr = self.ip_v4()
+    port = self.port(port_range)
+    return f'{addr}:{port}'
+
+----------
+
+@pytest.mark.parametrize('port_range', [PortRange.ALL, PortRange.WELL_KNOWN, PortRange.EPHEMERAL, PortRange.REGISTERED])
+def test_ip_v4_with_port(self, net, port_range):
+    ip = net.ip_v4_with_port(port_range)
+    port = int(ip.split(':')[-1])
+    (port_start, port_end) = port_range.value
+    assert port_start <= port <= port_end
+
+----------
+
+
+
+Test Class Name: TestInternet

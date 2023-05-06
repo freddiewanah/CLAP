@@ -1,0 +1,55 @@
+def build_proposal_generator(cfg, input_shape):
+    """
+    Build a proposal generator from `cfg.MODEL.PROPOSAL_GENERATOR.NAME`.
+    The name can be "PrecomputedProposals" to use no proposal generator.
+    """
+    name = cfg.MODEL.PROPOSAL_GENERATOR.NAME
+    if name == 'PrecomputedProposals':
+        return None
+    return PROPOSAL_GENERATOR_REGISTRY.get(name)(cfg, input_shape)
+
+----------
+
+def test_rrpn(self):
+    torch.manual_seed(121)
+    cfg = get_cfg()
+    cfg.MODEL.PROPOSAL_GENERATOR.NAME = 'RRPN'
+    cfg.MODEL.ANCHOR_GENERATOR.NAME = 'RotatedAnchorGenerator'
+    cfg.MODEL.ANCHOR_GENERATOR.SIZES = [[32, 64]]
+    cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.25, 1]]
+    cfg.MODEL.ANCHOR_GENERATOR.ANGLES = [[0, 60]]
+    cfg.MODEL.RPN.BBOX_REG_WEIGHTS = (1, 1, 1, 1, 1)
+    cfg.MODEL.RPN.HEAD_NAME = 'StandardRPNHead'
+    backbone = build_backbone(cfg)
+    proposal_generator = build_proposal_generator(cfg, backbone.output_shape())
+    num_images = 2
+    images_tensor = torch.rand(num_images, 20, 30)
+    image_sizes = [(10, 10), (20, 30)]
+    images = ImageList(images_tensor, image_sizes)
+    image_shape = (15, 15)
+    num_channels = 1024
+    features = {'res4': torch.rand(num_images, num_channels, 1, 2)}
+    gt_boxes = torch.tensor([[2, 2, 2, 2, 0], [4, 4, 4, 4, 0]], dtype=torch.float32)
+    gt_instances = Instances(image_shape)
+    gt_instances.gt_boxes = RotatedBoxes(gt_boxes)
+    with EventStorage():
+        (proposals, proposal_losses) = proposal_generator(images, features, [gt_instances[0], gt_instances[1]])
+    expected_losses = {'loss_rpn_cls': torch.tensor(0.04291602224), 'loss_rpn_loc': torch.tensor(0.145077362)}
+    for name in expected_losses.keys():
+        err_msg = 'proposal_losses[{}] = {}, expected losses = {}'.format(name, proposal_losses[name], expected_losses[name])
+        self.assertTrue(torch.allclose(proposal_losses[name], expected_losses[name]), err_msg)
+    expected_proposal_box = torch.tensor([[-1.77999556, 0.78155339, 68.04367828, 14.78156471, 60.59333801], [13.82740974, -1.50282836, 34.67269897, 29.1967659, -3.81942749], [8.1039257, -0.99071521, 145.39100647, 32.13126373, 3.67242432], [5.0, 4.57370186, 10.0, 9.14740372, 0.89196777]])
+    expected_objectness_logit = torch.tensor([0.10924313, 0.0988187, 0.07649877, 0.05858029])
+    torch.set_printoptions(precision=8, sci_mode=False)
+    self.assertEqual(len(proposals), len(image_sizes))
+    proposal = proposals[0]
+    err_msg = 'computed proposal boxes = {}, expected {}'.format(proposal.proposal_boxes.tensor, expected_proposal_box)
+    self.assertTrue(torch.allclose(proposal.proposal_boxes.tensor[:4], expected_proposal_box, atol=1e-05), err_msg)
+    err_msg = 'computed objectness logits = {}, expected {}'.format(proposal.objectness_logits, expected_objectness_logit)
+    self.assertTrue(torch.allclose(proposal.objectness_logits[:4], expected_objectness_logit, atol=1e-05), err_msg)
+
+----------
+
+
+
+Test Class Name: RPNTest

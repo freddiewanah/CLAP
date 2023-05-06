@@ -1,0 +1,39 @@
+def sleep(duration: float) -> 'Future[None]':
+    """Return a `.Future` that resolves after the given number of seconds.
+
+    When used with ``yield`` in a coroutine, this is a non-blocking
+    analogue to `time.sleep` (which should not be used in coroutines
+    because it is blocking)::
+
+        yield gen.sleep(0.5)
+
+    Note that calling this function on its own does nothing; you must
+    wait on the `.Future` it returns (usually by yielding it).
+
+    .. versionadded:: 4.1
+    """
+    f = _create_future()
+    IOLoop.current().call_later(duration, lambda : future_set_result_unless_cancelled(f, None))
+    return f
+
+----------
+
+@gen_test
+def test_put_clears_timed_out_putters(self):
+    q = queues.Queue(1)
+    putters = [q.put(i, timedelta(seconds=0.01)) for i in range(10)]
+    put = q.put(10)
+    self.assertEqual(10, len(q._putters))
+    yield gen.sleep(0.02)
+    self.assertEqual(10, len(q._putters))
+    self.assertFalse(put.done())
+    q.put(11)
+    self.assertEqual(2, len(q._putters))
+    for putter in putters[1:]:
+        self.assertRaises(TimeoutError, putter.result)
+
+----------
+
+
+
+Test Class Name: QueuePutTest

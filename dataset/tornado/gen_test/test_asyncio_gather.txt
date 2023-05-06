@@ -1,0 +1,23 @@
+@gen.coroutine
+def f():
+    yield gen.moment
+    raise gen.Return((1, 2))
+
+----------
+
+@gen_test
+def test_asyncio_gather(self):
+
+    @gen.coroutine
+    def f():
+        yield gen.moment
+        raise gen.Return(1)
+    ret = (yield asyncio.gather(f(), f()))
+    self.assertEqual(ret, [1, 1])
+    self.finished = True
+
+----------
+
+
+
+Test Class Name: Foo

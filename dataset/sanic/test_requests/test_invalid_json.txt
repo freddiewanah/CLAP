@@ -1,0 +1,26 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_invalid_json(app):
+
+    @app.post('/')
+    async def handler(request):
+        return json(request.json)
+    data = 'I am not json'
+    (request, response) = app.test_client.post('/', data=data)
+    assert response.status == 400
+
+----------
+
+
+
+Test Class Name: Bar

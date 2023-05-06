@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_match():
+    assert match(Command('temp.py', 'Permission denied'))
+    assert not match(Command('', ''))
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,26 @@
+def passport_series(self, year: t.Optional[int]=None) -> str:
+    """Generate random series of passport.
+
+        :param year: Year of manufacture.
+        :type year: int or None
+        :return: Series.
+
+        :Example:
+            02 15.
+        """
+    if not year:
+        year = self.random.randint(10, int(self._current_year[2:]))
+    region = self.random.randint(1, 99)
+    return f'{region:02d} {year}'
+
+----------
+
+def test_passport_series(russia):
+    series = russia.passport_series()
+    assert isinstance(series.split(' '), list)
+
+----------
+
+
+
+Test Class Name: default

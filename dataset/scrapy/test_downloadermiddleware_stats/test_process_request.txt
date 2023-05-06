@@ -1,0 +1,17 @@
+def process_request(self, request, spider):
+    self.stats.inc_value('downloader/request_count', spider=spider)
+    self.stats.inc_value(f'downloader/request_method_count/{request.method}', spider=spider)
+    reqlen = len(request_httprepr(request))
+    self.stats.inc_value('downloader/request_bytes', reqlen, spider=spider)
+
+----------
+
+def test_process_request(self):
+    self.mw.process_request(self.req, self.spider)
+    self.assertStatsEqual('downloader/request_count', 1)
+
+----------
+
+
+
+Test Class Name: TestDownloaderStats

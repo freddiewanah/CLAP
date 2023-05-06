@@ -1,0 +1,31 @@
+def exception_response(request: Request, exception: Exception, debug: bool, fallback: str, base: t.Type[BaseRenderer], renderer: t.Type[t.Optional[BaseRenderer]]=None) -> HTTPResponse:
+    """
+    Render a response for the default FALLBACK exception handler.
+    """
+    if not renderer:
+        mt = guess_mime(request, fallback)
+        renderer = RENDERERS_BY_CONTENT_TYPE.get(mt, base)
+    renderer = t.cast(t.Type[BaseRenderer], renderer)
+    return renderer(request, exception, debug).render()
+
+----------
+
+@pytest.mark.parametrize('accept,content_type,expected', ((None, None, 'text/plain; charset=utf-8'), ('foo/bar', None, 'text/plain; charset=utf-8'), ('application/json', None, 'application/json'), ('application/json,text/plain', None, 'application/json'), ('text/plain,application/json', None, 'application/json'), ('text/plain,foo/bar', None, 'text/plain; charset=utf-8'), ('text/plain,text/html', None, 'text/plain; charset=utf-8'), ('*/*', 'foo/bar', 'text/plain; charset=utf-8'), ('*/*', 'application/json', 'application/json'), ('text/*,*/plain', None, 'text/plain; charset=utf-8')))
+def test_combinations_for_auto(fake_request, accept, content_type, expected):
+    if accept:
+        fake_request.headers['accept'] = accept
+    else:
+        del fake_request.headers['accept']
+    if content_type:
+        fake_request.headers['content-type'] = content_type
+    try:
+        raise Exception('bad stuff')
+    except Exception as e:
+        response = exception_response(fake_request, e, True, base=TextRenderer, fallback='auto')
+    assert response.content_type == expected
+
+----------
+
+
+
+Test Class Name: default

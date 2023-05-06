@@ -1,0 +1,38 @@
+def parse_accept(accept: Optional[str]) -> AcceptList:
+    """Parse an Accept header and order the acceptable media types in
+    according to RFC 7231, s. 5.3.2
+    https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.2
+    """
+    if not accept:
+        if accept == '':
+            return AcceptList()
+        accept = '*/*'
+    try:
+        a = [mt for mt in [MediaType._parse(mtype) for mtype in accept.split(',')] if mt]
+        if not a:
+            raise ValueError
+        return AcceptList(sorted(a, key=lambda x: x.key))
+    except ValueError:
+        raise InvalidHeader(f'Invalid header value in Accept: {accept}')
+
+----------
+
+def test_wildcard_accept_set_ok():
+    accept = headers.parse_accept('*/*')[0]
+    assert accept.type == '*'
+    assert accept.subtype == '*'
+    assert accept.has_wildcard
+    accept = headers.parse_accept('foo/*')[0]
+    assert accept.type == 'foo'
+    assert accept.subtype == '*'
+    assert accept.has_wildcard
+    accept = headers.parse_accept('foo/bar')[0]
+    assert accept.type == 'foo'
+    assert accept.subtype == 'bar'
+    assert not accept.has_wildcard
+
+----------
+
+
+
+Test Class Name: default

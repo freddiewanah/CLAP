@@ -1,0 +1,62 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_s3_export(self):
+    skip_if_no_boto()
+    bucket = 'mybucket'
+    items = [self.MyItem({'foo': 'bar1', 'egg': 'spam1'}), self.MyItem({'foo': 'bar2', 'egg': 'spam2', 'baz': 'quux2'}), self.MyItem({'foo': 'bar3', 'baz': 'quux3'})]
+
+    class CustomS3FeedStorage(S3FeedStorage):
+        stubs = []
+
+        def open(self, *args, **kwargs):
+            from botocore.stub import ANY, Stubber
+            stub = Stubber(self.s3_client)
+            stub.activate()
+            CustomS3FeedStorage.stubs.append(stub)
+            stub.add_response('put_object', expected_params={'Body': ANY, 'Bucket': bucket, 'Key': ANY}, service_response={})
+            return super().open(*args, **kwargs)
+    key = 'export.csv'
+    uri = f's3://{bucket}/{key}/%(batch_time)s.json'
+    batch_item_count = 1
+    settings = {'AWS_ACCESS_KEY_ID': 'access_key', 'AWS_SECRET_ACCESS_KEY': 'secret_key', 'FEED_EXPORT_BATCH_ITEM_COUNT': batch_item_count, 'FEED_STORAGES': {'s3': CustomS3FeedStorage}, 'FEEDS': {uri: {'format': 'json'}}}
+    crawler = get_crawler(settings_dict=settings)
+    storage = S3FeedStorage.from_crawler(crawler, uri)
+    verifyObject(IFeedStorage, storage)
+
+    class TestSpider(scrapy.Spider):
+        name = 'testspider'
+
+        def parse(self, response):
+            for item in items:
+                yield item
+    with MockServer() as server:
+        TestSpider.start_urls = [server.url('/')]
+        crawler = get_crawler(TestSpider, settings)
+        yield crawler.crawl()
+    self.assertEqual(len(CustomS3FeedStorage.stubs), len(items) + 1)
+    for stub in CustomS3FeedStorage.stubs[:-1]:
+        stub.assert_no_pending_responses()
+
+----------
+
+
+
+Test Class Name: BatchDeliveriesTest

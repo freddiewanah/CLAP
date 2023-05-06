@@ -1,0 +1,18 @@
+def company(self) -> str:
+    """Get a random company name.
+
+        :return: Company name.
+        """
+    names: t.List[str] = self.extract(['company', 'name'])
+    return self.random.choice(names)
+
+----------
+
+def test_generic_finance(self, g1, g2):
+    assert g1.finance.company() == g2.finance.company()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

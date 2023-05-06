@@ -1,0 +1,27 @@
+@git_support
+def get_new_command(command):
+    command_parts = command.script_parts[:]
+    upstream_option_index = _get_upstream_option_index(command_parts)
+    if upstream_option_index is not None:
+        command_parts.pop(upstream_option_index)
+        if len(command_parts) > upstream_option_index:
+            command_parts.pop(upstream_option_index)
+    else:
+        push_idx = command_parts.index('push') + 1
+        while len(command_parts) > push_idx and command_parts[len(command_parts) - 1][0] != '-':
+            command_parts.pop(len(command_parts) - 1)
+    arguments = re.findall('git push (.*)', command.output)[-1].replace("'", "\\'").strip()
+    return replace_argument(' '.join(command_parts), 'push', 'push {}'.format(arguments))
+
+----------
+
+@pytest.mark.parametrize('branches, command, new_command', [(b'', Command('git checkout unknown', did_not_match('unknown')), ['git checkout -b unknown']), (b'', Command('git commit unknown', did_not_match('unknown')), ['git branch unknown && git commit unknown']), (b'  test-random-branch-123', Command('git checkout tst-rdm-brnch-123', did_not_match('tst-rdm-brnch-123')), ['git checkout test-random-branch-123', 'git checkout -b tst-rdm-brnch-123']), (b'  test-random-branch-123', Command('git commit tst-rdm-brnch-123', did_not_match('tst-rdm-brnch-123')), ['git commit test-random-branch-123'])])
+def test_get_new_command(branches, command, new_command, git_branch):
+    git_branch(branches)
+    assert get_new_command(command) == new_command
+
+----------
+
+
+
+Test Class Name: default

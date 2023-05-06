@@ -1,0 +1,18 @@
+@gen.coroutine
+def async_future(self, result):
+    yield gen.moment
+    return result
+
+----------
+
+@gen_test
+def test_multi_future_duplicate(self):
+    f = self.async_future(2)
+    results = (yield [self.async_future(1), f, self.async_future(3), f])
+    self.assertEqual(results, [1, 2, 3, 2])
+
+----------
+
+
+
+Test Class Name: GenBasicTest

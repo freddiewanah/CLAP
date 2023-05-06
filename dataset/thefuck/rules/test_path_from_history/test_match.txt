@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, output', [('ls project', 'no such file or directory: project'), ('cd project', "can't cd to project")])
+def test_match(script, output):
+    assert match(Command(script, output))
+
+----------
+
+
+
+Test Class Name: default

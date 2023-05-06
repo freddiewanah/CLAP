@@ -1,0 +1,19 @@
+def keys(self):
+    return self._values.keys()
+
+----------
+
+@defer.inlineCallbacks
+def test_export_multiple_item_classes(self):
+    items = [self.MyItem({'foo': 'bar1', 'egg': 'spam1'}), self.MyItem2({'hello': 'world2', 'foo': 'bar2'}), self.MyItem({'foo': 'bar3', 'egg': 'spam3', 'baz': 'quux3'}), {'hello': 'world4', 'egg': 'spam4'}]
+    header = self.MyItem.fields.keys()
+    rows_csv = [{'egg': 'spam1', 'foo': 'bar1', 'baz': ''}, {'egg': '', 'foo': 'bar2', 'baz': ''}, {'egg': 'spam3', 'foo': 'bar3', 'baz': 'quux3'}, {'egg': 'spam4', 'foo': '', 'baz': ''}]
+    rows_jl = [dict(row) for row in items]
+    yield self.assertExportedCsv(items, header, rows_csv)
+    yield self.assertExportedJsonLines(items, rows_jl)
+
+----------
+
+
+
+Test Class Name: FeedExportTest

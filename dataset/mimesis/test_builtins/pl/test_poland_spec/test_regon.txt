@@ -1,0 +1,26 @@
+def regon(self) -> str:
+    """Generate random valid 9-digit REGON.
+
+        :return: Valid 9-digit REGON
+        """
+    regon_coeffs = (8, 9, 2, 3, 4, 5, 6, 7)
+    regon_digits = [self.random.randint(0, 9) for _ in range(8)]
+    sum_v = sum((nc * nd for (nc, nd) in zip(regon_coeffs, regon_digits)))
+    checksum_digit = sum_v % 11
+    if checksum_digit > 9:
+        checksum_digit = 0
+    regon_digits.append(checksum_digit)
+    return ''.join(map(str, regon_digits))
+
+----------
+
+def test_regon(pl):
+    regon = pl.regon()
+    assert len(regon) == 9
+    assert validate_regon(regon)
+
+----------
+
+
+
+Test Class Name: default

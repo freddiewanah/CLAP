@@ -1,0 +1,21 @@
+@classmethod
+def from_crawler(cls, crawler, *args, **kwargs):
+    spider = super().from_crawler(crawler, *args, **kwargs)
+    spider._follow_links = crawler.settings.getbool('CRAWLSPIDER_FOLLOW_LINKS', True)
+    return spider
+
+----------
+
+def test_from_crawler_crawler_and_settings_population(self):
+    crawler = get_crawler()
+    spider = self.spider_class.from_crawler(crawler, 'example.com')
+    self.assertTrue(hasattr(spider, 'crawler'))
+    self.assertIs(spider.crawler, crawler)
+    self.assertTrue(hasattr(spider, 'settings'))
+    self.assertIs(spider.settings, crawler.settings)
+
+----------
+
+
+
+Test Class Name: SpiderTest

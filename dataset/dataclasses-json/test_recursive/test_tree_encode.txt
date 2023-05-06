@@ -1,0 +1,13 @@
+def to_json(self, *, skipkeys: bool=False, ensure_ascii: bool=True, check_circular: bool=True, allow_nan: bool=True, indent: Optional[Union[int, str]]=None, separators: Tuple[str, str]=None, default: Callable=None, sort_keys: bool=False, **kw) -> str:
+    return json.dumps(self.to_dict(encode_json=False), cls=_ExtendedEncoder, skipkeys=skipkeys, ensure_ascii=ensure_ascii, check_circular=check_circular, allow_nan=allow_nan, indent=indent, separators=separators, default=default, sort_keys=sort_keys, **kw)
+
+----------
+
+def test_tree_encode(self):
+    assert family_tree.to_json(indent=4) == family_tree_json
+
+----------
+
+
+
+Test Class Name: TestRecursive

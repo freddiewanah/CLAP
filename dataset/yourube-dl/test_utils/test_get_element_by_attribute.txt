@@ -1,0 +1,19 @@
+def get_element_by_attribute(attribute, value, html, escape_value=True):
+    retval = get_elements_by_attribute(attribute, value, html, escape_value)
+    return retval[0] if retval else None
+
+----------
+
+def test_get_element_by_attribute(self):
+    html = '\n            <span class="foo bar">nice</span>\n        '
+    self.assertEqual(get_element_by_attribute('class', 'foo bar', html), 'nice')
+    self.assertEqual(get_element_by_attribute('class', 'foo', html), None)
+    self.assertEqual(get_element_by_attribute('class', 'no-such-foo', html), None)
+    html = '\n            <div itemprop="author" itemscope>foo</div>\n        '
+    self.assertEqual(get_element_by_attribute('itemprop', 'author', html), 'foo')
+
+----------
+
+
+
+Test Class Name: TestUtil

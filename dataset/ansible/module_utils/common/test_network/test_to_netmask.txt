@@ -1,0 +1,20 @@
+def to_netmask(val):
+    """ converts a masklen to a netmask """
+    if not is_masklen(val):
+        raise ValueError('invalid value for masklen')
+    bits = 0
+    for i in range(32 - int(val), 32):
+        bits |= 1 << i
+    return inet_ntoa(pack('>I', bits))
+
+----------
+
+def test_to_netmask():
+    assert '255.0.0.0' == to_netmask(8)
+    assert '255.0.0.0' == to_netmask('8')
+
+----------
+
+
+
+Test Class Name: default

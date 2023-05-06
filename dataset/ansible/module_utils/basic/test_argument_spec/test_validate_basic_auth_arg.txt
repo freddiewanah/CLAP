@@ -1,0 +1,22 @@
+def basic_auth_argument_spec(spec=None):
+    arg_spec = dict(api_username=dict(type='str'), api_password=dict(type='str', no_log=True), api_url=dict(type='str'), validate_certs=dict(type='bool', default=True))
+    if spec:
+        arg_spec.update(spec)
+    return arg_spec
+
+----------
+
+@pytest.mark.parametrize('stdin', BASIC_AUTH_VALID_ARGS, indirect=['stdin'])
+def test_validate_basic_auth_arg(mocker, stdin):
+    kwargs = dict(argument_spec=basic_auth_argument_spec())
+    am = basic.AnsibleModule(**kwargs)
+    assert isinstance(am.params['api_username'], string_types)
+    assert isinstance(am.params['api_password'], string_types)
+    assert isinstance(am.params['api_url'], string_types)
+    assert isinstance(am.params['validate_certs'], bool)
+
+----------
+
+
+
+Test Class Name: default

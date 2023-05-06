@@ -1,0 +1,77 @@
+def lookup(self, exception, route_name: Optional[str]=None):
+    """
+        Lookup the existing instance of :class:`ErrorHandler` and fetch the
+        registered handler for a specific type of exception.
+
+        This method leverages a dict lookup to speedup the retrieval process.
+
+        :param exception: Type of exception
+
+        :type exception: :class:`sanic.exceptions.SanicException` or
+            :class:`Exception`
+
+        :return: Registered function if found ``None`` otherwise
+        """
+    exception_class = type(exception)
+    for name in (route_name, None):
+        exception_key = (exception_class, name)
+        handler = self.cached_handlers.get(exception_key)
+        if handler:
+            return handler
+    for name in (route_name, None):
+        for ancestor in type.mro(exception_class):
+            exception_key = (ancestor, name)
+            if exception_key in self.cached_handlers:
+                handler = self.cached_handlers[exception_key]
+                self.cached_handlers[exception_class, route_name] = handler
+                return handler
+            if ancestor is BaseException:
+                break
+    self.cached_handlers[exception_class, route_name] = None
+    handler = None
+    return handler
+
+----------
+
+def test_exception_handler_lookup(exception_handler_app: Sanic):
+
+    class CustomError(Exception):
+        pass
+
+    class CustomServerError(ServerError):
+        pass
+
+    def custom_error_handler():
+        pass
+
+    def server_error_handler():
+        pass
+
+    def import_error_handler():
+        pass
+    try:
+        ModuleNotFoundError
+    except Exception:
+
+        class ModuleNotFoundError(ImportError):
+            pass
+    handler = ErrorHandler()
+    handler.add(ImportError, import_error_handler)
+    handler.add(CustomError, custom_error_handler)
+    handler.add(ServerError, server_error_handler)
+    assert handler.lookup(ImportError(), None) == import_error_handler
+    assert handler.lookup(ModuleNotFoundError(), None) == import_error_handler
+    assert handler.lookup(CustomError(), None) == custom_error_handler
+    assert handler.lookup(ServerError('Error'), None) == server_error_handler
+    assert handler.lookup(CustomServerError('Error'), None) == server_error_handler
+    assert handler.lookup(ImportError(), None) == import_error_handler
+    assert handler.lookup(ModuleNotFoundError(), None) == import_error_handler
+    assert handler.lookup(CustomError(), None) == custom_error_handler
+    assert handler.lookup(ServerError('Error'), None) == server_error_handler
+    assert handler.lookup(CustomServerError('Error'), None) == server_error_handler
+
+----------
+
+
+
+Test Class Name: CustomServerError

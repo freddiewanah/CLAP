@@ -1,0 +1,29 @@
+def json(body: Any, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='application/json', dumps: Optional[Callable[..., str]]=None, **kwargs: Any) -> JSONResponse:
+    """
+    Returns response object with body in json format.
+
+    :param body: Response data to be serialized.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param kwargs: Remaining arguments that are passed to the json encoder.
+    """
+    return JSONResponse(body, status=status, headers=headers, content_type=content_type, dumps=dumps, **kwargs)
+
+----------
+
+@pytest.mark.skipif(NO_UJSON is True, reason='ujson not installed')
+def test_json_response_ujson(payload: Dict[str, Foo]):
+    """ujson will look at __json__"""
+    response = json(payload)
+    assert response.body == b'{"foo":{"bar":"bar"}}'
+    with pytest.raises(TypeError, match='Object of type Foo is not JSON serializable'):
+        json(payload, dumps=sdumps)
+    Sanic('Test', dumps=sdumps)
+    with pytest.raises(TypeError, match='Object of type Foo is not JSON serializable'):
+        json(payload)
+
+----------
+
+
+
+Test Class Name: Foo

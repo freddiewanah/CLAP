@@ -1,0 +1,27 @@
+def fetch(self, request: Union['HTTPRequest', str], **kwargs: Any) -> 'HTTPResponse':
+    """Executes a request, returning an `HTTPResponse`.
+
+        The request may be either a string URL or an `HTTPRequest` object.
+        If it is a string, we construct an `HTTPRequest` using any additional
+        kwargs: ``HTTPRequest(request, **kwargs)``
+
+        If an error occurs during the fetch, we raise an `HTTPError` unless
+        the ``raise_error`` keyword argument is set to False.
+        """
+    response = self._io_loop.run_sync(functools.partial(self._async_client.fetch, request, **kwargs))
+    return response
+
+----------
+
+def test_max_redirects(self: typing.Any):
+    response = self.fetch('/countdown/5', max_redirects=3)
+    self.assertEqual(302, response.code)
+    self.assertTrue(response.request.url.endswith('/countdown/5'))
+    self.assertTrue(response.effective_url.endswith('/countdown/2'))
+    self.assertTrue(response.headers['Location'].endswith('/countdown/1'))
+
+----------
+
+
+
+Test Class Name: SimpleHTTPClientTestMixin

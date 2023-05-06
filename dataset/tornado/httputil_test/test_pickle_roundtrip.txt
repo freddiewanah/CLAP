@@ -1,0 +1,27 @@
+def get_all(self) -> Iterable[Tuple[str, str]]:
+    """Returns an iterable of all (name, value) pairs.
+
+        If a header has multiple values, multiple pairs will be
+        returned with the same name.
+        """
+    for (name, values) in self._as_list.items():
+        for value in values:
+            yield (name, value)
+
+----------
+
+def test_pickle_roundtrip(self):
+    headers = HTTPHeaders()
+    headers.add('Set-Cookie', 'a=b')
+    headers.add('Set-Cookie', 'c=d')
+    headers.add('Content-Type', 'text/html')
+    pickled = pickle.dumps(headers)
+    unpickled = pickle.loads(pickled)
+    self.assertEqual(sorted(headers.get_all()), sorted(unpickled.get_all()))
+    self.assertEqual(sorted(headers.items()), sorted(unpickled.items()))
+
+----------
+
+
+
+Test Class Name: HTTPHeadersTest

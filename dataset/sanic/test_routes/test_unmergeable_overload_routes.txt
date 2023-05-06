@@ -1,0 +1,52 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_unmergeable_overload_routes(app):
+
+    @app.route('/overload_whole', methods=None)
+    async def handler1(request):
+        return text('OK1')
+
+    @app.route('/overload_whole', methods=['POST', 'PUT'])
+    async def handler2(request):
+        return text('OK1')
+    assert len(app.router.static_routes) == 1
+    assert len(app.router.static_routes['overload_whole',].methods) == 3
+    (request, response) = app.test_client.get('/overload_whole')
+    assert response.text == 'OK1'
+    (request, response) = app.test_client.post('/overload_whole')
+    assert response.text == 'OK1'
+    (request, response) = app.test_client.put('/overload_whole')
+    assert response.text == 'OK1'
+    app.router.reset()
+
+    @app.route('/overload_part', methods=['GET'])
+    async def handler3(request):
+        return text('OK1')
+    with pytest.raises(RouteExists):
+
+        @app.route('/overload_part')
+        async def handler4(request):
+            return text('Duplicated')
+    (request, response) = app.test_client.get('/overload_part')
+    assert response.text == 'OK1'
+    (request, response) = app.test_client.post('/overload_part')
+    assert response.status == 405
+
+----------
+
+
+
+Test Class Name: default

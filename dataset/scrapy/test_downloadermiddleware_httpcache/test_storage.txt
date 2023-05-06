@@ -1,0 +1,30 @@
+def retrieve_response(self, spider, request):
+    data = self._read_data(spider, request)
+    if data is None:
+        return
+    url = data['url']
+    status = data['status']
+    headers = Headers(data['headers'])
+    body = data['body']
+    respcls = responsetypes.from_args(headers=headers, url=url, body=body)
+    response = respcls(url=url, headers=headers, status=status, body=body)
+    return response
+
+----------
+
+def test_storage(self):
+    with self._storage() as storage:
+        request2 = self.request.copy()
+        assert storage.retrieve_response(self.spider, request2) is None
+        storage.store_response(self.spider, self.request, self.response)
+        response2 = storage.retrieve_response(self.spider, request2)
+        assert isinstance(response2, HtmlResponse)
+        self.assertEqualResponse(self.response, response2)
+        time.sleep(2)
+        assert storage.retrieve_response(self.spider, request2) is None
+
+----------
+
+
+
+Test Class Name: DefaultStorageTest

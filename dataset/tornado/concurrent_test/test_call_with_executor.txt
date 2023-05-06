@@ -1,0 +1,27 @@
+@gen.coroutine
+def f():
+    yield gen.moment
+    raise gen.Return(1)
+
+----------
+
+@gen_test
+def test_call_with_executor(self):
+
+    class Object(object):
+
+        def __init__(self):
+            self.__executor = futures.thread.ThreadPoolExecutor(1)
+
+        @run_on_executor(executor='_Object__executor')
+        def f(self):
+            return 42
+    o = Object()
+    answer = (yield o.f())
+    self.assertEqual(answer, 42)
+
+----------
+
+
+
+Test Class Name: Object

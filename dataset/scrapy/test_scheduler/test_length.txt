@@ -1,0 +1,24 @@
+@abstractmethod
+def has_pending_requests(self) -> bool:
+    """
+        ``True`` if the scheduler has enqueued requests, ``False`` otherwise
+        """
+    raise NotImplementedError()
+
+----------
+
+def test_length(self):
+    self.assertFalse(self.scheduler.has_pending_requests())
+    self.assertEqual(len(self.scheduler), 0)
+    for url in _URLS:
+        self.scheduler.enqueue_request(Request(url))
+    self.close_scheduler()
+    self.create_scheduler()
+    self.assertTrue(self.scheduler.has_pending_requests())
+    self.assertEqual(len(self.scheduler), len(_URLS))
+
+----------
+
+
+
+Test Class Name: BaseSchedulerOnDiskTester

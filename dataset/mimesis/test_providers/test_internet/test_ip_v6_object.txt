@@ -1,0 +1,21 @@
+def ip_v6_object(self) -> IPv6Address:
+    """Generate random :py:class:`ipaddress.IPv6Address` object.
+
+        :return: :py:class:`ipaddress.IPv6Address` object.
+        """
+    return IPv6Address(self.random.randint(0, self._MAX_IPV6))
+
+----------
+
+def test_ip_v6_object(self, net):
+    ip = net.ip_v6_object()
+    assert ip.version == 6
+    assert ip.max_prefixlen == 128
+    assert re.match(patterns.IP_V6_REGEX, ip.exploded)
+    assert isinstance(ip, IPv6Address)
+
+----------
+
+
+
+Test Class Name: TestInternet

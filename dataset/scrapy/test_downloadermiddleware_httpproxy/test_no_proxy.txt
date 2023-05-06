@@ -1,0 +1,39 @@
+def process_request(self, request, spider):
+    (creds, proxy_url) = (None, None)
+    if 'proxy' in request.meta:
+        if request.meta['proxy'] is not None:
+            (creds, proxy_url) = self._get_proxy(request.meta['proxy'], '')
+    elif self.proxies:
+        parsed = urlparse_cached(request)
+        scheme = parsed.scheme
+        if (scheme not in ('http', 'https') or not proxy_bypass(parsed.hostname)) and scheme in self.proxies:
+            (creds, proxy_url) = self.proxies[scheme]
+    self._set_proxy_and_creds(request, proxy_url, creds)
+
+----------
+
+def test_no_proxy(self):
+    os.environ['http_proxy'] = 'https://proxy.for.http:3128'
+    mw = HttpProxyMiddleware()
+    os.environ['no_proxy'] = '*'
+    req = Request('http://noproxy.com')
+    assert mw.process_request(req, spider) is None
+    assert 'proxy' not in req.meta
+    os.environ['no_proxy'] = 'other.com'
+    req = Request('http://noproxy.com')
+    assert mw.process_request(req, spider) is None
+    assert 'proxy' in req.meta
+    os.environ['no_proxy'] = 'other.com,noproxy.com'
+    req = Request('http://noproxy.com')
+    assert mw.process_request(req, spider) is None
+    assert 'proxy' not in req.meta
+    os.environ['no_proxy'] = '*'
+    req = Request('http://noproxy.com', meta={'proxy': 'http://proxy.com'})
+    assert mw.process_request(req, spider) is None
+    self.assertEqual(req.meta, {'proxy': 'http://proxy.com'})
+
+----------
+
+
+
+Test Class Name: TestHttpProxyMiddleware

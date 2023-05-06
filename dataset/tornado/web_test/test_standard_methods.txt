@@ -1,0 +1,29 @@
+def utf8(value: Union[None, str, bytes]) -> Optional[bytes]:
+    """Converts a string argument to a byte string.
+
+    If the argument is already a byte string or None, it is returned unchanged.
+    Otherwise it must be a unicode string and is encoded as utf8.
+    """
+    if isinstance(value, _UTF8_TYPES):
+        return value
+    if not isinstance(value, unicode_type):
+        raise TypeError('Expected bytes, unicode, or None; got %r' % type(value))
+    return value.encode('utf-8')
+
+----------
+
+def test_standard_methods(self):
+    response = self.fetch('/', method='HEAD')
+    self.assertEqual(response.body, b'')
+    for method in ['GET', 'DELETE', 'OPTIONS']:
+        response = self.fetch('/', method=method)
+        self.assertEqual(response.body, utf8(method))
+    for method in ['POST', 'PUT']:
+        response = self.fetch('/', method=method, body=b'')
+        self.assertEqual(response.body, utf8(method))
+
+----------
+
+
+
+Test Class Name: Handler

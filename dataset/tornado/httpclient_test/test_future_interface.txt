@@ -1,0 +1,16 @@
+def get_url(self, path: str) -> str:
+    """Returns an absolute url for the given path on the test server."""
+    return '%s://127.0.0.1:%s%s' % (self.get_protocol(), self.get_http_port(), path)
+
+----------
+
+@gen_test
+def test_future_interface(self):
+    response = (yield self.http_client.fetch(self.get_url('/hello')))
+    self.assertEqual(response.body, b'Hello world!')
+
+----------
+
+
+
+Test Class Name: HTTPClientCommonTestCase

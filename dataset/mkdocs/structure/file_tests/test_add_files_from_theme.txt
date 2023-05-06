@@ -1,0 +1,22 @@
+def get_file_from_path(self, path: str) -> Optional[File]:
+    """Return a File instance with File.src_uri equal to path."""
+    return self.src_uris.get(PurePath(path).as_posix())
+
+----------
+
+@tempdir(files=['favicon.ico', 'index.md'])
+@tempdir(files=['base.html', 'favicon.ico', 'style.css', 'foo.md', 'README', '.ignore.txt', '.ignore/file.txt', 'foo/.ignore.txt', 'foo/.ignore/file.txt'])
+def test_add_files_from_theme(self, tdir, ddir):
+    config = load_config(docs_dir=ddir, theme={'name': None, 'custom_dir': tdir})
+    env = config.theme.get_env()
+    files = get_files(config)
+    self.assertEqual([file.src_path for file in files], ['index.md', 'favicon.ico'])
+    files.add_files_from_theme(env, config)
+    self.assertEqual([file.src_path for file in files], ['index.md', 'favicon.ico', 'style.css'])
+    self.assertEqual(files.get_file_from_path('favicon.ico').abs_src_path, os.path.normpath(os.path.join(ddir, 'favicon.ico')))
+
+----------
+
+
+
+Test Class Name: TestFiles

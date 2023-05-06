@@ -1,0 +1,83 @@
+@traceback_utils.filter_traceback
+def save(self, filepath, overwrite=True, save_format=None, **kwargs):
+    """Saves a model as a TensorFlow SavedModel or HDF5 file.
+
+        See the [Serialization and Saving guide](
+            https://keras.io/guides/serialization_and_saving/) for details.
+
+        Args:
+            model: Keras model instance to be saved.
+            filepath: `str` or `pathlib.Path` object. Path where to save the
+                model.
+            overwrite: Whether we should overwrite any existing model at the
+                target location, or instead ask the user via an interactive
+                prompt.
+            save_format: Either `"keras"`, `"tf"`, `"h5"`,
+                indicating whether to save the model
+                in the native Keras format (`.keras`),
+                in the TensorFlow SavedModel format
+                (referred to as "SavedModel" below),
+                or in the legacy HDF5 format (`.h5`).
+                Defaults to `"tf"` in TF 2.X, and `"h5"` in TF 1.X.
+
+        SavedModel format arguments:
+            include_optimizer: Only applied to SavedModel and legacy HDF5
+                formats. If False, do not save the optimizer state.
+                Defaults to True.
+            signatures: Only applies to SavedModel format. Signatures to save
+                with the SavedModel. See the `signatures` argument in
+                `tf.saved_model.save` for details.
+            options: Only applies to SavedModel format.
+                `tf.saved_model.SaveOptions` object that specifies SavedModel
+                saving options.
+            save_traces: Only applies to SavedModel format. When enabled, the
+                SavedModel will store the function traces for each layer. This
+                can be disabled, so that only the configs of each layer are
+                stored. Defaults to `True`.
+                Disabling this will decrease serialization time
+                and reduce file size, but it requires that all custom
+                layers/models implement a `get_config()` method.
+
+        Example:
+
+        ```python
+        model = tf.keras.Sequential([
+            tf.keras.layers.Dense(5, input_shape=(3,)),
+            tf.keras.layers.Softmax()])
+        model.save("model.keras")
+        loaded_model = tf.keras.models.load_model("model.keras")
+        x = tf.random.uniform((10, 3))
+        assert np.allclose(model.predict(x), loaded_model.predict(x))
+        ```
+
+        Note that `model.save()` is an alias for `tf.keras.models.save_model()`.
+        """
+    saving_api.save_model(self, filepath=filepath, overwrite=overwrite, save_format=save_format, **kwargs)
+
+----------
+
+def testEagerDistributionStrategy(self):
+    num_training_steps = 10
+    checkpoint_directory = self.get_temp_dir()
+    checkpoint_prefix = os.path.join(checkpoint_directory, 'ckpt')
+
+    def _train_fn(optimizer, model, root):
+        input_value = tf.constant([[3.0]])
+        optimizer.minimize(functools.partial(model, input_value), global_step=root.optimizer_step)
+    strategy = tf.distribute.MirroredStrategy()
+    with strategy.scope():
+        for training_continuation in range(3):
+            model = MyModel()
+            optimizer = tf.compat.v1.train.AdamOptimizer(0.001)
+            root = tf.train.Checkpoint(optimizer=optimizer, model=model, optimizer_step=tf.compat.v1.train.get_or_create_global_step())
+            root.restore(tf.train.latest_checkpoint(checkpoint_directory))
+            for _ in range(num_training_steps):
+                strategy.extended.call_for_each_replica(functools.partial(_train_fn, optimizer, model, root))
+            root.save(file_prefix=checkpoint_prefix)
+            self.assertEqual((training_continuation + 1) * num_training_steps, root.optimizer_step.numpy())
+
+----------
+
+
+
+Test Class Name: CheckpointingTests

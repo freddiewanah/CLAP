@@ -1,0 +1,48 @@
+def load_module(self, fullname):
+    if not self._redirect:
+        raise ValueError('no redirect found for {0}'.format(fullname))
+    mod = import_module(self._redirect)
+    sys.modules[fullname] = mod
+    return mod
+
+----------
+
+def test_collpkg_loader_load_module():
+    reset_collections_loader_state()
+    with patch('ansible.utils.collection_loader.AnsibleCollectionConfig') as p:
+        for name in ['ansible_collections.ansible.builtin', 'ansible_collections.testns.testcoll']:
+            parent_pkg = name.rpartition('.')[0]
+            module_to_load = name.rpartition('.')[2]
+            paths = extend_paths(default_test_collection_paths, parent_pkg)
+            existing_child_paths = [p for p in extend_paths(paths, module_to_load) if os.path.exists(p)]
+            is_builtin = 'ansible.builtin' in name
+            if name in sys.modules:
+                del sys.modules[name]
+            loader = _AnsibleCollectionPkgLoader(name, path_list=paths)
+            assert repr(loader).startswith('_AnsibleCollectionPkgLoader(path=')
+            module = loader.load_module(name)
+            assert module.__name__ == name
+            assert isinstance(module.__loader__, _AnsibleCollectionPkgLoader)
+            if is_builtin:
+                assert module.__path__ == []
+            else:
+                assert module.__path__ == [existing_child_paths[0]]
+            assert module.__package__ == name
+            if is_builtin:
+                assert module.__file__ == '<ansible_synthetic_collection_package>'
+            else:
+                assert module.__file__.endswith('__synthetic__') and os.path.isdir(os.path.dirname(module.__file__))
+            assert sys.modules.get(name) == module
+            assert hasattr(module, '_collection_meta') and isinstance(module._collection_meta, dict)
+            if module._collection_meta:
+                _collection_finder = import_module('ansible.utils.collection_loader._collection_finder')
+                with patch.object(_collection_finder, '_meta_yml_to_dict', side_effect=Exception('bang')):
+                    with pytest.raises(Exception) as ex:
+                        _AnsibleCollectionPkgLoader(name, path_list=paths).load_module(name)
+                    assert 'error parsing collection metadata' in str(ex.value)
+
+----------
+
+
+
+Test Class Name: default

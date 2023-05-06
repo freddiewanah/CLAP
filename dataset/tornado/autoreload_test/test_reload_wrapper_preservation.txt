@@ -1,0 +1,47 @@
+def sleep(duration: float) -> 'Future[None]':
+    """Return a `.Future` that resolves after the given number of seconds.
+
+    When used with ``yield`` in a coroutine, this is a non-blocking
+    analogue to `time.sleep` (which should not be used in coroutines
+    because it is blocking)::
+
+        yield gen.sleep(0.5)
+
+    Note that calling this function on its own does nothing; you must
+    wait on the `.Future` it returns (usually by yielding it).
+
+    .. versionadded:: 4.1
+    """
+    f = _create_future()
+    IOLoop.current().call_later(duration, lambda : future_set_result_unless_cancelled(f, None))
+    return f
+
+----------
+
+def test_reload_wrapper_preservation(self):
+    main = "import os\nimport sys\n\n# This import will fail if path is not set up correctly\nimport testapp\n\nif 'tornado.autoreload' not in sys.modules:\n    raise Exception('started without autoreload wrapper')\n\nimport tornado.autoreload\n\nprint('Starting')\nsys.stdout.flush()\nif 'TESTAPP_STARTED' not in os.environ:\n    os.environ['TESTAPP_STARTED'] = '1'\n    # Simulate an internal autoreload (one not caused\n    # by the wrapper).\n    tornado.autoreload._reload()\nelse:\n    # Exit directly so autoreload doesn't catch it.\n    os._exit(0)\n"
+    os.mkdir(os.path.join(self.path, 'testapp'))
+    init_file = os.path.join(self.path, 'testapp', '__init__.py')
+    open(init_file, 'w').close()
+    main_file = os.path.join(self.path, 'testapp', '__main__.py')
+    with open(main_file, 'w') as f:
+        f.write(main)
+    pythonpath = os.getcwd()
+    if 'PYTHONPATH' in os.environ:
+        pythonpath += os.pathsep + os.environ['PYTHONPATH']
+    autoreload_proc = Popen([sys.executable, '-m', 'tornado.autoreload', '-m', 'testapp'], stdout=subprocess.PIPE, cwd=self.path, env=dict(os.environ, PYTHONPATH=pythonpath), universal_newlines=True)
+    for i in range(40):
+        if autoreload_proc.poll() is not None:
+            break
+        time.sleep(0.1)
+    else:
+        autoreload_proc.kill()
+        raise Exception('subprocess failed to terminate')
+    out = autoreload_proc.communicate()[0]
+    self.assertEqual(out, 'Starting\n' * 2)
+
+----------
+
+
+
+Test Class Name: AutoreloadTest

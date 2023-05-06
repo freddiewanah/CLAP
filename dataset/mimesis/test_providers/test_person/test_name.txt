@@ -1,0 +1,25 @@
+def name(self, gender: t.Optional[Gender]=None) -> str:
+    """Generate a random name.
+
+        :param gender: Gender's enum object.
+        :return: Name.
+
+        :Example:
+            John.
+        """
+    key = self.validate_enum(gender, Gender)
+    names: t.List[str] = self.extract(['names', key])
+    return self.random.choice(names)
+
+----------
+
+@pytest.mark.parametrize('gender', [Gender.FEMALE, Gender.MALE])
+def test_name(self, person, gender):
+    result = person.name(gender=gender)
+    assert result in person._data['names'][gender.value]
+
+----------
+
+
+
+Test Class Name: TestPerson

@@ -1,0 +1,17 @@
+def render_table(header_row, data):
+    """ Render a list of rows, each as a list of values """
+    table = [header_row] + data
+    max_lens = [max((len(compat_str(v)) for v in col)) for col in zip(*table)]
+    format_str = ' '.join(('%-' + compat_str(ml + 1) + 's' for ml in max_lens[:-1])) + '%s'
+    return '\n'.join((format_str % tuple(row) for row in table))
+
+----------
+
+def test_render_table(self):
+    self.assertEqual(render_table(['a', 'bcd'], [[123, 4], [9999, 51]]), 'a    bcd\n123  4\n9999 51')
+
+----------
+
+
+
+Test Class Name: TestUtil

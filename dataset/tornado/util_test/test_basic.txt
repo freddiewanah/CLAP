@@ -1,0 +1,13 @@
+def is_finalizing() -> bool:
+    return L != []
+
+----------
+
+def test_basic(self):
+    self.assertFalse(is_finalizing())
+
+----------
+
+
+
+Test Class Name: IsFinalizingTest

@@ -1,0 +1,44 @@
+def check_required_one_of(terms, parameters, options_context=None):
+    """Check each list of terms to ensure at least one exists in the given module
+    parameters
+
+    Accepts a list of lists or tuples
+
+    :arg terms: List of lists of terms to check. For each list of terms, at
+        least one is required.
+    :arg parameters: Dictionary of parameters
+    :kwarg options_context: List of strings of parent key names if ``terms`` are
+        in a sub spec.
+
+    :returns: Empty list or raises :class:`TypeError` if the check fails.
+    """
+    results = []
+    if terms is None:
+        return results
+    for term in terms:
+        count = count_terms(term, parameters)
+        if count == 0:
+            results.append(term)
+    if results:
+        for term in results:
+            msg = 'one of the following is required: %s' % ', '.join(term)
+            if options_context:
+                msg = '{0} found in {1}'.format(msg, ' -> '.join(options_context))
+            raise TypeError(to_native(msg))
+    return results
+
+----------
+
+def test_check_required_one_of_context(arguments_terms):
+    params = {'state': 'present'}
+    expected = 'one of the following is required: path, owner found in foo_context'
+    option_context = ['foo_context']
+    with pytest.raises(TypeError) as e:
+        check_required_one_of(arguments_terms, params, option_context)
+    assert to_native(e.value) == expected
+
+----------
+
+
+
+Test Class Name: default

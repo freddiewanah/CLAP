@@ -1,0 +1,21 @@
+def download_request(self, request: Request, spider: Spider) -> Deferred:
+    agent = ScrapyH2Agent(context_factory=self._context_factory, pool=self._pool, crawler=self._crawler)
+    return agent.download_request(request, spider)
+
+----------
+
+def test_duplicate_header(self):
+    request = Request(self.getURL('echo'))
+    (header, value1, value2) = ('Custom-Header', 'foo', 'bar')
+    request.headers.appendlist(header, value1)
+    request.headers.appendlist(header, value2)
+    d = self.download_request(request, Spider('foo'))
+    d.addCallback(lambda r: json.loads(r.text)['headers'][header])
+    d.addCallback(self.assertEqual, [value1, value2])
+    return d
+
+----------
+
+
+
+Test Class Name: Https2TestCase

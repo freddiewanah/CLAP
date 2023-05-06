@@ -1,0 +1,15 @@
+def remove_start(s, start):
+    return s[len(start):] if s is not None and s.startswith(start) else s
+
+----------
+
+def test_remove_start(self):
+    self.assertEqual(remove_start(None, 'A - '), None)
+    self.assertEqual(remove_start('A - B', 'A - '), 'B')
+    self.assertEqual(remove_start('B - A', 'A - '), 'B - A')
+
+----------
+
+
+
+Test Class Name: TestUtil

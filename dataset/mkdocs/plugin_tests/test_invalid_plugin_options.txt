@@ -1,0 +1,28 @@
+def load_config(self, options: Dict[str, Any], config_file_path: Optional[str]=None) -> Tuple[ConfigErrors, ConfigWarnings]:
+    """Load config from a dict of options. Returns a tuple of (errors, warnings)."""
+    if self.config_class is LegacyConfig:
+        self.config = LegacyConfig(self.config_scheme, config_file_path=config_file_path)
+    else:
+        self.config = self.config_class(config_file_path=config_file_path)
+    self.config.load_dict(options)
+    return self.config.validate()
+
+----------
+
+def test_invalid_plugin_options(self):
+    plugin = DummyPlugin()
+    (errors, warnings) = plugin.load_config({'foo': 42})
+    self.assertEqual(errors, [('foo', ValidationError("Expected type: <class 'str'> but received: <class 'int'>"))])
+    self.assertEqual(warnings, [])
+    (errors, warnings) = plugin.load_config({'bar': 'a string'})
+    self.assertEqual(errors, [('bar', ValidationError("Expected type: <class 'int'> but received: <class 'str'>"))])
+    self.assertEqual(warnings, [])
+    (errors, warnings) = plugin.load_config({'invalid_key': 'value'})
+    self.assertEqual(errors, [])
+    self.assertEqual(warnings, [('invalid_key', 'Unrecognised configuration name: invalid_key')])
+
+----------
+
+
+
+Test Class Name: TestPluginClass

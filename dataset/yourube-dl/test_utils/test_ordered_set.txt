@@ -1,0 +1,21 @@
+def orderedSet(iterable):
+    """ Remove all duplicates from the input iterable """
+    res = []
+    for el in iterable:
+        if el not in res:
+            res.append(el)
+    return res
+
+----------
+
+def test_ordered_set(self):
+    self.assertEqual(orderedSet([1, 1, 2, 3, 4, 4, 5, 6, 7, 3, 5]), [1, 2, 3, 4, 5, 6, 7])
+    self.assertEqual(orderedSet([]), [])
+    self.assertEqual(orderedSet([1]), [1])
+    self.assertEqual(orderedSet([135, 1, 1, 1]), [135, 1])
+
+----------
+
+
+
+Test Class Name: TestUtil

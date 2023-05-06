@@ -1,0 +1,34 @@
+@staticmethod
+def load(role_include, play, parent_role=None, from_files=None, from_include=False, validate=True, public=True):
+    if from_files is None:
+        from_files = {}
+    try:
+        r = Role(play=play, from_files=from_files, from_include=from_include, validate=validate, public=public)
+        r._load_role_data(role_include, parent_role=parent_role)
+        role_path = r.get_role_path()
+        if role_path not in play.role_cache:
+            play.role_cache[role_path] = []
+        if r not in play.role_cache[role_path]:
+            play.role_cache[role_path].append(r)
+        return r
+    except RuntimeError:
+        raise AnsibleError('A recursion loop was detected with the roles specified. Make sure child roles do not have dependencies on parent roles', obj=role_include._ds)
+
+----------
+
+@patch('ansible.playbook.role.definition.unfrackpath', mock_unfrackpath_noop)
+def test_load_role_with_tasks(self):
+    fake_loader = DictDataLoader({'/etc/ansible/roles/foo_tasks/tasks/main.yml': "\n            - shell: echo 'hello world'\n            "})
+    mock_play = MagicMock()
+    mock_play.role_cache = {}
+    i = RoleInclude.load('foo_tasks', play=mock_play, loader=fake_loader)
+    r = Role.load(i, play=mock_play)
+    self.assertEqual(str(r), 'foo_tasks')
+    self.assertEqual(len(r._task_blocks), 1)
+    assert isinstance(r._task_blocks[0], Block)
+
+----------
+
+
+
+Test Class Name: TestRole

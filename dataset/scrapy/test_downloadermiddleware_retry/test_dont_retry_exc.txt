@@ -1,0 +1,16 @@
+def process_exception(self, request, exception, spider):
+    if isinstance(exception, self.EXCEPTIONS_TO_RETRY) and (not request.meta.get('dont_retry', False)):
+        return self._retry(request, exception, spider)
+
+----------
+
+def test_dont_retry_exc(self):
+    req = Request('http://www.scrapytest.org/503', meta={'dont_retry': True})
+    r = self.mw.process_exception(req, DNSLookupError(), self.spider)
+    assert r is None
+
+----------
+
+
+
+Test Class Name: RetryTest

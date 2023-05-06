@@ -1,0 +1,22 @@
+def get_current_locale(self) -> str:
+    """Get current locale.
+
+        If locale is not defined then this method will always return ``en``,
+        because ``en`` is default locale for all providers, excluding builtins.
+
+        :return: Current locale.
+        """
+    return self.locale
+
+----------
+
+@pytest.mark.parametrize('locale', Locale)
+def test_get_current_locale(self, locale):
+    base = BaseDataProvider(locale=locale)
+    assert locale.value == base.get_current_locale()
+
+----------
+
+
+
+Test Class Name: TestBase

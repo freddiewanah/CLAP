@@ -1,0 +1,24 @@
+def get_method(self):
+    if self._method:
+        return self._method
+    else:
+        return urllib_request.Request.get_method(self)
+
+----------
+
+def test_RequestWithMethod():
+    get = RequestWithMethod('https://ansible.com/', 'GET')
+    assert get.get_method() == 'GET'
+    post = RequestWithMethod('https://ansible.com/', 'POST', data='foo', headers={'Bar': 'baz'})
+    assert post.get_method() == 'POST'
+    assert post.get_full_url() == 'https://ansible.com/'
+    assert post.data == 'foo'
+    assert post.headers == {'Bar': 'baz'}
+    none = RequestWithMethod('https://ansible.com/', '')
+    assert none.get_method() == 'GET'
+
+----------
+
+
+
+Test Class Name: default

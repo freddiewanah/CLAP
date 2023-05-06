@@ -1,0 +1,16 @@
+@classmethod
+def from_dict(cls: Type[A], kvs: Json, *, infer_missing=False) -> A:
+    return _decode_dataclass(cls, kvs, infer_missing)
+
+----------
+
+def test_undefined_parameters_catch_all_initialized_with_dict_and_more_unknown(invalid_response):
+    invalid_response['catch_all'] = {'someValue': 'some-stuff'}
+    dump = UnknownAPIDump.from_dict(invalid_response)
+    assert dump.catch_all == {'someValue': 'some-stuff', 'undefined_field_name': [1, 2, 3]}
+
+----------
+
+
+
+Test Class Name: UnknownAPIDumpCamelCase

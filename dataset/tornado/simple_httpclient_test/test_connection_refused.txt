@@ -1,0 +1,34 @@
+def fetch(self, request: Union['HTTPRequest', str], **kwargs: Any) -> 'HTTPResponse':
+    """Executes a request, returning an `HTTPResponse`.
+
+        The request may be either a string URL or an `HTTPRequest` object.
+        If it is a string, we construct an `HTTPRequest` using any additional
+        kwargs: ``HTTPRequest(request, **kwargs)``
+
+        If an error occurs during the fetch, we raise an `HTTPError` unless
+        the ``raise_error`` keyword argument is set to False.
+        """
+    response = self._io_loop.run_sync(functools.partial(self._async_client.fetch, request, **kwargs))
+    return response
+
+----------
+
+def test_connection_refused(self: typing.Any):
+    (cleanup_func, port) = refusing_port()
+    self.addCleanup(cleanup_func)
+    with ExpectLog(gen_log, '.*', required=False):
+        with self.assertRaises(socket.error) as cm:
+            self.fetch('http://127.0.0.1:%d/' % port, raise_error=True)
+    if sys.platform != 'cygwin':
+        contains_errno = str(errno.ECONNREFUSED) in str(cm.exception)
+        if not contains_errno and hasattr(errno, 'WSAECONNREFUSED'):
+            contains_errno = str(errno.WSAECONNREFUSED) in str(cm.exception)
+        self.assertTrue(contains_errno, cm.exception)
+        expected_message = os.strerror(errno.ECONNREFUSED)
+        self.assertTrue(expected_message in str(cm.exception), cm.exception)
+
+----------
+
+
+
+Test Class Name: TimeoutResolver

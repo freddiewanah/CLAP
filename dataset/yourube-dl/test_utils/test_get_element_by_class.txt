@@ -1,0 +1,17 @@
+def get_element_by_class(class_name, html):
+    """Return the content of the first tag with the specified class in the passed HTML document"""
+    retval = get_elements_by_class(class_name, html)
+    return retval[0] if retval else None
+
+----------
+
+def test_get_element_by_class(self):
+    html = '\n            <span class="foo bar">nice</span>\n        '
+    self.assertEqual(get_element_by_class('foo', html), 'nice')
+    self.assertEqual(get_element_by_class('no-such-class', html), None)
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,37 @@
+def matches(self, url):
+    if self.allow_domains and (not url_is_from_any_domain(url, self.allow_domains)):
+        return False
+    if self.deny_domains and url_is_from_any_domain(url, self.deny_domains):
+        return False
+    allowed = (regex.search(url) for regex in self.allow_res) if self.allow_res else [True]
+    denied = (regex.search(url) for regex in self.deny_res) if self.deny_res else []
+    return any(allowed) and (not any(denied))
+
+----------
+
+def test_matches(self):
+    url1 = 'http://lotsofstuff.com/stuff1/index'
+    url2 = 'http://evenmorestuff.com/uglystuff/index'
+    lx = self.extractor_cls(allow=('stuff1',))
+    self.assertEqual(lx.matches(url1), True)
+    self.assertEqual(lx.matches(url2), False)
+    lx = self.extractor_cls(deny=('uglystuff',))
+    self.assertEqual(lx.matches(url1), True)
+    self.assertEqual(lx.matches(url2), False)
+    lx = self.extractor_cls(allow_domains=('evenmorestuff.com',))
+    self.assertEqual(lx.matches(url1), False)
+    self.assertEqual(lx.matches(url2), True)
+    lx = self.extractor_cls(deny_domains=('lotsofstuff.com',))
+    self.assertEqual(lx.matches(url1), False)
+    self.assertEqual(lx.matches(url2), True)
+    lx = self.extractor_cls(allow=['blah1'], deny=['blah2'], allow_domains=['blah1.com'], deny_domains=['blah2.com'])
+    self.assertEqual(lx.matches('http://blah1.com/blah1'), True)
+    self.assertEqual(lx.matches('http://blah1.com/blah2'), False)
+    self.assertEqual(lx.matches('http://blah2.com/blah1'), False)
+    self.assertEqual(lx.matches('http://blah2.com/blah2'), False)
+
+----------
+
+
+
+Test Class Name: LinkExtractorTestCase

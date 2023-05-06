@@ -1,0 +1,36 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.parametrize('test_str', ['sanic-test', 'sanictest', 'sanic test'])
+def test_redirect_with_params(app, test_str):
+    use_in_uri = quote(test_str)
+
+    @app.route('/api/v1/test/<test>/')
+    async def init_handler(request, test):
+        return redirect(f'/api/v2/test/{use_in_uri}/')
+
+    @app.route('/api/v2/test/<test>/', unquote=True)
+    async def target_handler(request, test):
+        assert test == test_str
+        return text('OK')
+    (_, response) = app.test_client.get(f'/api/v1/test/{use_in_uri}/')
+    assert response.status == 200
+    assert response.body == b'OK'
+
+----------
+
+
+
+Test Class Name: default

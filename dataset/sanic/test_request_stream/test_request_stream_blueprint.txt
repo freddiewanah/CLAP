@@ -1,0 +1,125 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_request_stream_blueprint(app):
+    bp = Blueprint('test_blueprint_request_stream_blueprint')
+
+    @app.get('/get')
+    async def get(request):
+        return text('GET')
+
+    @bp.head('/head')
+    async def head(request):
+        return text('HEAD')
+
+    @bp.delete('/delete')
+    async def delete(request):
+        return text('DELETE')
+
+    @bp.options('/options')
+    async def options(request):
+        return text('OPTIONS')
+
+    @bp.post('/_post/<id>')
+    async def _post(request, id):
+        return text('_POST')
+
+    @bp.post('/post/<id>', stream=True)
+    async def post(request, id):
+        result = ''
+        while True:
+            body = await request.stream.read()
+            if body is None:
+                break
+            result += body.decode('utf-8')
+        return text(result)
+
+    @bp.put('/_put')
+    async def _put(request):
+        return text('_PUT')
+
+    @bp.put('/put', stream=True)
+    async def put(request):
+        result = ''
+        while True:
+            body = await request.stream.read()
+            if body is None:
+                break
+            result += body.decode('utf-8')
+        return text(result)
+
+    @bp.patch('/_patch')
+    async def _patch(request):
+        return text('_PATCH')
+
+    @bp.patch('/patch', stream=True)
+    async def patch(request):
+        result = ''
+        while True:
+            body = await request.stream.read()
+            if body is None:
+                break
+            result += body.decode('utf-8')
+        return text(result)
+
+    async def post_add_route(request):
+        result = ''
+        while True:
+            body = await request.stream.read()
+            if body is None:
+                break
+            result += body.decode('utf-8')
+        return text(result)
+    bp.add_route(post_add_route, '/post/add_route', methods=['POST'], stream=True)
+    app.blueprint(bp)
+    (request, response) = app.test_client.get('/get')
+    assert response.status == 200
+    assert response.text == 'GET'
+    (request, response) = app.test_client.head('/head')
+    assert response.status == 200
+    assert response.text == ''
+    (request, response) = app.test_client.delete('/delete')
+    assert response.status == 200
+    assert response.text == 'DELETE'
+    (request, response) = app.test_client.options('/options')
+    assert response.status == 200
+    assert response.text == 'OPTIONS'
+    (request, response) = app.test_client.post('/_post/1', data=data)
+    assert response.status == 200
+    assert response.text == '_POST'
+    (request, response) = app.test_client.post('/post/1', data=data)
+    assert response.status == 200
+    assert response.text == data
+    (request, response) = app.test_client.put('/_put', data=data)
+    assert response.status == 200
+    assert response.text == '_PUT'
+    (request, response) = app.test_client.put('/put', data=data)
+    assert response.status == 200
+    assert response.text == data
+    (request, response) = app.test_client.patch('/_patch', data=data)
+    assert response.status == 200
+    assert response.text == '_PATCH'
+    (request, response) = app.test_client.patch('/patch', data=data)
+    assert response.status == 200
+    assert response.text == data
+    (request, response) = app.test_client.post('/post/add_route', data=data)
+    assert response.status == 200
+    assert response.text == data
+
+----------
+
+
+
+Test Class Name: SimpleView

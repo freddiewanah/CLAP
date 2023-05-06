@@ -1,0 +1,20 @@
+def as_list(self):
+    """
+        Generate a list from this dict, that looks like the ParseResult named tuple
+        """
+    return [self.get(k, None) for k in ('scheme', 'netloc', 'path', 'params', 'query', 'fragment')]
+
+----------
+
+def test_ParseResultDottedDict():
+    url = 'https://ansible.com/blog'
+    parts = urls.urlparse(url)
+    dotted_parts = urls.ParseResultDottedDict(parts._asdict())
+    assert parts[0] == dotted_parts.scheme
+    assert dotted_parts.as_list() == list(parts)
+
+----------
+
+
+
+Test Class Name: default

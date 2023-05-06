@@ -1,0 +1,26 @@
+def address(self) -> str:
+    """Generate a random full address.
+
+        :return: Full address.
+        """
+    fmt: str = self.extract(['address_fmt'])
+    st_num = self.street_number()
+    st_name = self.street_name()
+    if self.locale in SHORTENED_ADDRESS_FMT:
+        return fmt.format(st_num=st_num, st_name=st_name)
+    if self.locale == 'ja':
+        return fmt.format(self.random.choice(self.extract(['city'])), *self.random.randints(amount=3, a=1, b=100))
+    return fmt.format(st_num=st_num, st_name=st_name, st_sfx=self.street_suffix())
+
+----------
+
+def test_address(self, address):
+    result = address.address()
+    assert isinstance(result, str)
+    assert result is not None
+
+----------
+
+
+
+Test Class Name: TestAddress

@@ -1,0 +1,28 @@
+def load_module(self, fullname):
+    if not self._redirect:
+        raise ValueError('no redirect found for {0}'.format(fullname))
+    mod = import_module(self._redirect)
+    sys.modules[fullname] = mod
+    return mod
+
+----------
+
+def test_root_loader():
+    name = 'ansible_collections'
+    for paths in ([], default_test_collection_paths):
+        if name in sys.modules:
+            del sys.modules[name]
+        loader = _AnsibleCollectionRootPkgLoader(name, paths)
+        assert repr(loader).startswith('_AnsibleCollectionRootPkgLoader(path=')
+        module = loader.load_module(name)
+        assert module.__name__ == name
+        assert module.__path__ == [p for p in extend_paths(paths, name) if os.path.isdir(p)]
+        assert module.__file__ == '<ansible_synthetic_collection_package>'
+        assert module.__package__ == name
+        assert sys.modules.get(name) == module
+
+----------
+
+
+
+Test Class Name: default

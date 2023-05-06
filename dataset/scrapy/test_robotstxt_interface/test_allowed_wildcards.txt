@@ -1,0 +1,30 @@
+@abstractmethod
+def allowed(self, url, user_agent):
+    """Return ``True`` if  ``user_agent`` is allowed to crawl ``url``, otherwise return ``False``.
+
+        :param url: Absolute URL
+        :type url: str
+
+        :param user_agent: User agent
+        :type user_agent: str
+        """
+    pass
+
+----------
+
+def test_allowed_wildcards(self):
+    robotstxt_robotstxt_body = 'User-agent: first\n                                Disallow: /disallowed/*/end$\n\n                                User-agent: second\n                                Allow: /*allowed\n                                Disallow: /\n                                '.encode('utf-8')
+    rp = self.parser_cls.from_crawler(crawler=None, robotstxt_body=robotstxt_robotstxt_body)
+    self.assertTrue(rp.allowed('https://www.site.local/disallowed', 'first'))
+    self.assertFalse(rp.allowed('https://www.site.local/disallowed/xyz/end', 'first'))
+    self.assertFalse(rp.allowed('https://www.site.local/disallowed/abc/end', 'first'))
+    self.assertTrue(rp.allowed('https://www.site.local/disallowed/xyz/endinglater', 'first'))
+    self.assertTrue(rp.allowed('https://www.site.local/allowed', 'second'))
+    self.assertTrue(rp.allowed('https://www.site.local/is_still_allowed', 'second'))
+    self.assertTrue(rp.allowed('https://www.site.local/is_allowed_too', 'second'))
+
+----------
+
+
+
+Test Class Name: BaseRobotParserTest

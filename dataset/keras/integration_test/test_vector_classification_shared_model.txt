@@ -1,0 +1,31 @@
+@tf.function(input_signature=[tf.TensorSpec((None, 3))])
+def predict(inputs):
+    return {'predictions': model(inputs)}
+
+----------
+
+def test_vector_classification_shared_model(self):
+    np.random.seed(1337)
+    ((x_train, y_train), _) = test_utils.get_test_data(train_samples=100, test_samples=0, input_shape=(10,), num_classes=2)
+    y_train = utils.to_categorical(y_train)
+    base_model = test_utils.get_model_from_layers([keras.layers.Dense(16, activation='relu', kernel_regularizer=keras.regularizers.l2(1e-05), bias_regularizer=keras.regularizers.l2(1e-05)), keras.layers.BatchNormalization()], input_shape=x_train.shape[1:])
+    x = keras.layers.Input(x_train.shape[1:])
+    y = base_model(x)
+    y = keras.layers.Dense(y_train.shape[-1], activation='softmax')(y)
+    model = keras.models.Model(x, y)
+    model.compile(loss='categorical_crossentropy', optimizer=keras.optimizers.legacy.adam.Adam(0.005), metrics=['acc'], run_eagerly=test_utils.should_run_eagerly())
+    self.assertLen(model.losses, 2)
+    if not tf.executing_eagerly():
+        self.assertLen(model.get_updates_for(x), 2)
+    history = model.fit(x_train, y_train, epochs=10, batch_size=10, validation_data=(x_train, y_train), verbose=2)
+    self.assertGreater(history.history['val_acc'][-1], 0.7)
+    (_, val_acc) = model.evaluate(x_train, y_train)
+    self.assertAlmostEqual(history.history['val_acc'][-1], val_acc)
+    predictions = model.predict(x_train)
+    self.assertEqual(predictions.shape, (x_train.shape[0], 2))
+
+----------
+
+
+
+Test Class Name: VectorClassificationIntegrationTest

@@ -1,0 +1,15 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_selector_shortcuts(self):
+    body = b'<?xml version="1.0" encoding="utf-8"?><xml><elem>value</elem></xml>'
+    response = self.response_class('http://www.example.com', body=body)
+    self.assertEqual(response.xpath('//elem/text()').getall(), response.selector.xpath('//elem/text()').getall())
+
+----------
+
+
+
+Test Class Name: XmlResponseTest

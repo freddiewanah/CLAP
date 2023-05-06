@@ -1,0 +1,21 @@
+def integer_number(self, start: int=-1000, end: int=1000) -> int:
+    """Generate random integer from start to end.
+
+        :param start: Start range.
+        :param end: End range.
+        :return: Integer.
+        """
+    return self.random.randint(start, end)
+
+----------
+
+def test_integer(self, numeric):
+    result = numeric.integer_number(-100, 100)
+    assert isinstance(result, int)
+    assert -100 <= result <= 100
+
+----------
+
+
+
+Test Class Name: TestNumbers

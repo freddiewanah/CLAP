@@ -1,0 +1,20 @@
+def rethrow(self) -> None:
+    """If there was an error on the request, raise an `HTTPError`."""
+    if self.error:
+        raise self.error
+
+----------
+
+def test_error_with_response(self):
+    resp = HTTPResponse(HTTPRequest('http://example.com/'), 403)
+    with self.assertRaises(HTTPError) as cm:
+        resp.rethrow()
+    e = cm.exception
+    self.assertEqual(str(e), 'HTTP 403: Forbidden')
+    self.assertEqual(repr(e), 'HTTP 403: Forbidden')
+
+----------
+
+
+
+Test Class Name: HTTPErrorTestCase

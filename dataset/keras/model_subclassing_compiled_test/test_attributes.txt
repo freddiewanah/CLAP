@@ -1,0 +1,53 @@
+def train_on_batch(model, inputs, targets, sample_weights=None, output_loss_metrics=None):
+    """Calculates the loss and gradient updates for one input batch.
+
+    Args:
+        model: Model whose loss has to be calculated.
+        inputs: Input batch data.
+        targets: Target batch data.
+        sample_weights: Sample weight batch data.
+        output_loss_metrics: List of metrics that are used to aggregated output
+          loss values.
+
+    Returns:
+        Dict with three items:
+          'total_loss': list with a single tensor for overall loss,
+          'output_losses': list of tensors for loss corresponding to each of the
+            model output. Could be a empty list when model has only one output.
+          'metrics': list of tensors for metric specified.
+    """
+    inputs = training_utils_v1.cast_to_model_input_dtypes(inputs, model)
+    (outs, total_loss, output_losses, masks) = _process_single_batch(model, inputs, targets, sample_weights=sample_weights, training=True, output_loss_metrics=output_loss_metrics)
+    if not isinstance(outs, list):
+        outs = [outs]
+    metrics_results = _eager_metrics_fn(model, outs, targets, sample_weights=sample_weights, masks=masks)
+    total_loss = tf.nest.flatten(total_loss)
+    return {'total_loss': total_loss, 'output_losses': output_losses, 'metrics': metrics_results}
+
+----------
+
+def test_attributes(self):
+    num_classes = (2, 3)
+    num_samples = 100
+    input_dim = 50
+    model = model_util.get_multi_io_subclass_model(num_classes=num_classes, use_bn=True)
+    x1 = np.ones((num_samples, input_dim))
+    x2 = np.ones((num_samples, input_dim))
+    y1 = np.zeros((num_samples, num_classes[0]))
+    y2 = np.zeros((num_samples, num_classes[1]))
+    self.assertEqual(model.name, 'test_model')
+    self.assertEqual(model.built, False)
+    self.assertEqual(len(model.weights), 0)
+    model.compile(loss='mse', optimizer='rmsprop', run_eagerly=test_utils.should_run_eagerly())
+    model.train_on_batch([x1, x2], [y1, y2])
+    self.assertEqual(model.built, True)
+    self.assertEqual(len(model.layers), 4)
+    self.assertEqual(len(model.weights), 10)
+    self.assertEqual(len(model.trainable_weights), 8)
+    self.assertEqual(len(model.non_trainable_weights), 2)
+
+----------
+
+
+
+Test Class Name: ModelSubclassCompiledTest

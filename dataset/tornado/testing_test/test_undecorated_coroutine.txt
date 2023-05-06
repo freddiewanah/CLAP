@@ -1,0 +1,43 @@
+def run() -> None:
+    try:
+        result = func()
+        if result is not None:
+            from tornado.gen import convert_yielded
+            result = convert_yielded(result)
+    except Exception:
+        fut = Future()
+        future_cell[0] = fut
+        future_set_exc_info(fut, sys.exc_info())
+    else:
+        if is_future(result):
+            future_cell[0] = result
+        else:
+            fut = Future()
+            future_cell[0] = fut
+            fut.set_result(result)
+    assert future_cell[0] is not None
+    self.add_future(future_cell[0], lambda future: self.stop())
+
+----------
+
+@unittest.skipIf(platform.python_implementation() == 'PyPy', 'pypy destructor warnings cannot be silenced')
+@unittest.skipIf(sys.version_info >= (3, 12), 'py312 has its own check for test case returns')
+def test_undecorated_coroutine(self):
+
+    class Test(AsyncTestCase):
+
+        async def test_coro(self):
+            pass
+    test = Test('test_coro')
+    result = unittest.TestResult()
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        test.run(result)
+    self.assertEqual(len(result.errors), 1)
+    self.assertIn('should be decorated', result.errors[0][1])
+
+----------
+
+
+
+Test Class Name: Test

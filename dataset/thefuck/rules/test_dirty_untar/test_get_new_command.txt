@@ -1,0 +1,29 @@
+@git_support
+def get_new_command(command):
+    command_parts = command.script_parts[:]
+    upstream_option_index = _get_upstream_option_index(command_parts)
+    if upstream_option_index is not None:
+        command_parts.pop(upstream_option_index)
+        if len(command_parts) > upstream_option_index:
+            command_parts.pop(upstream_option_index)
+    else:
+        push_idx = command_parts.index('push') + 1
+        while len(command_parts) > push_idx and command_parts[len(command_parts) - 1][0] != '-':
+            command_parts.pop(len(command_parts) - 1)
+    arguments = re.findall('git push (.*)', command.output)[-1].replace("'", "\\'").strip()
+    return replace_argument(' '.join(command_parts), 'push', 'push {}'.format(arguments))
+
+----------
+
+@parametrize_extensions
+@parametrize_filename
+@parametrize_script
+def test_get_new_command(ext, tar_error, filename, unquoted, quoted, script, fixed):
+    tar_error(unquoted.format(ext))
+    assert get_new_command(Command(script.format(filename.format(ext)), '')) == fixed.format(dir=quoted.format(''), filename=filename.format(ext))
+
+----------
+
+
+
+Test Class Name: default

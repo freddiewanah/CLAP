@@ -1,0 +1,22 @@
+@gen.coroutine
+def f():
+    yield gen.moment
+    raise gen.Return((1, 2))
+
+----------
+
+@gen_test
+def test_sync_gen_return(self):
+
+    @gen.coroutine
+    def f():
+        raise gen.Return(42)
+    result = (yield f())
+    self.assertEqual(result, 42)
+    self.finished = True
+
+----------
+
+
+
+Test Class Name: GenCoroutineTest

@@ -1,0 +1,37 @@
+def sleep(duration: float) -> 'Future[None]':
+    """Return a `.Future` that resolves after the given number of seconds.
+
+    When used with ``yield`` in a coroutine, this is a non-blocking
+    analogue to `time.sleep` (which should not be used in coroutines
+    because it is blocking)::
+
+        yield gen.sleep(0.5)
+
+    Note that calling this function on its own does nothing; you must
+    wait on the `.Future` it returns (usually by yielding it).
+
+    .. versionadded:: 4.1
+    """
+    f = _create_future()
+    IOLoop.current().call_later(duration, lambda : future_set_result_unless_cancelled(f, None))
+    return f
+
+----------
+
+def test_timeout(self):
+
+    @gen_test(timeout=0.1)
+    def test(self):
+        yield gen.sleep(1)
+    try:
+        test(self)
+        self.fail('did not get expected exception')
+    except ioloop.TimeoutError:
+        self.assertIn('gen.sleep(1)', traceback.format_exc())
+    self.finished = True
+
+----------
+
+
+
+Test Class Name: GenTest

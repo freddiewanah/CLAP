@@ -1,0 +1,30 @@
+def get(self, key, def_val=None):
+    try:
+        return super().get(key, def_val)[-1]
+    except IndexError:
+        return None
+
+----------
+
+@defer.inlineCallbacks
+def test_download_gzip_response(self):
+    crawler = get_crawler(SingleRequestSpider, self.settings_dict)
+    body = b'1' * 100
+    request = Request(self.mockserver.url('/payload'), method='POST', body=body, meta={'download_maxsize': 50})
+    yield crawler.crawl(seed=request)
+    failure = crawler.spider.meta['failure']
+    self.assertIsInstance(failure.value, defer.CancelledError)
+    raise unittest.SkipTest('xpayload fails on PY3')
+    request.headers.setdefault(b'Accept-Encoding', b'gzip,deflate')
+    request = request.replace(url=self.mockserver.url('/xpayload'))
+    yield crawler.crawl(seed=request)
+    failure = crawler.spider.meta.get('failure')
+    self.assertTrue(failure is None)
+    reason = crawler.spider.meta['close_reason']
+    self.assertTrue(reason, 'finished')
+
+----------
+
+
+
+Test Class Name: Http11MockServerTestCase

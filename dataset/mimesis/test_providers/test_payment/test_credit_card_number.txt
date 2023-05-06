@@ -1,0 +1,45 @@
+def credit_card_number(self, card_type: t.Optional[CardType]=None) -> str:
+    """Generate a random credit card number.
+
+        :param card_type: Issuing Network. Default is Visa.
+        :return: Credit card number.
+        :raises NotImplementedError: if card_type not supported.
+
+        :Example:
+            4455 5299 1152 2450
+        """
+    length = 16
+    regex = re.compile('(\\d{4})(\\d{4})(\\d{4})(\\d{4})')
+    if card_type is None:
+        card_type = get_random_item(CardType, rnd=self.random)
+    if card_type == CardType.VISA:
+        number = self.random.randint(4000, 4999)
+    elif card_type == CardType.MASTER_CARD:
+        number = self.random.choice([self.random.randint(2221, 2720), self.random.randint(5100, 5599)])
+    elif card_type == CardType.AMERICAN_EXPRESS:
+        number = self.random.choice([34, 37])
+        length = 15
+        regex = re.compile('(\\d{4})(\\d{6})(\\d{5})')
+    else:
+        raise NonEnumerableError(CardType)
+    str_num = str(number)
+    while len(str_num) < length - 1:
+        str_num += self.random.choice(string.digits)
+    groups = regex.search(str_num + luhn_checksum(str_num)).groups()
+    card = ' '.join(groups)
+    return card
+
+----------
+
+@pytest.mark.parametrize('card_type', [CardType.VISA, CardType.MASTER_CARD, CardType.AMERICAN_EXPRESS])
+def test_credit_card_number(self, payment, card_type):
+    result = payment.credit_card_number(card_type=card_type)
+    assert re.match(patterns.CREDIT_CARD_REGEX, result)
+    with pytest.raises(NonEnumerableError):
+        payment.credit_card_number(card_type='nil')
+
+----------
+
+
+
+Test Class Name: TestPayment

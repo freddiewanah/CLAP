@@ -1,0 +1,33 @@
+def find_offsets(filename: str, num_chunks: int) -> tp.List[int]:
+    """
+    given a file and a number of chuncks, find the offsets in the file
+    to be able to chunk around full lines.
+    """
+    with open(filename, 'r', encoding='utf-8') as f:
+        size = os.fstat(f.fileno()).st_size
+        chunk_size = size // num_chunks
+        offsets = [0 for _ in range(num_chunks + 1)]
+        for i in range(1, num_chunks):
+            f.seek(chunk_size * i)
+            _safe_readline(f)
+            offsets[i] = f.tell()
+        offsets[-1] = size
+        return offsets
+
+----------
+
+def test_find_offsets(self):
+    from fairseq.file_chunker_utils import find_offsets
+    offsets = find_offsets(self._tmpfile, self._num_splits)
+    self.assertEqual(len(offsets), self._num_splits + 1)
+    (zero, *real_offsets, last) = offsets
+    self.assertEqual(zero, 0)
+    for (i, o) in enumerate(real_offsets):
+        self.assertEqual(o, self._num_bytes + (i + 1) * self._num_bytes * self._num_lines / self._num_splits)
+    self.assertEqual(last, self._num_bytes * self._num_lines)
+
+----------
+
+
+
+Test Class Name: TestFileChunker

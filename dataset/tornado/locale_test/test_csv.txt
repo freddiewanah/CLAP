@@ -1,0 +1,23 @@
+def translate(self, message: str, plural_message: Optional[str]=None, count: Optional[int]=None) -> str:
+    """Returns the translation for the given message for this locale.
+
+        If ``plural_message`` is given, you must also provide
+        ``count``. We return ``plural_message`` when ``count != 1``,
+        and we return the singular form for the given message when
+        ``count == 1``.
+        """
+    raise NotImplementedError()
+
+----------
+
+def test_csv(self):
+    tornado.locale.load_translations(os.path.join(os.path.dirname(__file__), 'csv_translations'))
+    locale = tornado.locale.get('fr_FR')
+    self.assertTrue(isinstance(locale, tornado.locale.CSVLocale))
+    self.assertEqual(locale.translate('school'), 'école')
+
+----------
+
+
+
+Test Class Name: TranslationLoaderTest

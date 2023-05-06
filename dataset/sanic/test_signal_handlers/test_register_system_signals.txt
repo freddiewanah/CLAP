@@ -1,0 +1,29 @@
+def run(app, level=logging.DEBUG):
+
+    @app.after_server_start
+    async def stop(app, _):
+        app.stop()
+    with caplog.at_level(level):
+        Sanic.serve()
+    return caplog.record_tuples
+
+----------
+
+@pytest.mark.skipif(os.name == 'nt', reason='May hang CI on py38/windows')
+def test_register_system_signals(app):
+    """Test if sanic register system signals"""
+
+    @app.route('/hello')
+    async def hello_route(request):
+        return HTTPResponse()
+    app.listener('after_server_start')(stop)
+    app.listener('before_server_start')(set_loop)
+    app.listener('after_server_stop')(after)
+    app.run(HOST, PORT, single_process=True)
+    assert calledq.get() is True
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,45 @@
+@staticmethod
+def stock_image(width: t.Union[int, str]=1920, height: t.Union[int, str]=1080, keywords: t.Optional[Keywords]=None, writable: bool=False) -> t.Union[str, bytes]:
+    """Generate random stock image (JPG/JPEG) hosted on Unsplash.
+
+        See \xabRandom search term\xbb on https://source.unsplash.com/
+        for more details.
+
+        .. note:: This method required an active HTTP connection
+            if you want to get a writable object.
+
+        :param width: Width of the image.
+        :param height: Height of the image.
+        :param keywords: List of search keywords.
+        :param writable: Return image as sequence ob bytes.
+        :return: Link to the image.
+        """
+    if keywords is not None:
+        keywords_str = ','.join(keywords)
+    else:
+        keywords_str = ''
+    url = f'https://source.unsplash.com/{width}x{height}?{keywords_str}'
+    if writable:
+        try:
+            response = urllib.request.urlopen(url)
+            content: bytes = response.read()
+            return content
+        except urllib.error.URLError:
+            raise urllib.error.URLError('Required an active HTTP connection')
+    return url
+
+----------
+
+@pytest.mark.parametrize('w, h, keywords, writable, res_type', [(900, 900, ['love', 'passion', 'death'], False, str), (800, 800, {'love', 'passion', 'death'}, False, str), (800, 800, None, False, str)])
+def test_stock_image(self, net, w, h, keywords, writable, res_type):
+    result = net.stock_image(width=w, height=h, keywords=keywords, writable=writable)
+    assert isinstance(result, res_type)
+    if res_type == str:
+        assert re.match(patterns.STOCK_IMAGE, result)
+        assert result.endswith('?' + ','.join(keywords or []))
+
+----------
+
+
+
+Test Class Name: TestInternet

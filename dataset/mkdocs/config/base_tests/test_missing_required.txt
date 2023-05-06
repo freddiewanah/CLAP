@@ -1,0 +1,16 @@
+def validate(self, value: object) -> T:
+    return self.run_validation(value)
+
+----------
+
+def test_missing_required(self):
+    conf = defaults.MkDocsConfig()
+    (errors, warnings) = conf.validate()
+    self.assertEqual(errors, [('site_name', ValidationError('Required configuration not provided.'))])
+    self.assertEqual(warnings, [])
+
+----------
+
+
+
+Test Class Name: ConfigBaseTests

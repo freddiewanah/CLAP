@@ -1,0 +1,56 @@
+def apply_deltas(self, deltas, boxes):
+    """
+        Apply transformation `deltas` (dx, dy, dw, dh) to `boxes`.
+
+        Args:
+            deltas (Tensor): transformation deltas of shape (N, k*4), where k >= 1.
+                deltas[i] represents k potentially different class-specific
+                box transformations for the single box boxes[i].
+            boxes (Tensor): boxes to transform, of shape (N, 4)
+        """
+    deltas = deltas.float()
+    boxes = boxes.to(deltas.dtype)
+    widths = boxes[:, 2] - boxes[:, 0]
+    heights = boxes[:, 3] - boxes[:, 1]
+    ctr_x = boxes[:, 0] + 0.5 * widths
+    ctr_y = boxes[:, 1] + 0.5 * heights
+    (wx, wy, ww, wh) = self.weights
+    dx = deltas[:, 0::4] / wx
+    dy = deltas[:, 1::4] / wy
+    dw = deltas[:, 2::4] / ww
+    dh = deltas[:, 3::4] / wh
+    dw = torch.clamp(dw, max=self.scale_clamp)
+    dh = torch.clamp(dh, max=self.scale_clamp)
+    pred_ctr_x = dx * widths[:, None] + ctr_x[:, None]
+    pred_ctr_y = dy * heights[:, None] + ctr_y[:, None]
+    pred_w = torch.exp(dw) * widths[:, None]
+    pred_h = torch.exp(dh) * heights[:, None]
+    x1 = pred_ctr_x - 0.5 * pred_w
+    y1 = pred_ctr_y - 0.5 * pred_h
+    x2 = pred_ctr_x + 0.5 * pred_w
+    y2 = pred_ctr_y + 0.5 * pred_h
+    pred_boxes = torch.stack((x1, y1, x2, y2), dim=-1)
+    return pred_boxes.reshape(deltas.shape)
+
+----------
+
+def test_reconstruction(self):
+    weights = (5, 5, 10, 10)
+    b2b_tfm = Box2BoxTransform(weights=weights)
+    src_boxes = random_boxes(10)
+    dst_boxes = random_boxes(10)
+    devices = [torch.device('cpu')]
+    if torch.cuda.is_available():
+        devices.append(torch.device('cuda'))
+    for device in devices:
+        src_boxes = src_boxes.to(device=device)
+        dst_boxes = dst_boxes.to(device=device)
+        deltas = b2b_tfm.get_deltas(src_boxes, dst_boxes)
+        dst_boxes_reconstructed = b2b_tfm.apply_deltas(deltas, src_boxes)
+        self.assertTrue(torch.allclose(dst_boxes, dst_boxes_reconstructed))
+
+----------
+
+
+
+Test Class Name: TestBox2BoxTransform

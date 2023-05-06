@@ -1,0 +1,21 @@
+def get(self, name: str, default: Optional[Any]=None) -> Optional[Any]:
+    """Return the first value, either the default or actual"""
+    return super().get(name, [default])[0]
+
+----------
+
+def test_request_multipart_file_with_json_content_type(app):
+
+    @app.route('/', methods=['POST'])
+    async def post(request):
+        return text('OK')
+    payload = '------sanic\r\nContent-Disposition: form-data; name="file"; filename="test.json"\r\nContent-Type: application/json\r\nContent-Length: 0\r\n\r\n------sanic--'
+    headers = {'content-type': 'multipart/form-data; boundary=------sanic'}
+    (request, _) = app.test_client.post(data=payload, headers=headers)
+    assert request.files.get('file').type == 'application/json'
+
+----------
+
+
+
+Test Class Name: Bar

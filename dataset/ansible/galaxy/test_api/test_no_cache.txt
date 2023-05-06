@@ -1,0 +1,27 @@
+def write(data):
+    if not isinstance(data, basestring):
+        data = str(data)
+    if isinstance(fp, file) and isinstance(data, unicode) and (fp.encoding is not None):
+        errors = getattr(fp, 'errors', None)
+        if errors is None:
+            errors = 'strict'
+        data = data.encode(fp.encoding, errors)
+    fp.write(data)
+
+----------
+
+def test_no_cache(cache_dir):
+    cache_file = os.path.join(cache_dir, 'api.json')
+    with open(cache_file, mode='w') as fd:
+        fd.write('random')
+    api = GalaxyAPI(None, 'test', 'https://galaxy.ansible.com/')
+    assert api._cache is None
+    with open(cache_file) as fd:
+        actual_cache = fd.read()
+    assert actual_cache == 'random'
+
+----------
+
+
+
+Test Class Name: default

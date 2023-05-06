@@ -1,0 +1,18 @@
+def cryptocurrency_iso_code(self) -> str:
+    """Get symbol of random cryptocurrency.
+
+        :return: Symbol of cryptocurrency.
+        """
+    return self.random.choice(CRYPTOCURRENCY_ISO_CODES)
+
+----------
+
+def test_cryptocurrency_iso_code(self, _finance):
+    result = _finance.cryptocurrency_iso_code()
+    assert result in CRYPTOCURRENCY_ISO_CODES
+
+----------
+
+
+
+Test Class Name: TestFinance

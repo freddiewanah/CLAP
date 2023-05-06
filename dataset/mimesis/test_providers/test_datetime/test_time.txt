@@ -1,0 +1,19 @@
+def time(self) -> Time:
+    """Generate a random time object.
+
+        :return: ``datetime.time`` object.
+        """
+    random_time = time(self.random.randint(0, 23), self.random.randint(0, 59), self.random.randint(0, 59), self.random.randint(0, 999999))
+    return random_time
+
+----------
+
+def test_time(self, dt):
+    default = dt.time()
+    assert isinstance(default, datetime.time)
+
+----------
+
+
+
+Test Class Name: TestDatetime

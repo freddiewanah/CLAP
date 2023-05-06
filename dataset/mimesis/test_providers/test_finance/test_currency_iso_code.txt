@@ -1,0 +1,25 @@
+def currency_iso_code(self, allow_random: bool=False) -> str:
+    """Get code of the currency for current locale.
+
+        :param allow_random: Get a random ISO code.
+        :return: Currency code.
+        """
+    code: str = self.extract(['currency-code'])
+    if allow_random:
+        return self.random.choice(CURRENCY_ISO_CODES)
+    return code
+
+----------
+
+def test_currency_iso_code(self, finance):
+    result1 = finance.currency_iso_code()
+    result2 = finance.currency_iso_code()
+    assert result1 == result2
+    result = finance.currency_iso_code(allow_random=True)
+    assert result in CURRENCY_ISO_CODES
+
+----------
+
+
+
+Test Class Name: TestFinance

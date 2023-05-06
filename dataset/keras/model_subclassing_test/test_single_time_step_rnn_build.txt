@@ -1,0 +1,39 @@
+def lstm():
+    """LSTM model."""
+    inputs = keras.Input((None, 3))
+    x = keras.layers.LSTM(4, return_sequences=True)(inputs)
+    x = keras.layers.LSTM(3, return_sequences=True)(x)
+    x = keras.layers.LSTM(2, return_sequences=False)(x)
+    outputs = keras.layers.Dense(2)(x)
+    model = keras.Model(inputs, outputs)
+    return ModelFn(model, (None, 4, 3), (None, 2))
+
+----------
+
+def test_single_time_step_rnn_build(self):
+    dim = 4
+    timesteps = 1
+    batch_input_shape = (None, timesteps, dim)
+    units = 3
+
+    class SimpleRNNModel(keras.Model):
+
+        def __init__(self):
+            super().__init__()
+            self.lstm = keras.layers.LSTM(units)
+
+        def call(self, inputs):
+            return self.lstm(inputs)
+    model = SimpleRNNModel()
+    self.assertFalse(model.built, 'Model should not have been built')
+    self.assertFalse(model.weights, 'Model should have no weights since it has not been built.')
+    model.build(batch_input_shape)
+    self.assertTrue(model.weights, 'Model should have weights now that it has been properly built.')
+    self.assertTrue(model.built, 'Model should be built after calling `build`.')
+    model(tf.ones((32, timesteps, dim)))
+
+----------
+
+
+
+Test Class Name: default

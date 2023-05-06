@@ -1,0 +1,28 @@
+def cpr(self) -> str:
+    """Generate a random CPR number (Central Person Registry).
+
+        :return: CPR number.
+
+        :Example:
+            0405420694
+        """
+    date = self._datetime.date(start=1858, end=2021)
+    cpr_date = f'{date:%d%m%y}'
+    century_selector = self._calculate_century_selector(date.year)
+    cpr_century = f'{cpr_date}{century_selector}'
+    (serial_number, checksum) = self._generate_serial_checksum(cpr_century)
+    cpr_nr = f'{cpr_century}{serial_number}{checksum}'
+    return cpr_nr
+
+----------
+
+def test_cpr(denmark):
+    cpr_number = denmark.cpr()
+    assert cpr_number is not None
+    assert len(cpr_number) == 10
+
+----------
+
+
+
+Test Class Name: default

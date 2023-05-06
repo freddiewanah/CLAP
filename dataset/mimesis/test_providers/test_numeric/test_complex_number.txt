@@ -1,0 +1,31 @@
+def complex_number(self, start_real: float=0.0, end_real: float=1.0, start_imag: float=0.0, end_imag: float=1.0, precision_real: int=15, precision_imag: int=15) -> complex:
+    """Generate a random complex number.
+
+        :param start_real: Start real range.
+        :param end_real: End real range.
+        :param start_imag: Start imaginary range.
+        :param end_imag: End imaginary range.
+        :param precision_real:  Round a real part of
+            number to a given precision.
+        :param precision_imag:  Round the imaginary part of
+            number to a given precision.
+        :return: Complex numbers.
+        """
+    real_part = self.random.uniform(start_real, end_real, precision_real)
+    imag_part = self.random.uniform(start_imag, end_imag, precision_imag)
+    return complex(real_part, imag_part)
+
+----------
+
+@pytest.mark.parametrize('sr, er, si, ei, pr, pi', [(1.2, 10, 1, 2.4, 15, 15), (10.4, 20.0, 2.3, 10, 10, 10), (20.3, 30.8, 2.4, 4.5, 12, 12)])
+def test_complex_number(self, numeric, sr, er, si, ei, pr, pi):
+    result = numeric.complex_number(start_real=sr, end_real=er, start_imag=si, end_imag=ei, precision_real=pr, precision_imag=pi)
+    assert isinstance(result, complex)
+    assert len(str(result.real).split('.')[1]) <= pr
+    assert len(str(result.imag).split('.')[1]) <= pi
+
+----------
+
+
+
+Test Class Name: TestNumbers

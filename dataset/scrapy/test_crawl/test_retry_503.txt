@@ -1,0 +1,33 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_retry_503(self):
+    crawler = get_crawler(SimpleSpider)
+    with LogCapture() as log:
+        yield crawler.crawl(self.mockserver.url('/status?n=503'), mockserver=self.mockserver)
+    self._assert_retried(log)
+
+----------
+
+def _assert_retried(self, log):
+    self.assertEqual(str(log).count('Retrying'), 2)
+    self.assertEqual(str(log).count('Gave up retrying'), 1)
+
+Test Class Name: CrawlTestCase

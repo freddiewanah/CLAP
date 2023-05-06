@@ -1,0 +1,69 @@
+def update_config(self, config: Union[bytes, str, dict, Any]):
+    """
+        Update app.config.
+
+        .. note::
+
+            Only upper case settings are considered
+
+        You can upload app config by providing path to py file
+        holding settings.
+
+        .. code-block:: python
+
+            # /some/py/file
+            A = 1
+            B = 2
+
+        .. code-block:: python
+
+            config.update_config("${some}/py/file")
+
+        Yes you can put environment variable here, but they must be provided
+        in format: ``${some_env_var}``, and mark that ``$some_env_var`` is
+        treated as plain string.
+
+        You can upload app config by providing dict holding settings.
+
+        .. code-block:: python
+
+            d = {"A": 1, "B": 2}
+            config.update_config(d)
+
+        You can upload app config by providing any object holding settings,
+        but in such case config.__dict__ will be used as dict holding settings.
+
+        .. code-block:: python
+
+            class C:
+                A = 1
+                B = 2
+
+            config.update_config(C)
+
+        `See user guide re: config
+        <https://sanicframework.org/guide/deployment/configuration.html>`__
+        """
+    if isinstance(config, (bytes, str, Path)):
+        config = load_module_from_file_location(location=config)
+    if not isinstance(config, dict):
+        cfg = {}
+        if not isclass(config):
+            cfg.update({key: getattr(config, key) for key in config.__class__.__dict__.keys()})
+        config = dict(config.__dict__)
+        config.update(cfg)
+    config = dict(filter(lambda i: i[0].isupper(), config.items()))
+    self.update(config)
+
+----------
+
+@pytest.mark.parametrize('conf_object', [_test_setting_as_dict, _test_setting_as_class, _test_setting_as_module], ids=['from_dict', 'from_class', 'from_file'])
+def test_update(app: Sanic, conf_object):
+    app.update_config(conf_object)
+    assert app.config['TEST_SETTING_VALUE'] == 1
+
+----------
+
+
+
+Test Class Name: Config

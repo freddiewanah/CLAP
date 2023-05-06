@@ -1,0 +1,66 @@
+def apply_gradients(self, grads_and_vars, name=None):
+    """Apply gradients to variables.
+
+        Args:
+          grads_and_vars: List of `(gradient, variable)` pairs.
+          name: string, defaults to None. The name of the namescope to
+            use when creating variables. If None, `self.name` will be used.
+
+        Returns:
+          A `tf.Variable`, representing the current iteration.
+
+        Raises:
+          TypeError: If `grads_and_vars` is malformed.
+        """
+    self._compute_current_learning_rate()
+    grads_and_vars = list(grads_and_vars)
+    if len(grads_and_vars) == 0:
+        return self._iterations
+    (grads, trainable_variables) = zip(*grads_and_vars)
+    scope_name = name or self.name or 'optimizer'
+    with tf.name_scope(scope_name):
+        with tf.init_scope():
+            self.build(trainable_variables)
+        grads_and_vars = list(zip(grads, trainable_variables))
+        grads_and_vars = optimizer_utils.filter_empty_gradients(grads_and_vars)
+        if len(list(grads_and_vars)) == 0:
+            return self._iterations
+        (grads, trainable_variables) = zip(*grads_and_vars)
+        grads = self._clip_gradients(grads)
+        grads = self._deduplicate_sparse_grad(grads)
+        self._apply_weight_decay(trainable_variables)
+        grads_and_vars = list(zip(grads, trainable_variables))
+        iteration = self._internal_apply_gradients(grads_and_vars)
+        for variable in trainable_variables:
+            if variable.constraint is not None:
+                variable.assign(variable.constraint(variable))
+        return iteration
+
+----------
+
+def testDeferredRestorationUsageEager(self):
+    """An idiomatic eager execution example."""
+    num_training_steps = 10
+    checkpoint_directory = self.get_temp_dir()
+    for training_continuation in range(3):
+        with self.test_scope():
+            model = Subclassed()
+            optimizer = adam.Adam(0.001)
+            root = tf.train.Checkpoint(optimizer=optimizer, model=model)
+            manager = tf.train.CheckpointManager(root, checkpoint_directory, max_to_keep=2)
+            root.restore(manager.latest_checkpoint)
+            for _ in range(num_training_steps):
+                input_value = tf.constant([[3.0]])
+                with tf.GradientTape() as tape:
+                    loss = model(input_value)
+                variables = model.trainable_variables
+                gradients = tape.gradient(loss, variables)
+                optimizer.apply_gradients(zip(gradients, variables))
+            manager.save()
+            self.assertEqual((training_continuation + 1) * num_training_steps, root.optimizer.iterations.numpy())
+
+----------
+
+
+
+Test Class Name: CheckpointingTests

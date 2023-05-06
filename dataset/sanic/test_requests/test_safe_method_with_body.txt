@@ -1,0 +1,24 @@
+def get(self, name: str, default: Optional[Any]=None) -> Optional[Any]:
+    """Return the first value, either the default or actual"""
+    return super().get(name, [default])[0]
+
+----------
+
+def test_safe_method_with_body(app):
+
+    @app.get('/', ignore_body=False)
+    async def handler(request):
+        return text('OK')
+    payload = {'test': 'OK'}
+    headers = {'content-type': 'application/json'}
+    data = json_dumps(payload)
+    (request, response) = app.test_client.request('/', http_method='get', data=data, headers=headers)
+    assert request.body == data.encode('utf-8')
+    assert request.json.get('test') == 'OK'
+    assert response.body == b'OK'
+
+----------
+
+
+
+Test Class Name: Bar

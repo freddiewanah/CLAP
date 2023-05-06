@@ -1,0 +1,22 @@
+def cvv(self) -> str:
+    """Generate a random CVV.
+
+        :return: CVV code.
+
+        :Example:
+            069
+        """
+    return f'{self.random.randint(1, 999):03d}'
+
+----------
+
+def test_cvv(self, payment):
+    result = payment.cvv()
+    assert isinstance(result, str)
+    assert len(result) == 3
+
+----------
+
+
+
+Test Class Name: TestPayment

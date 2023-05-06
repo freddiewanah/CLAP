@@ -1,0 +1,22 @@
+def main(args=None):
+    ConsoleCLI.cli_executor(args)
+
+----------
+
+def test_sunos_service_start(mocked_sunos_service, capfd):
+    """
+    test SunOS Service Start
+    """
+    set_module_args({'name': 'environment', 'state': 'started'})
+    with pytest.raises(SystemExit):
+        service.main()
+    (out, dummy) = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']
+
+----------
+
+
+
+Test Class Name: default

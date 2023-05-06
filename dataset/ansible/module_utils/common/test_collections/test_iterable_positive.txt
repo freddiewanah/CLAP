@@ -1,0 +1,21 @@
+def is_iterable(seq, include_strings=False):
+    """Identify whether the input is an iterable."""
+    if not include_strings and is_string(seq):
+        return False
+    try:
+        iter(seq)
+        return True
+    except TypeError:
+        return False
+
+----------
+
+@pytest.mark.parametrize('seq', ([], (), {}, set(), frozenset(), IterableStub()))
+def test_iterable_positive(seq):
+    assert is_iterable(seq)
+
+----------
+
+
+
+Test Class Name: FakeAnsibleVaultEncryptedUnicode

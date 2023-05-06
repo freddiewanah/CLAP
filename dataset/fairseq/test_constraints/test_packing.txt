@@ -1,0 +1,57 @@
+def pack_constraints(batch_constraints: List[List[torch.Tensor]]) -> torch.Tensor:
+    """Takes a list of list of constraints in tensor form (a list of
+    tensor constraints for each sentence) and transforms it into a
+    packed Tensor. For example, here is a batch of size 3 with 3, 0,
+    and 1 constraints:
+
+        [ [ [3 1 2], [3], [4 5 6 7], ]
+          [],
+          [ [1 8 9 10 1 4 11 12], ]
+        ]
+
+    Its corresponding packed structure is:
+
+        [ [ 3  3  1  2  0  3  0  4  5  6  7  0],
+          [ 0  0  0  0  0  0  0  0  0  0  0  0],
+          [ 1  1  8  9 10  1  4 11 12  0  0  0] ]
+
+    The packed tensor has shape (batch size, maxlen), where
+    maxlen is defined below. Each row contains concatenated
+    constraint tokens for that sentence, with 0 appended after
+    each constraint. The first item in each row is the number
+    of constraints for that sentence. So maxlen is the maximum
+    of
+
+    (number of constraints) + (sum length of constraints) + 1.
+
+    across all sentences in the batch.
+    """
+    max_constraints_len = 1
+    for sentence_constraints in batch_constraints:
+        if len(sentence_constraints):
+            constraints_len = 1 + sum([c.size(0) for c in sentence_constraints]) + len(sentence_constraints)
+            max_constraints_len = max(max_constraints_len, constraints_len)
+    batch_size = len(batch_constraints)
+    constraints_tensor = torch.zeros((batch_size, max_constraints_len)).long()
+    for (i, sentence_constraints) in enumerate(batch_constraints):
+        constraints_tensor[i, 0] = len(sentence_constraints)
+        offset = 1
+        for (j, constraint) in enumerate(sentence_constraints):
+            this_len = constraint.size(0)
+            constraints_tensor[i, offset:offset + this_len] = constraint
+            offset += this_len + 1
+    return constraints_tensor.long()
+
+----------
+
+def test_packing(self):
+    """Ensures the list of lists of tensors gets packed correctly."""
+    for (batch_constraints, expected_tensor) in self.examples:
+        packed = pack_constraints(batch_constraints)
+        assert torch.equal(packed, expected_tensor)
+
+----------
+
+
+
+Test Class Name: TestHelperRoutines

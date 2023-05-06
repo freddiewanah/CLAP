@@ -1,0 +1,21 @@
+def generate_sentence(self) -> str:
+    """Generate sentence from the parts.
+
+        :return: Sentence.
+        """
+    sentences = self.extract(['sentence'])
+    sentence = [self.random.choice(sentences[k]) for k in ('head', 'p1', 'p2', 'tail')]
+    return ' '.join(sentence)
+
+----------
+
+def test_generate_sentence(russia):
+    result = russia.generate_sentence()
+    assert len(result) >= 20
+    assert isinstance(result, str)
+
+----------
+
+
+
+Test Class Name: default

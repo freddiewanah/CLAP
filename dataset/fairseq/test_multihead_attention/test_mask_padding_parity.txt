@@ -1,0 +1,28 @@
+def type_as(a, b):
+    return a
+
+----------
+
+def test_mask_padding_parity():
+
+    def old_padding_code(key_padding_mask, attn_mask):
+        if attn_mask is not None:
+            attn_mask = torch.cat([attn_mask, attn_mask.new_zeros(attn_mask.size(0), 1)], dim=1)
+        if key_padding_mask is not None:
+            key_padding_mask = torch.cat([key_padding_mask, torch.zeros(key_padding_mask.size(0), 1).type_as(key_padding_mask)], dim=1)
+        return (key_padding_mask, attn_mask)
+    mha = MultiheadAttention(embed_dim=8, num_heads=2, dropout=0.0, add_bias_kv=True, add_zero_attn=True)
+    key_padding_mask = torch.rand((8, 64))
+    attn_mask = torch.rand((64, 64))
+    (kp_mask_orig, a_mask_orig) = old_padding_code(key_padding_mask, attn_mask)
+    (kp_mask_new, a_mask_new) = mha._pad_masks(key_padding_mask, attn_mask)
+    assert kp_mask_orig.size() == kp_mask_new.size()
+    assert a_mask_orig.size() == a_mask_new.size()
+    assert torch.equal(kp_mask_orig, kp_mask_new)
+    assert torch.equal(a_mask_orig, a_mask_new)
+
+----------
+
+
+
+Test Class Name: default

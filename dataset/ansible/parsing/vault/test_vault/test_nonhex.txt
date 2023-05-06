@@ -1,0 +1,14 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_nonhex(self):
+    b_data = b'6z36316566653264333665333637623064303639353237620a636366633565663263336335656532'
+    self.assertRaisesRegex(vault.AnsibleVaultFormatError, '.*Vault format unhexlify error.*Non-hexadecimal digit found', vault._unhexlify, b_data)
+
+----------
+
+
+
+Test Class Name: TestUnhexlify

@@ -1,0 +1,29 @@
+def do_request(server, content):
+    request = FakeRequest(content + ' HTTP/1.1')
+    server.RequestHandlerClass(request, ('127.0.0.1', 0), server)
+    response = request.out_file.getvalue()
+    (headers, _, content) = response.partition(b'\r\n\r\n')
+    (status, _, headers) = headers.partition(b'\r\n')
+    status = status.split(None, 1)[1].decode()
+    headers = email.message_from_bytes(headers)
+    headers['_status'] = status
+    return (headers, content.decode())
+
+----------
+
+@tempdir()
+def test_bad_error_handler(self, site_dir):
+    self.maxDiff = None
+    with testing_server(site_dir) as server:
+        server.error_handler = lambda code: 0 / 0
+        with self.assertLogs('mkdocs.livereload') as cm:
+            (headers, output) = do_request(server, 'GET /missing')
+        self.assertEqual(headers['_status'], '404 Not Found')
+        self.assertIn('404', output)
+        self.assertRegex('\n'.join(cm.output), 'Failed to render an error message[\\s\\S]+/missing.+code 404')
+
+----------
+
+
+
+Test Class Name: BuildTests

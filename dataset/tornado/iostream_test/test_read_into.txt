@@ -1,0 +1,61 @@
+def sleep(duration: float) -> 'Future[None]':
+    """Return a `.Future` that resolves after the given number of seconds.
+
+    When used with ``yield`` in a coroutine, this is a non-blocking
+    analogue to `time.sleep` (which should not be used in coroutines
+    because it is blocking)::
+
+        yield gen.sleep(0.5)
+
+    Note that calling this function on its own does nothing; you must
+    wait on the `.Future` it returns (usually by yielding it).
+
+    .. versionadded:: 4.1
+    """
+    f = _create_future()
+    IOLoop.current().call_later(duration, lambda : future_set_result_unless_cancelled(f, None))
+    return f
+
+----------
+
+@gen_test
+def test_read_into(self: typing.Any):
+    (rs, ws) = (yield self.make_iostream_pair())
+
+    def sleep_some():
+        self.io_loop.run_sync(lambda : gen.sleep(0.05))
+    try:
+        buf = bytearray(10)
+        fut = rs.read_into(buf)
+        ws.write(b'hello')
+        yield gen.sleep(0.05)
+        self.assertTrue(rs.reading())
+        ws.write(b'world!!')
+        data = (yield fut)
+        self.assertFalse(rs.reading())
+        self.assertEqual(data, 10)
+        self.assertEqual(bytes(buf), b'helloworld')
+        fut = rs.read_into(buf)
+        yield gen.sleep(0.05)
+        self.assertTrue(rs.reading())
+        ws.write(b'1234567890')
+        data = (yield fut)
+        self.assertFalse(rs.reading())
+        self.assertEqual(data, 10)
+        self.assertEqual(bytes(buf), b'!!12345678')
+        buf = bytearray(4)
+        ws.write(b'abcdefghi')
+        data = (yield rs.read_into(buf))
+        self.assertEqual(data, 4)
+        self.assertEqual(bytes(buf), b'90ab')
+        data = (yield rs.read_bytes(7))
+        self.assertEqual(data, b'cdefghi')
+    finally:
+        ws.close()
+        rs.close()
+
+----------
+
+
+
+Test Class Name: IOStreamPairContext

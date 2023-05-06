@@ -1,0 +1,28 @@
+def replace(m: Match[str]) -> str:
+    groups = m.groupdict()
+    back_slashes = groups['backslashes']
+    if len(back_slashes) % 2 == 0:
+        return back_slashes + groups['body']
+    if groups['u']:
+        return back_slashes + 'u' + groups['u'].lower()
+    elif groups['U']:
+        return back_slashes + 'U' + groups['U'].lower()
+    elif groups['x']:
+        return back_slashes + 'x' + groups['x'].lower()
+    else:
+        assert groups['N'], f'Unexpected match: {m}'
+        return back_slashes + 'N{' + groups['N'].upper() + '}'
+
+----------
+
+@pytest.mark.parametrize('mode', [pytest.param(JUPYTER_MODE, id='default mode'), pytest.param(replace(JUPYTER_MODE, python_cell_magics={'cust1', 'cust1'}), id='custom cell magics mode')])
+@pytest.mark.parametrize('src, expected', (pytest.param('ls =!ls', 'ls = !ls', id='System assignment'), pytest.param("!ls\n'foo'", '!ls\n"foo"', id='System call'), pytest.param("!!ls\n'foo'", '!!ls\n"foo"', id='Other system call'), pytest.param("?str\n'foo'", '?str\n"foo"', id='Help'), pytest.param("??str\n'foo'", '??str\n"foo"', id='Other help'), pytest.param("%matplotlib inline\n'foo'", '%matplotlib inline\n"foo"', id='Line magic with argument'), pytest.param("%time\n'foo'", '%time\n"foo"', id='Line magic without argument'), pytest.param('env =  %env var', 'env = %env var', id='Assignment to environment variable'), pytest.param('env =  %env', 'env = %env', id='Assignment to magic')))
+def test_magic(src: str, expected: str, mode: Mode) -> None:
+    result = format_cell(src, fast=True, mode=mode)
+    assert result == expected
+
+----------
+
+
+
+Test Class Name: default

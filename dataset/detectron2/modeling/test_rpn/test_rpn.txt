@@ -1,0 +1,41 @@
+def build_backbone(cfg, input_shape=None):
+    """
+    Build a backbone from `cfg.MODEL.BACKBONE.NAME`.
+
+    Returns:
+        an instance of :class:`Backbone`
+    """
+    if input_shape is None:
+        input_shape = ShapeSpec(channels=len(cfg.MODEL.PIXEL_MEAN))
+    backbone_name = cfg.MODEL.BACKBONE.NAME
+    backbone = BACKBONE_REGISTRY.get(backbone_name)(cfg, input_shape)
+    assert isinstance(backbone, Backbone)
+    return backbone
+
+----------
+
+def test_rpn(self):
+    torch.manual_seed(121)
+    cfg = get_cfg()
+    backbone = build_backbone(cfg)
+    proposal_generator = RPN(cfg, backbone.output_shape())
+    (gt_instances, features, images, image_sizes) = self.get_gt_and_features()
+    with EventStorage():
+        (proposals, proposal_losses) = proposal_generator(images, features, [gt_instances[0], gt_instances[1]])
+    expected_losses = {'loss_rpn_cls': torch.tensor(0.08011703193), 'loss_rpn_loc': torch.tensor(0.101470276)}
+    for name in expected_losses.keys():
+        err_msg = 'proposal_losses[{}] = {}, expected losses = {}'.format(name, proposal_losses[name], expected_losses[name])
+        self.assertTrue(torch.allclose(proposal_losses[name], expected_losses[name]), err_msg)
+    self.assertEqual(len(proposals), len(image_sizes))
+    for (proposal, im_size) in zip(proposals, image_sizes):
+        self.assertEqual(proposal.image_size, im_size)
+    expected_proposal_box = torch.tensor([[0, 0, 10, 10], [7.2702, 0, 10, 10]])
+    expected_objectness_logit = torch.tensor([0.1596, -0.0007])
+    self.assertTrue(torch.allclose(proposals[0].proposal_boxes.tensor, expected_proposal_box, atol=0.0001))
+    self.assertTrue(torch.allclose(proposals[0].objectness_logits, expected_objectness_logit, atol=0.0001))
+
+----------
+
+
+
+Test Class Name: RPNTest

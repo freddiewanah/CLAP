@@ -1,0 +1,15 @@
+def url(self, path):
+    return urljoin(self.baseurl, path)
+
+----------
+
+@defer.inlineCallbacks
+def test_response_type_html(self):
+    (_, out, _) = (yield self.execute([self.url('/html'), '-c', 'type(response)']))
+    assert b'HtmlResponse' in out
+
+----------
+
+
+
+Test Class Name: ShellTest

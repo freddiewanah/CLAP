@@ -1,0 +1,85 @@
+@with_collection_artifacts_manager
+def execute_list_collection(self, artifacts_manager=None):
+    """
+        List all collections installed on the local system
+
+        :param artifacts_manager: Artifacts manager.
+        """
+    if artifacts_manager is not None:
+        artifacts_manager.require_build_metadata = False
+    output_format = context.CLIARGS['output_format']
+    collection_name = context.CLIARGS['collection']
+    default_collections_path = set(C.COLLECTIONS_PATHS)
+    collections_search_paths = set(context.CLIARGS['collections_path'] or []) | default_collections_path | set(AnsibleCollectionConfig.collection_paths)
+    collections_in_paths = {}
+    warnings = []
+    path_found = False
+    collection_found = False
+    namespace_filter = None
+    collection_filter = None
+    if collection_name:
+        validate_collection_name(collection_name)
+        (namespace_filter, collection_filter) = collection_name.split('.')
+    collections = list(find_existing_collections(list(collections_search_paths), artifacts_manager, namespace_filter=namespace_filter, collection_filter=collection_filter, dedupe=False))
+    seen = set()
+    (fqcn_width, version_width) = _get_collection_widths(collections)
+    for collection in sorted(collections, key=lambda c: c.src):
+        collection_found = True
+        collection_path = pathlib.Path(to_text(collection.src)).parent.parent.as_posix()
+        if output_format in {'yaml', 'json'}:
+            collections_in_paths[collection_path] = {collection.fqcn: {'version': collection.ver} for collection in collections}
+        else:
+            if collection_path not in seen:
+                _display_header(collection_path, 'Collection', 'Version', fqcn_width, version_width)
+                seen.add(collection_path)
+            _display_collection(collection, fqcn_width, version_width)
+    path_found = False
+    for path in collections_search_paths:
+        if not os.path.exists(path):
+            if path in default_collections_path:
+                continue
+            warnings.append('- the configured path {0} does not exist.'.format(path))
+        elif os.path.exists(path) and (not os.path.isdir(path)):
+            warnings.append('- the configured path {0}, exists, but it is not a directory.'.format(path))
+        else:
+            path_found = True
+    if collection_found and collection_name:
+        warnings = []
+    for w in warnings:
+        display.warning(w)
+    if not collections and (not path_found):
+        raise AnsibleOptionsError('- None of the provided paths were usable. Please specify a valid path with --{0}s-path'.format(context.CLIARGS['type']))
+    if output_format == 'json':
+        display.display(json.dumps(collections_in_paths))
+    elif output_format == 'yaml':
+        display.display(yaml_dump(collections_in_paths))
+    return 0
+
+----------
+
+def test_execute_list_collection_specific(mocker, capsys, mock_from_path, tmp_path_factory):
+    """Test listing a specific collection"""
+    collection_name = 'sandwiches.ham'
+    cliargs(collection_name=collection_name)
+    init_plugin_loader()
+    mocker.patch('os.path.exists', path_exists)
+    mocker.patch('ansible.galaxy.collection.validate_collection_name', collection_name)
+    mocker.patch('ansible.cli.galaxy._get_collection_widths', return_value=(14, 5))
+    gc = GalaxyCLI(['ansible-galaxy', 'collection', 'list', collection_name])
+    tmp_path = tmp_path_factory.mktemp('test-ÅÑŚÌβŁÈ Collections')
+    concrete_artifact_cm = collection.concrete_artifact_manager.ConcreteArtifactsManager(tmp_path, validate_certs=False)
+    gc.execute_list_collection(artifacts_manager=concrete_artifact_cm)
+    (out, err) = capsys.readouterr()
+    out_lines = out.splitlines()
+    assert len(out_lines) == 5
+    assert out_lines[0] == ''
+    assert out_lines[1] == '# /usr/share/ansible/collections/ansible_collections'
+    assert out_lines[2] == 'Collection     Version'
+    assert out_lines[3] == '-------------- -------'
+    assert out_lines[4] == 'sandwiches.ham 1.0.0  '
+
+----------
+
+
+
+Test Class Name: default

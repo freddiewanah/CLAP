@@ -1,0 +1,18 @@
+def warn(warning):
+    if isinstance(warning, string_types):
+        _global_warnings.append(warning)
+    else:
+        raise TypeError('warn requires a string not a %s' % type(warning))
+
+----------
+
+def test_multiple_warningss(warning_messages):
+    for w in warning_messages:
+        warn(w)
+    assert warning_messages == warnings._global_warnings
+
+----------
+
+
+
+Test Class Name: default

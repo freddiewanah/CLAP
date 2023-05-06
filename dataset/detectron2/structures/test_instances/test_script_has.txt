@@ -1,0 +1,30 @@
+def has(self, name: str) -> bool:
+    """
+        Returns:
+            bool: whether the field called `name` exists.
+        """
+    return name in self._fields
+
+----------
+
+def test_script_has(self):
+
+    class f(torch.nn.Module):
+
+        def forward(self, x: Instances):
+            return x.has('proposal_boxes')
+    image_shape = (15, 15)
+    fields = {'proposal_boxes': Boxes}
+    with patch_instances(fields) as new_instance:
+        script_module = torch.jit.script(f())
+        x = new_instance(image_shape)
+        self.assertFalse(script_module(x))
+        box_tensors = torch.tensor([[5, 5, 10, 10], [1, 1, 2, 3]])
+        x.proposal_boxes = Boxes(box_tensors)
+        self.assertTrue(script_module(x))
+
+----------
+
+
+
+Test Class Name: default

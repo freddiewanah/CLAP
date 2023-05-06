@@ -1,0 +1,21 @@
+def screen_size(self) -> str:
+    """Get a random size of screen in inch.
+
+        :return: Screen size.
+
+        :Example:
+            13\u2033.
+        """
+    return self.random.choice(SCREEN_SIZES)
+
+----------
+
+def test_screen_size(self, hard):
+    result = hard.screen_size()
+    assert result in SCREEN_SIZES
+
+----------
+
+
+
+Test Class Name: TestHardware

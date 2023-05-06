@@ -1,0 +1,25 @@
+def assertPathNotExists(self, *parts):
+    path = os.path.join(*parts)
+    if os.path.exists(path):
+        msg = self._formatMessage(None, f"The path '{path}' does exist")
+        raise self.failureException(msg)
+
+----------
+
+@tempdir(files={'index.md': 'page content', 'empty.md': '', 'img.jpg': '', 'static.html': 'content', '.hidden': 'content', '.git/hidden': 'content'})
+@tempdir()
+def test_copying_media(self, site_dir, docs_dir):
+    cfg = load_config(docs_dir=docs_dir, site_dir=site_dir)
+    build.build(cfg)
+    self.assertPathIsFile(site_dir, 'index.html')
+    self.assertPathIsFile(site_dir, 'img.jpg')
+    self.assertPathIsFile(site_dir, 'static.html')
+    self.assertPathNotExists(site_dir, 'empty.md')
+    self.assertPathNotExists(site_dir, '.hidden')
+    self.assertPathNotExists(site_dir, '.git/hidden')
+
+----------
+
+
+
+Test Class Name: BuildTests

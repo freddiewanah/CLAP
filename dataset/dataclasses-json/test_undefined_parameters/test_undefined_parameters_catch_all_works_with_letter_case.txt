@@ -1,0 +1,22 @@
+def to_dict(self, encode_json=False) -> Dict[str, Json]:
+    return _asdict(self, encode_json=encode_json)
+
+----------
+
+def test_undefined_parameters_catch_all_works_with_letter_case(invalid_response_camel_case):
+
+    @dataclass_json(undefined=Undefined.INCLUDE, letter_case=LetterCase.CAMEL)
+    @dataclass()
+    class UnknownAPIDumpCamelCase:
+        endpoint: str
+        data: Dict[str, Any]
+        catch_all: CatchAll
+    dump = UnknownAPIDumpCamelCase.from_dict(invalid_response_camel_case)
+    assert {'undefinedFieldName': [1, 2, 3]} == dump.catch_all
+    assert invalid_response_camel_case == dump.to_dict()
+
+----------
+
+
+
+Test Class Name: UnknownAPIDumpMultipleCatchAll

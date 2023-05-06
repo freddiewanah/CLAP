@@ -1,0 +1,30 @@
+def data_file_path(prefix_path):
+    return prefix_path + '.bin'
+
+----------
+
+def test_huffman_compresses(self):
+    data = make_data()
+    builder = make_code_builder(data)
+    coder = builder.build_code()
+    with TemporaryDirectory() as dirname:
+        prefix = os.path.join(dirname, 'huffman')
+        build_dataset(prefix, data, coder)
+        prefix_mmap = os.path.join(dirname, 'mmap')
+        mmap_builder = indexed_dataset.make_builder(indexed_dataset.data_file_path(prefix_mmap), 'mmap', vocab_size=len(POPULATION))
+        dictionary = Dictionary()
+        for c in POPULATION:
+            dictionary.add_symbol(c)
+        dictionary.finalize()
+        for sentence in data:
+            mmap_builder.add_item(dictionary.encode_line(' '.join(sentence)))
+        mmap_builder.finalize(indexed_dataset.index_file_path(prefix_mmap))
+        huff_size = os.stat(indexed_dataset.data_file_path(prefix)).st_size
+        mmap_size = os.stat(indexed_dataset.data_file_path(prefix_mmap)).st_size
+        self.assertLess(huff_size, mmap_size)
+
+----------
+
+
+
+Test Class Name: TestHuffmanDataset

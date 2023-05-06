@@ -1,0 +1,34 @@
+def parse_rows(self, response):
+    """Receives a response and a dict (representing each row) with a key for
+        each provided (or detected) header of the CSV file.  This spider also
+        gives the opportunity to override adapt_response and
+        process_results methods for pre and post-processing purposes.
+        """
+    for row in csviter(response, self.delimiter, self.headers, quotechar=self.quotechar):
+        ret = iterate_spider_output(self.parse_row(response, row))
+        for result_item in self.process_results(response, ret):
+            yield result_item
+
+----------
+
+def test_parse_rows(self):
+    body = get_testdata('feeds', 'feed-sample6.csv')
+    response = Response('http://example.org/dummy.csv', body=body)
+
+    class _CrawlSpider(self.spider_class):
+        name = 'test'
+        delimiter = ','
+        quotechar = "'"
+
+        def parse_row(self, response, row):
+            return row
+    spider = _CrawlSpider()
+    rows = list(spider.parse_rows(response))
+    assert rows[0] == {'id': '1', 'name': 'alpha', 'value': 'foobar'}
+    assert len(rows) == 4
+
+----------
+
+
+
+Test Class Name: CSVFeedSpiderTest

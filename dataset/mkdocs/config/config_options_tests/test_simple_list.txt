@@ -1,0 +1,22 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+@patch('markdown.Markdown')
+def test_simple_list(self, mock_md) -> None:
+
+    class Schema(Config):
+        markdown_extensions = c.MarkdownExtensions()
+        mdx_configs = c.Private()
+    config = {'markdown_extensions': ['foo', 'bar']}
+    conf = self.get_config(Schema, config)
+    assert_type(conf.markdown_extensions, List[str])
+    self.assertEqual(conf.markdown_extensions, ['foo', 'bar'])
+    self.assertEqual(conf.mdx_configs, {})
+
+----------
+
+
+
+Test Class Name: MarkdownExtensionsTest

@@ -1,0 +1,38 @@
+def train_fn():
+    with tf.GradientTape() as tape:
+        loss = model(input_value)
+    variables = model.trainable_variables
+    gradients = tape.gradient(loss, variables)
+    return optimizer.apply_gradients(zip(gradients, variables))
+
+----------
+
+@test_combinations.generate(test_combinations.combine(mode=['graph', 'eager']))
+def testAgnosticUsage(self):
+    """Graph/eager agnostic usage."""
+    with self.test_session():
+        num_training_steps = 10
+        checkpoint_directory = self.get_temp_dir()
+        for training_continuation in range(3):
+            with test_utils.device(should_use_gpu=True):
+                model = MyModel()
+                optimizer = tf.compat.v1.train.AdamOptimizer(0.001)
+                root = tf.train.Checkpoint(optimizer=optimizer, model=model, global_step=tf.compat.v1.train.get_or_create_global_step())
+                manager = tf.train.CheckpointManager(root, checkpoint_directory, max_to_keep=1)
+                status = root.restore(save_path=manager.latest_checkpoint)
+                input_value = tf.constant([[3.0]])
+                train_fn = functools.partial(optimizer.minimize, functools.partial(model, input_value), global_step=root.global_step)
+                if not tf.executing_eagerly():
+                    train_fn = functools.partial(self.evaluate, train_fn())
+                status.initialize_or_restore()
+                for _ in range(num_training_steps):
+                    train_fn()
+                manager.save()
+                self.assertEqual((training_continuation + 1) * num_training_steps, self.evaluate(root.global_step))
+                self.assertEqual(training_continuation + 1, self.evaluate(root.save_counter))
+
+----------
+
+
+
+Test Class Name: CheckpointingTests

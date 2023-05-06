@@ -1,0 +1,45 @@
+def generate_context(context_file='cookiecutter.json', default_context=None, extra_context=None):
+    """Generate the context for a Cookiecutter project template.
+
+    Loads the JSON file as a Python object, with key being the JSON filename.
+
+    :param context_file: JSON file containing key/value pairs for populating
+        the cookiecutter's variables.
+    :param default_context: Dictionary containing config to take into account.
+    :param extra_context: Dictionary containing configuration overrides
+    """
+    context = OrderedDict([])
+    try:
+        with open(context_file, encoding='utf-8') as file_handle:
+            obj = json.load(file_handle, object_pairs_hook=OrderedDict)
+    except ValueError as e:
+        full_fpath = os.path.abspath(context_file)
+        json_exc_message = str(e)
+        our_exc_message = f"JSON decoding error while loading '{full_fpath}'. Decoding error details: '{json_exc_message}'"
+        raise ContextDecodingException(our_exc_message) from e
+    file_name = os.path.split(context_file)[1]
+    file_stem = file_name.split('.')[0]
+    context[file_stem] = obj
+    if default_context:
+        try:
+            apply_overwrites_to_context(obj, default_context)
+        except ValueError as error:
+            warnings.warn(f'Invalid default received: {error}')
+    if extra_context:
+        apply_overwrites_to_context(obj, extra_context)
+    logger.debug('Context generated is %s', context)
+    return context
+
+----------
+
+def test_apply_overwrites_does_not_modify_choices_for_invalid_overwrite():
+    """Verify variables overwrite for list if variable not in list ignored."""
+    expected_context = {'choices_template': OrderedDict([('full_name', 'Raphael Pierzina'), ('github_username', 'hackebrot'), ('project_name', 'Kivy Project'), ('repo_name', '{{cookiecutter.project_name|lower}}'), ('orientation', ['all', 'landscape', 'portrait'])])}
+    generated_context = generate.generate_context(context_file='tests/test-generate-context/choices_template.json', default_context={'not_in_template': 'foobar', 'project_name': 'Kivy Project', 'orientation': 'foobar'}, extra_context={'also_not_in_template': 'foobar2', 'github_username': 'hackebrot'})
+    assert generated_context == expected_context
+
+----------
+
+
+
+Test Class Name: default

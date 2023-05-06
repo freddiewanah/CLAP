@@ -1,0 +1,28 @@
+def list(self) -> List[str]:
+    """
+        List all registered datasets.
+
+        Returns:
+            list[str]
+        """
+    return list(self.keys())
+
+----------
+
+def test_iter_style(self):
+
+    class DS(torch.utils.data.IterableDataset):
+
+        def __iter__(self):
+            yield from [1, 2, 3]
+    ds = DS()
+    ds = MapDataset(ds, TestMapDataset.map_func)
+    self.assertIsInstance(ds, torch.utils.data.IterableDataset)
+    data = list(iter(ds))
+    self.assertEqual(data, [2, 6])
+
+----------
+
+
+
+Test Class Name: TestMapDataset

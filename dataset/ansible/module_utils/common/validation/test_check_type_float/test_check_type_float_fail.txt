@@ -1,0 +1,32 @@
+def check_type_float(value):
+    """Verify that value is a float or convert it to a float and return it
+
+    Raises :class:`TypeError` if unable to convert to a float
+
+    :arg value: float, int, str, or bytes to verify or convert and return.
+
+    :returns: float of given value.
+    """
+    if isinstance(value, float):
+        return value
+    if isinstance(value, (binary_type, text_type, int)):
+        try:
+            return float(value)
+        except ValueError:
+            pass
+    raise TypeError('%s cannot be converted to a float' % type(value))
+
+----------
+
+def test_check_type_float_fail():
+    test_cases = ({'k1': 'v1'}, ['a', 'b'], 'b')
+    for case in test_cases:
+        with pytest.raises(TypeError) as e:
+            check_type_float(case)
+        assert 'cannot be converted to a float' in to_native(e.value)
+
+----------
+
+
+
+Test Class Name: default

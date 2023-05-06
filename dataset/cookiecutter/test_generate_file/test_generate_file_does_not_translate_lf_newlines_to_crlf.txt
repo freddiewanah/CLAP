@@ -1,0 +1,72 @@
+def generate_file(project_dir, infile, context, env, skip_if_file_exists=False):
+    """Render filename of infile as name of outfile, handle infile correctly.
+
+    Dealing with infile appropriately:
+
+        a. If infile is a binary file, copy it over without rendering.
+        b. If infile is a text file, render its contents and write the
+           rendered infile to outfile.
+
+    Precondition:
+
+        When calling `generate_file()`, the root template dir must be the
+        current working directory. Using `utils.work_in()` is the recommended
+        way to perform this directory change.
+
+    :param project_dir: Absolute path to the resulting generated project.
+    :param infile: Input file to generate the file from. Relative to the root
+        template dir.
+    :param context: Dict for populating the cookiecutter's variables.
+    :param env: Jinja2 template execution environment.
+    """
+    logger.debug('Processing file %s', infile)
+    outfile_tmpl = env.from_string(infile)
+    outfile = os.path.join(project_dir, outfile_tmpl.render(**context))
+    file_name_is_empty = os.path.isdir(outfile)
+    if file_name_is_empty:
+        logger.debug('The resulting file name is empty: %s', outfile)
+        return
+    if skip_if_file_exists and os.path.exists(outfile):
+        logger.debug('The resulting file already exists: %s', outfile)
+        return
+    logger.debug('Created file at %s', outfile)
+    logger.debug("Check %s to see if it's a binary", infile)
+    if is_binary(infile):
+        logger.debug('Copying binary %s to %s without rendering', infile, outfile)
+        shutil.copyfile(infile, outfile)
+    else:
+        infile_fwd_slashes = infile.replace(os.path.sep, '/')
+        try:
+            tmpl = env.get_template(infile_fwd_slashes)
+        except TemplateSyntaxError as exception:
+            exception.translated = False
+            raise
+        rendered_file = tmpl.render(**context)
+        with open(infile, encoding='utf-8', newline='') as rd:
+            rd.readline()
+            newline = rd.newlines
+            if context['cookiecutter'].get('_new_lines', False):
+                newline = context['cookiecutter']['_new_lines']
+                logger.debug('Overwriting end line character with %s', newline)
+        logger.debug('Writing contents to file %s', outfile)
+        with open(outfile, 'w', encoding='utf-8', newline=newline) as fh:
+            fh.write(rendered_file)
+    shutil.copymode(infile, outfile)
+
+----------
+
+def test_generate_file_does_not_translate_lf_newlines_to_crlf(env, tmp_path):
+    """Verify that file generation use same line ending, as in source file."""
+    infile = 'tests/files/{{cookiecutter.generate_file}}_lf_newlines.txt'
+    generate.generate_file(project_dir='.', infile=infile, context={'cookiecutter': {'generate_file': 'cheese'}}, env=env)
+    gf = 'tests/files/cheese_lf_newlines.txt'
+    with Path(gf).open(encoding='utf-8', newline='') as f:
+        simple_text = f.readline()
+    assert simple_text == 'newline is LF\n'
+    assert f.newlines == '\n'
+
+----------
+
+
+
+Test Class Name: default

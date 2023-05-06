@@ -1,0 +1,16 @@
+def app_alias(self, alias_name):
+    return "alias {0} 'setenv TF_SHELL tcsh && setenv TF_ALIAS {0} && set fucked_cmd=`history -h 2 | head -n 1` && eval `thefuck ${{fucked_cmd}}`'".format(alias_name)
+
+----------
+
+def test_app_alias(self, shell):
+    assert 'setenv TF_SHELL tcsh' in shell.app_alias('fuck')
+    assert 'alias fuck' in shell.app_alias('fuck')
+    assert 'alias FUCK' in shell.app_alias('FUCK')
+    assert 'thefuck' in shell.app_alias('fuck')
+
+----------
+
+
+
+Test Class Name: TestTcsh

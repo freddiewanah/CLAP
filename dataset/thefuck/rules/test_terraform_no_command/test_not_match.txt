@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, output', [('terraform --version', 'Terraform v0.12.2'), ('terraform plan', 'No changes. Infrastructure is up-to-date.'), ('terraform apply', 'Apply complete! Resources: 0 added, 0 changed, 0 destroyed.')])
+def test_not_match(script, output):
+    assert not match(Command(script, output))
+
+----------
+
+
+
+Test Class Name: default

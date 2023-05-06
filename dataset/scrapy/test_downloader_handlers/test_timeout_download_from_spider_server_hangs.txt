@@ -1,0 +1,22 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+@defer.inlineCallbacks
+def test_timeout_download_from_spider_server_hangs(self):
+    if self.reactor_pytest == 'asyncio' and sys.platform == 'win32':
+        raise unittest.SkipTest('This test produces DirtyReactorAggregateError on Windows with asyncio')
+    spider = Spider('foo')
+    meta = {'download_timeout': 0.5}
+    request = Request(self.getURL('hang-after-headers'), meta=meta)
+    d = self.download_request(request, spider)
+    yield self.assertFailure(d, defer.TimeoutError, error.TimeoutError)
+
+----------
+
+
+
+Test Class Name: HttpTestCase

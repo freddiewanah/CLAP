@@ -1,0 +1,21 @@
+def result(self) -> None:
+    return None
+
+----------
+
+@gen_test
+def test_read_into_zero_bytes(self: typing.Any):
+    (rs, ws) = (yield self.make_iostream_pair())
+    try:
+        buf = bytearray()
+        fut = rs.read_into(buf)
+        self.assertEqual(fut.result(), 0)
+    finally:
+        ws.close()
+        rs.close()
+
+----------
+
+
+
+Test Class Name: IOStreamPairContext

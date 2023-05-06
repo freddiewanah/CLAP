@@ -1,0 +1,56 @@
+def html(body: Union[str, bytes, HTMLProtocol], status: int=200, headers: Optional[Dict[str, str]]=None) -> HTTPResponse:
+    """
+    Returns response object with body in html format.
+
+    :param body: str or bytes-ish, or an object with __html__ or _repr_html_.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    """
+    if not isinstance(body, (str, bytes)):
+        if hasattr(body, '__html__'):
+            body = body.__html__()
+        elif hasattr(body, '_repr_html_'):
+            body = body._repr_html_()
+    return HTTPResponse(body, status=status, headers=headers, content_type='text/html; charset=utf-8')
+
+----------
+
+def test_html(app):
+
+    class Foo:
+
+        def __html__(self):
+            return '<h1>Foo</h1>'
+
+        def _repr_html_(self):
+            return '<h1>Foo object repr</h1>'
+
+    class Bar:
+
+        def _repr_html_(self):
+            return '<h1>Bar object repr</h1>'
+
+    @app.route('/')
+    async def handler(request):
+        return html('<h1>Hello</h1>')
+
+    @app.route('/foo')
+    async def handler(request):
+        return html(Foo())
+
+    @app.route('/bar')
+    async def handler(request):
+        return html(Bar())
+    (request, response) = app.test_client.get('/')
+    assert response.content_type == 'text/html; charset=utf-8'
+    assert response.body == b'<h1>Hello</h1>'
+    (request, response) = app.test_client.get('/foo')
+    assert response.body == b'<h1>Foo</h1>'
+    (request, response) = app.test_client.get('/bar')
+    assert response.body == b'<h1>Bar object repr</h1>'
+
+----------
+
+
+
+Test Class Name: default

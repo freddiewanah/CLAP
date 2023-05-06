@@ -1,0 +1,26 @@
+def hex_color(self, safe: bool=False) -> str:
+    """Generate a random hex color.
+
+        :param safe: Get safe Flat UI hex color.
+        :return: Hex color code.
+
+        :Example:
+            #d8346b
+        """
+    if safe:
+        return self.random.choice(SAFE_COLORS)
+    return f'#{self.random.randint(0, 16777215):06x}'
+
+----------
+
+@pytest.mark.parametrize('safe', [True, False])
+def test_hex_color(self, _text, safe):
+    result = _text.hex_color(safe=safe)
+    assert re.match(patterns.HEX_COLOR, result)
+    assert result in SAFE_COLORS if safe else result
+
+----------
+
+
+
+Test Class Name: TestText

@@ -1,0 +1,63 @@
+@keras_export('keras.backend.constant')
+@tf.__internal__.dispatch.add_dispatch_support
+@doc_controls.do_not_generate_docs
+def constant(value, dtype=None, shape=None, name=None):
+    """Creates a constant tensor.
+
+    Args:
+        value: A constant value (or list)
+        dtype: The type of the elements of the resulting tensor.
+        shape: Optional dimensions of resulting tensor.
+        name: Optional name for the tensor.
+
+    Returns:
+        A Constant Tensor.
+    """
+    if dtype is None:
+        dtype = floatx()
+    return tf.constant(value, dtype=dtype, shape=shape, name=name)
+
+----------
+
+@test_combinations.generate(test_combinations.combine(mode=['graph', 'eager']))
+def testWithDefun(self):
+    with self.test_session():
+        num_training_steps = 2
+        checkpoint_directory = self.get_temp_dir()
+        checkpoint_prefix = os.path.join(checkpoint_directory, 'ckpt')
+        for training_continuation in range(3):
+            with test_utils.device(should_use_gpu=True):
+                model = MyModel()
+                optimizer = adam.Adam(0.0)
+                root = tf.train.Checkpoint(optimizer=optimizer, model=model)
+                checkpoint_path = tf.train.latest_checkpoint(checkpoint_directory)
+                status = root.restore(save_path=checkpoint_path)
+
+                def train_fn():
+
+                    @tf.function
+                    def _call_model(x):
+                        return model(x)
+                    with tf.GradientTape() as tape:
+                        loss = _call_model(tf.constant([[3.0]]))
+                    gradients = tape.gradient(loss, model.variables)
+                    return optimizer.apply_gradients(zip(gradients, model.variables))
+                if not tf.executing_eagerly():
+                    train_fn = functools.partial(self.evaluate, train_fn())
+                status.initialize_or_restore()
+                for _ in range(num_training_steps):
+                    train_fn()
+                if training_continuation > 0:
+                    status.assert_consumed()
+                    self.assertAllClose([[42.0]], self.evaluate(model.variables[0]))
+                else:
+                    self.evaluate(model.variables[0].assign([[42.0]]))
+                root.save(file_prefix=checkpoint_prefix)
+                self.assertEqual((training_continuation + 1) * num_training_steps, self.evaluate(optimizer.iterations))
+                self.assertEqual(training_continuation + 1, self.evaluate(root.save_counter))
+
+----------
+
+
+
+Test Class Name: CheckpointingTests

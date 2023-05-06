@@ -1,0 +1,40 @@
+@g_connect(['v1'])
+def authenticate(self, github_token):
+    """
+        Retrieve an authentication token
+        """
+    url = _urljoin(self.api_server, self.available_api_versions['v1'], 'tokens') + '/'
+    args = urlencode({'github_token': github_token})
+    try:
+        resp = open_url(url, data=args, validate_certs=self.validate_certs, method='POST', http_agent=user_agent(), timeout=self._server_timeout)
+    except HTTPError as e:
+        raise GalaxyError(e, 'Attempting to authenticate to galaxy')
+    except Exception as e:
+        raise AnsibleError('Unable to authenticate to galaxy: %s' % to_native(e), orig_exc=e)
+    data = json.loads(to_text(resp.read(), errors='surrogate_or_strict'))
+    return data
+
+----------
+
+def test_initialise_galaxy(monkeypatch):
+    mock_open = MagicMock()
+    mock_open.side_effect = [StringIO(u'{"available_versions":{"v1":"v1/"}}'), StringIO(u'{"token":"my token"}')]
+    monkeypatch.setattr(galaxy_api, 'open_url', mock_open)
+    api = GalaxyAPI(None, 'test', 'https://galaxy.ansible.com/api/')
+    actual = api.authenticate('github_token')
+    assert len(api.available_api_versions) == 2
+    assert api.available_api_versions['v1'] == u'v1/'
+    assert api.available_api_versions['v2'] == u'v2/'
+    assert actual == {u'token': u'my token'}
+    assert mock_open.call_count == 2
+    assert mock_open.mock_calls[0][1][0] == 'https://galaxy.ansible.com/api/'
+    assert 'ansible-galaxy' in mock_open.mock_calls[0][2]['http_agent']
+    assert mock_open.mock_calls[1][1][0] == 'https://galaxy.ansible.com/api/v1/tokens/'
+    assert 'ansible-galaxy' in mock_open.mock_calls[1][2]['http_agent']
+    assert mock_open.mock_calls[1][2]['data'] == 'github_token=github_token'
+
+----------
+
+
+
+Test Class Name: default

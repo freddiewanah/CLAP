@@ -1,0 +1,17 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('yay -S llc', 'error: target not found: llc'), Command('pikaur -S llc', 'error: target not found: llc'), Command('yaourt -S llc', 'error: target not found: llc'), Command('pacman llc', 'error: target not found: llc'), Command('sudo pacman llc', 'error: target not found: llc')])
+@patch('thefuck.specific.archlinux.subprocess')
+def test_match_mocked(subp_mock, command):
+    subp_mock.check_output.return_value = PKGFILE_OUTPUT_LLC
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

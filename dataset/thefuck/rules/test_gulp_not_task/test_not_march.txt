@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, stdout', [('gulp serve', ''), ('cat srve', output('srve'))])
+def test_not_march(script, stdout):
+    assert not match(Command(script, stdout))
+
+----------
+
+
+
+Test Class Name: default

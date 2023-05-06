@@ -1,0 +1,21 @@
+def copy(self):
+    return self.__class__(self)
+
+----------
+
+@defer.inlineCallbacks
+def test_skip_messages(self):
+    settings = self.base_settings.copy()
+    settings['LOG_FORMATTER'] = SkipMessagesLogFormatter
+    crawler = get_crawler(ItemSpider, settings)
+    with LogCapture() as lc:
+        yield crawler.crawl(mockserver=self.mockserver)
+    self.assertNotIn('Scraped from <200 http://127.0.0.1:', str(lc))
+    self.assertNotIn('Crawled (200) <GET http://127.0.0.1:', str(lc))
+    self.assertNotIn('Dropped: Ignoring item', str(lc))
+
+----------
+
+
+
+Test Class Name: ShowOrSkipMessagesTestCase

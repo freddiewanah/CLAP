@@ -1,0 +1,18 @@
+def app_alias(self, alias_name):
+    return '\n            {name} () {{\n                TF_PYTHONIOENCODING=$PYTHONIOENCODING;\n                export TF_SHELL=zsh;\n                export TF_ALIAS={name};\n                TF_SHELL_ALIASES=$(alias);\n                export TF_SHELL_ALIASES;\n                TF_HISTORY="$(fc -ln -10)";\n                export TF_HISTORY;\n                export PYTHONIOENCODING=utf-8;\n                TF_CMD=$(\n                    thefuck {argument_placeholder} $@\n                ) && eval $TF_CMD;\n                unset TF_HISTORY;\n                export PYTHONIOENCODING=$TF_PYTHONIOENCODING;\n                {alter_history}\n            }}\n        '.format(name=alias_name, argument_placeholder=ARGUMENT_PLACEHOLDER, alter_history='test -n "$TF_CMD" && print -s $TF_CMD' if settings.alter_history else '')
+
+----------
+
+def test_app_alias_variables_correctly_set(self, shell):
+    alias = shell.app_alias('fuck')
+    assert 'fuck () {' in alias
+    assert 'TF_SHELL=zsh' in alias
+    assert 'TF_ALIAS=fuck' in alias
+    assert 'PYTHONIOENCODING=utf-8' in alias
+    assert 'TF_SHELL_ALIASES=$(alias)' in alias
+
+----------
+
+
+
+Test Class Name: TestZsh

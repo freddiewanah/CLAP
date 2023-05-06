@@ -1,0 +1,89 @@
+def respond(self, response: BaseHTTPResponse) -> BaseHTTPResponse:
+    raise NotImplementedError('Not implemented')
+
+----------
+
+def test_multiple_responses(app: Sanic, caplog: LogCaptureFixture, message_in_records: Callable[[List[LogRecord], str], bool]):
+
+    @app.route('/1')
+    async def handler1(request: Request):
+        response = await request.respond()
+        await response.send('foo')
+        response = await request.respond()
+
+    @app.route('/2')
+    async def handler2(request: Request):
+        response = await request.respond()
+        response = await request.respond()
+        await response.send('foo')
+
+    @app.get('/3')
+    async def handler3(request: Request):
+        response = await request.respond()
+        await response.send('foo,')
+        response = await request.respond()
+        await response.send('bar')
+
+    @app.get('/4')
+    async def handler4(request: Request):
+        response = await request.respond(headers={'one': 'one'})
+        return json({'foo': 'bar'}, headers={'one': 'two'})
+
+    @app.get('/5')
+    async def handler5(request: Request):
+        response = await request.respond(headers={'one': 'one'})
+        await response.send('foo')
+        return json({'foo': 'bar'}, headers={'one': 'two'})
+
+    @app.get('/6')
+    async def handler6(request: Request):
+        response = await request.respond(headers={'one': 'one'})
+        await response.send('foo, ')
+        json_response = json({'foo': 'bar'}, headers={'one': 'two'})
+        await response.send('bar')
+        return json_response
+    error_msg0 = 'Second respond call is not allowed.'
+    error_msg1 = 'The error response will not be sent to the client for the following exception:"Second respond call is not allowed.". A previous response has at least partially been sent.'
+    error_msg2 = 'The response object returned by the route handler will not be sent to client. The request has already been responded to.'
+    error_msg3 = 'Response stream was ended, no more response data is allowed to be sent.'
+    with caplog.at_level(ERROR):
+        (_, response) = app.test_client.get('/1')
+        assert response.status == 200
+        assert message_in_records(caplog.records, error_msg0)
+        assert message_in_records(caplog.records, error_msg1)
+    with caplog.at_level(ERROR):
+        (_, response) = app.test_client.get('/2')
+        assert response.status == 500
+        assert '500 — Internal Server Error' in response.text
+    with caplog.at_level(ERROR):
+        (_, response) = app.test_client.get('/3')
+        assert response.status == 200
+        assert 'foo,' in response.text
+        assert message_in_records(caplog.records, error_msg0)
+        assert message_in_records(caplog.records, error_msg1)
+    with caplog.at_level(ERROR):
+        (_, response) = app.test_client.get('/4')
+        assert response.status == 200
+        assert 'foo' not in response.text
+        assert 'one' in response.headers
+        assert response.headers['one'] == 'one'
+        assert message_in_records(caplog.records, error_msg2)
+    with caplog.at_level(ERROR):
+        (_, response) = app.test_client.get('/5')
+        assert response.status == 200
+        assert 'foo' in response.text
+        assert 'one' in response.headers
+        assert response.headers['one'] == 'one'
+        assert message_in_records(caplog.records, error_msg2)
+    with caplog.at_level(ERROR):
+        (_, response) = app.test_client.get('/6')
+        assert 'foo, bar' in response.text
+        assert 'one' in response.headers
+        assert response.headers['one'] == 'one'
+        assert message_in_records(caplog.records, error_msg2)
+
+----------
+
+
+
+Test Class Name: default

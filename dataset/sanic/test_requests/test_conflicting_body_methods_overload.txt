@@ -1,0 +1,43 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_conflicting_body_methods_overload(app):
+
+    @app.put('/')
+    @app.put('/p/')
+    @app.put('/p/<foo>')
+    async def put(request, foo=None):
+        return json({'name': request.route.name, 'body': str(request.body), 'foo': foo})
+
+    @app.delete('/p/<foo>')
+    async def delete(request, foo):
+        return json({'name': request.route.name, 'body': str(request.body), 'foo': foo})
+    payload = {'test': 'OK'}
+    data = str(json_dumps(payload).encode())
+    (_, response) = app.test_client.put('/', json=payload)
+    assert response.status == 200
+    assert response.json == {'name': 'test_conflicting_body_methods_overload.put', 'foo': None, 'body': data}
+    (_, response) = app.test_client.put('/p', json=payload)
+    assert response.status == 200
+    assert response.json == {'name': 'test_conflicting_body_methods_overload.put', 'foo': None, 'body': data}
+    (_, response) = app.test_client.put('/p/test', json=payload)
+    assert response.status == 200
+    assert response.json == {'name': 'test_conflicting_body_methods_overload.put', 'foo': 'test', 'body': data}
+    (_, response) = app.test_client.delete('/p/test')
+    assert response.status == 200
+    assert response.json == {'name': 'test_conflicting_body_methods_overload.delete', 'foo': 'test', 'body': str(''.encode())}
+
+----------
+
+
+
+Test Class Name: Bar

@@ -1,0 +1,76 @@
+def generic_urlparse(parts):
+    """
+    Returns a dictionary of url parts as parsed by urlparse,
+    but accounts for the fact that older versions of that
+    library do not support named attributes (ie. .netloc)
+    """
+    generic_parts = ParseResultDottedDict()
+    if hasattr(parts, 'netloc'):
+        generic_parts['scheme'] = parts.scheme
+        generic_parts['netloc'] = parts.netloc
+        generic_parts['path'] = parts.path
+        generic_parts['params'] = parts.params
+        generic_parts['query'] = parts.query
+        generic_parts['fragment'] = parts.fragment
+        generic_parts['username'] = parts.username
+        generic_parts['password'] = parts.password
+        hostname = parts.hostname
+        if hostname and hostname[0] == '[' and ('[' in parts.netloc) and (']' in parts.netloc):
+            hostname = parts.netloc.split(']')[0][1:].lower()
+        generic_parts['hostname'] = hostname
+        try:
+            port = parts.port
+        except ValueError:
+            netloc = parts.netloc.split('@')[-1].split(']')[-1]
+            if ':' in netloc:
+                port = netloc.split(':')[1]
+                if port:
+                    port = int(port)
+            else:
+                port = None
+        generic_parts['port'] = port
+    else:
+        generic_parts['scheme'] = parts[0]
+        generic_parts['netloc'] = parts[1]
+        generic_parts['path'] = parts[2]
+        generic_parts['params'] = parts[3]
+        generic_parts['query'] = parts[4]
+        generic_parts['fragment'] = parts[5]
+        try:
+            netloc_re = re.compile('^((?:\\w)+(?::(?:\\w)+)?@)?([A-Za-z0-9.-]+)(:\\d+)?$')
+            match = netloc_re.match(parts[1])
+            auth = match.group(1)
+            hostname = match.group(2)
+            port = match.group(3)
+            if port:
+                port = int(port[1:])
+            if auth:
+                auth = auth[:-1]
+                (username, password) = auth.split(':', 1)
+            else:
+                username = password = None
+            generic_parts['username'] = username
+            generic_parts['password'] = password
+            generic_parts['hostname'] = hostname
+            generic_parts['port'] = port
+        except Exception:
+            generic_parts['username'] = None
+            generic_parts['password'] = None
+            generic_parts['hostname'] = parts[1]
+            generic_parts['port'] = None
+    return generic_parts
+
+----------
+
+def test_generic_urlparse():
+    url = 'https://ansible.com/blog'
+    parts = urlparse(url)
+    generic_parts = generic_urlparse(parts)
+    assert generic_parts.as_list() == list(parts)
+    assert urlunparse(generic_parts.as_list()) == url
+
+----------
+
+
+
+Test Class Name: default

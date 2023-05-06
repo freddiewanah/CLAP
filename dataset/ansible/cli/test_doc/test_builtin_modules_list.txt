@@ -1,0 +1,28 @@
+def init_plugin_loader(prefix_collections_path=None):
+    """Initialize the plugin filters and the collection loaders
+
+    This method must be called to configure and insert the collection python loaders
+    into ``sys.meta_path`` and ``sys.path_hooks``.
+
+    This method is only called in ``CLI.run`` after CLI args have been parsed, so that
+    instantiation of the collection finder can utilize parsed CLI args, and to not cause
+    side effects.
+    """
+    _load_plugin_filter()
+    _configure_collection_loader(prefix_collections_path)
+
+----------
+
+def test_builtin_modules_list():
+    args = ['ansible-doc', '-l', 'ansible.builtin', '-t', 'module']
+    obj = DocCLI(args=args)
+    obj.parse()
+    init_plugin_loader()
+    result = obj._list_plugins('module', module_loader)
+    assert len(result) > 0
+
+----------
+
+
+
+Test Class Name: default

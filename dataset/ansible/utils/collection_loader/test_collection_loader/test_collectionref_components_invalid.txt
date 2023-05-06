@@ -1,0 +1,17 @@
+def search(value, pattern='', ignorecase=False, multiline=False):
+    """ Perform a `re.search` returning a boolean """
+    return regex(value, pattern, ignorecase, multiline, 'search')
+
+----------
+
+@pytest.mark.parametrize('name,subdirs,resource,ref_type,expected_error_type,expected_error_expression', [('bad_ns', '', 'resource', 'action', ValueError, 'invalid collection name'), ('ns.coll.', '', 'resource', 'action', ValueError, 'invalid collection name'), ('ns.coll', 'badsubdir#', 'resource', 'action', ValueError, 'invalid subdirs entry'), ('ns.coll', 'badsubdir.', 'resource', 'action', ValueError, 'invalid subdirs entry'), ('ns.coll', '.badsubdir', 'resource', 'action', ValueError, 'invalid subdirs entry'), ('ns.coll', '', 'resource', 'bogus', ValueError, 'invalid collection ref_type')])
+def test_collectionref_components_invalid(name, subdirs, resource, ref_type, expected_error_type, expected_error_expression):
+    with pytest.raises(expected_error_type) as curerr:
+        AnsibleCollectionRef(name, subdirs, resource, ref_type)
+    assert re.search(expected_error_expression, str(curerr.value))
+
+----------
+
+
+
+Test Class Name: default

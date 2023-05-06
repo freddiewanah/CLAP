@@ -1,0 +1,34 @@
+def inn(self) -> str:
+    """Generate random, but valid ``INN``.
+
+        :return: INN.
+        """
+
+    def control_sum(nums: t.List[int], t: str) -> int:
+        digits_dict = {'n2': [7, 2, 4, 10, 3, 5, 9, 4, 6, 8], 'n1': [3, 7, 2, 4, 10, 3, 5, 9, 4, 6, 8]}
+        number = 0
+        digits = digits_dict[t]
+        for (i, _) in enumerate(digits, start=0):
+            number += nums[i] * digits[i]
+        return number % 11 % 10
+    numbers = []
+    for x in range(0, 10):
+        numbers.append(self.random.randint(1 if x == 0 else 0, 9))
+    n2 = control_sum(numbers, 'n2')
+    numbers.append(n2)
+    n1 = control_sum(numbers, 'n1')
+    numbers.append(n1)
+    return ''.join(map(str, numbers))
+
+----------
+
+def test_inn(russia):
+    result = russia.inn()
+    assert isinstance(result, str)
+    assert result is not None
+
+----------
+
+
+
+Test Class Name: default

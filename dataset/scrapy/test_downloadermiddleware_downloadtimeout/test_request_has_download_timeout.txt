@@ -1,0 +1,19 @@
+def process_request(self, request, spider):
+    if self._timeout:
+        request.meta.setdefault('download_timeout', self._timeout)
+
+----------
+
+def test_request_has_download_timeout(self):
+    (req, spider, mw) = self.get_request_spider_mw()
+    spider.download_timeout = 2
+    mw.spider_opened(spider)
+    req.meta['download_timeout'] = 1
+    assert mw.process_request(req, spider) is None
+    self.assertEqual(req.meta.get('download_timeout'), 1)
+
+----------
+
+
+
+Test Class Name: DownloadTimeoutMiddlewareTest

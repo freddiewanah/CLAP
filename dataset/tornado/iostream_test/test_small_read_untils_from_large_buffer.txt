@@ -1,0 +1,51 @@
+def read_until(self, delimiter: bytes, max_bytes: Optional[int]=None) -> Awaitable[bytes]:
+    """Asynchronously read until we have found the given delimiter.
+
+        The result includes all the data read including the delimiter.
+
+        If ``max_bytes`` is not None, the connection will be closed
+        if more than ``max_bytes`` bytes have been read and the delimiter
+        is not found.
+
+        .. versionchanged:: 4.0
+            Added the ``max_bytes`` argument.  The ``callback`` argument is
+            now optional and a `.Future` will be returned if it is omitted.
+
+        .. versionchanged:: 6.0
+
+           The ``callback`` argument was removed. Use the returned
+           `.Future` instead.
+        """
+    future = self._start_read()
+    self._read_delimiter = delimiter
+    self._read_max_bytes = max_bytes
+    try:
+        self._try_inline_read()
+    except UnsatisfiableReadError as e:
+        gen_log.info('Unsatisfiable read, closing connection: %s' % e)
+        self.close(exc_info=e)
+        return future
+    except:
+        future.add_done_callback(lambda f: f.exception())
+        raise
+    return future
+
+----------
+
+@gen_test
+def test_small_read_untils_from_large_buffer(self: typing.Any):
+    (rs, ws) = (yield self.make_iostream_pair(max_buffer_size=10 * 1024))
+    try:
+        ws.write((b'a' * 1023 + b'\n') * 100)
+        for i in range(100):
+            data = (yield rs.read_until(b'\n', max_bytes=4096))
+            self.assertEqual(data, b'a' * 1023 + b'\n')
+    finally:
+        ws.close()
+        rs.close()
+
+----------
+
+
+
+Test Class Name: IOStreamPairContext

@@ -1,0 +1,21 @@
+def has_message_body(status):
+    """
+    According to the following RFC message body and length SHOULD NOT
+    be included in responses status 1XX, 204 and 304.
+    https://tools.ietf.org/html/rfc2616#section-4.4
+    https://tools.ietf.org/html/rfc2616#section-4.3
+    """
+    return status not in (204, 304) and (not 100 <= status < 200)
+
+----------
+
+def test_has_message_body():
+    tests = ((100, False), (102, False), (204, False), (200, True), (304, False), (400, True))
+    for (status_code, expected) in tests:
+        assert helpers.has_message_body(status_code) is expected
+
+----------
+
+
+
+Test Class Name: default

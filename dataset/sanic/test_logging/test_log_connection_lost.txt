@@ -1,0 +1,41 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.parametrize('debug', (True, False))
+def test_log_connection_lost(app, debug, monkeypatch):
+    """Should not log Connection lost exception on non debug"""
+    stream = StringIO()
+    error = logging.getLogger('sanic.error')
+    error.addHandler(logging.StreamHandler(stream))
+    monkeypatch.setattr(sanic.server.protocols.http_protocol, 'error_logger', error)
+
+    @app.route('/conn_lost')
+    async def conn_lost(request):
+        response = text('Ok')
+        request.transport.close()
+        return response
+    (req, res) = app.test_client.get('/conn_lost', debug=debug, allow_none=True)
+    assert res is None
+    log = stream.getvalue()
+    if debug:
+        assert 'Connection lost before response written @' in log
+    else:
+        assert 'Connection lost before response written @' not in log
+
+----------
+
+
+
+Test Class Name: default

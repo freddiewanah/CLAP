@@ -1,0 +1,33 @@
+def default(self, o):
+    if getattr(o, '__ENCRYPTED__', False):
+        if self._vault_to_text:
+            value = to_text(o, errors='surrogate_or_strict')
+        else:
+            value = {'__ansible_vault': to_text(o._ciphertext, errors='surrogate_or_strict', nonstring='strict')}
+    elif getattr(o, '__UNSAFE__', False):
+        value = {'__ansible_unsafe': to_text(o, errors='surrogate_or_strict', nonstring='strict')}
+    elif isinstance(o, Mapping):
+        value = dict(o)
+    elif isinstance(o, (datetime.date, datetime.datetime)):
+        value = o.isoformat()
+    else:
+        value = super(AnsibleJSONEncoder, self).default(o)
+    return value
+
+----------
+
+@pytest.mark.parametrize('test_input,expected', [({1: 'first'}, {1: 'first'}), ({2: 'second'}, {2: 'second'})])
+def test_default_encoder(self, ansible_json_encoder, test_input, expected):
+    """
+        Test for the default encoder of AnsibleJSONEncoder.default().
+
+        If objects of different classes that are not tested above were passed,
+        AnsibleJSONEncoder.default() invokes 'default()' method of json.JSONEncoder superclass.
+        """
+    assert ansible_json_encoder.default(test_input) == expected
+
+----------
+
+
+
+Test Class Name: M

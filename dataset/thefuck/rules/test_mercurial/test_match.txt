@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('hg base', "hg: unknown command 'base'\n(did you mean one of blame, phase, rebase?)"), Command('hg branchch', "hg: unknown command 'branchch'\n(did you mean one of branch, branches?)"), Command('hg vert', "hg: unknown command 'vert'\n(did you mean one of revert?)"), Command('hg lgo -r tip', "hg: command 're' is ambiguous:\n(did you mean one of log?)"), Command('hg rerere', "hg: unknown command 'rerere'\n(did you mean one of revert?)"), Command('hg re', "hg: command 're' is ambiguous:\n    rebase recover remove rename resolve revert"), Command('hg re re', "hg: command 're' is ambiguous:\n    rebase recover remove rename resolve revert")])
+def test_match(command):
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_precedence(self):
+    jsi = JSInterpreter('\n        function x() {\n            var a = [10, 20, 30, 40, 50];\n            var b = 6;\n            a[0]=a[b%a.length];\n            return a;\n        }')
+    self.assertEqual(jsi.call_function('x'), [20, 20, 30, 40, 50])
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

@@ -1,0 +1,26 @@
+def get_bos_token_from_sample(self, sample):
+    net_input = sample['net_input']
+    source_lang_token_id = torch.unique(net_input['src_tokens'][:, 0]).item()
+    source_lang_token = self.dictionary[source_lang_token_id].replace('_', '')
+    target_lang_token_id = _lang_token_index(self.dictionary, self.get_other_lang(source_lang_token))
+    return target_lang_token_id
+
+----------
+
+def test_lang_tokens(self):
+    (task, model) = self.obt_task(['en', 'ro', 'zh'])
+    assert obt._lang_token('en') in task.dictionary
+    assert obt._lang_token('ro') in task.dictionary
+    assert obt._lang_token('zh') in task.dictionary
+    en_bos = obt._lang_token_index(task.common_dict, 'en')
+    assert 'en' == task.common_dict[en_bos].strip('_')
+    zh_bos = obt._lang_token_index(task.common_dict, 'zh')
+    assert 'zh' == task.common_dict[zh_bos].strip('_')
+    zh_sample = mk_sample([zh_bos, 16, 14, 12, 10])
+    assert task.get_bos_token_from_sample(zh_sample) == en_bos
+
+----------
+
+
+
+Test Class Name: OnlineBacktranslationTest

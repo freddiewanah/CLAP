@@ -1,0 +1,161 @@
+def to_text(obj, encoding='utf-8', errors=None, nonstring='simplerepr'):
+    """Make sure that a string is a text string
+
+    :arg obj: An object to make sure is a text string.  In most cases this
+        will be either a text string or a byte string.  However, with
+        ``nonstring='simplerepr'``, this can be used as a traceback-free
+        version of ``str(obj)``.
+    :kwarg encoding: The encoding to use to transform from a byte string to
+        a text string.  Defaults to using 'utf-8'.
+    :kwarg errors: The error handler to use if the byte string is not
+        decodable using the specified encoding.  Any valid `codecs error
+        handler <https://docs.python.org/3/library/codecs.html#codec-base-classes>`_
+        may be specified.   We support three additional error strategies
+        specifically aimed at helping people to port code:
+
+            :surrogate_or_strict: Will use surrogateescape if it is a valid
+                handler, otherwise it will use strict
+            :surrogate_or_replace: Will use surrogateescape if it is a valid
+                handler, otherwise it will use replace.
+            :surrogate_then_replace: Does the same as surrogate_or_replace but
+                `was added for symmetry with the error handlers in
+                :func:`ansible.module_utils._text.to_bytes` (Added in Ansible 2.3)
+
+        Because surrogateescape was added in Python3 this usually means that
+        Python3 will use `surrogateescape` and Python2 will use the fallback
+        error handler. Note that the code checks for surrogateescape when the
+        module is imported.  If you have a backport of `surrogateescape` for
+        python2, be sure to register the error handler prior to importing this
+        module.
+
+        The default until Ansible-2.2 was `surrogate_or_replace`
+        In Ansible-2.3 this defaults to `surrogate_then_replace` for symmetry
+        with :func:`ansible.module_utils._text.to_bytes` .
+    :kwarg nonstring: The strategy to use if a nonstring is specified in
+        ``obj``.  Default is 'simplerepr'.  Valid values are:
+
+        :simplerepr: The default.  This takes the ``str`` of the object and
+            then returns the text version of that string.
+        :empty: Return an empty text string
+        :passthru: Return the object passed in
+        :strict: Raise a :exc:`TypeError`
+
+    :returns: Typically this returns a text string.  If a nonstring object is
+        passed in this may be a different type depending on the strategy
+        specified by nonstring.  This will never return a byte string.
+        From Ansible-2.3 onwards, the default is `surrogate_then_replace`.
+
+    .. version_changed:: 2.3
+
+        Added the surrogate_then_replace error handler and made it the default error handler.
+    """
+    if isinstance(obj, text_type):
+        return obj
+    if errors in _COMPOSED_ERROR_HANDLERS:
+        if HAS_SURROGATEESCAPE:
+            errors = 'surrogateescape'
+        elif errors == 'surrogate_or_strict':
+            errors = 'strict'
+        else:
+            errors = 'replace'
+    if isinstance(obj, binary_type):
+        return obj.decode(encoding, errors)
+    if nonstring == 'simplerepr':
+        try:
+            value = str(obj)
+        except UnicodeError:
+            try:
+                value = repr(obj)
+            except UnicodeError:
+                return u''
+    elif nonstring == 'passthru':
+        return obj
+    elif nonstring == 'empty':
+        return u''
+    elif nonstring == 'strict':
+        raise TypeError('obj must be a string type')
+    else:
+        raise TypeError("Invalid value %s for to_text's nonstring parameter" % nonstring)
+    return to_text(value, encoding, errors)
+
+----------
+
+@pytest.mark.parametrize('collection_skeleton', [('ansible_test.build_collection', None)], indirect=True)
+def test_collection_build(collection_artifact):
+    tar_path = os.path.join(collection_artifact, 'ansible_test-build_collection-1.0.0.tar.gz')
+    assert tarfile.is_tarfile(tar_path)
+    with tarfile.open(tar_path, mode='r') as tar:
+        tar_members = tar.getmembers()
+        valid_files = ['MANIFEST.json', 'FILES.json', 'roles', 'docs', 'plugins', 'plugins/README.md', 'README.md', 'runme.sh', 'meta', 'meta/runtime.yml']
+        assert len(tar_members) == len(valid_files)
+        for member in tar_members:
+            assert member.name in valid_files
+            assert member.gid == 0
+            assert member.gname == ''
+            assert member.uid == 0
+            assert member.uname == ''
+            if member.isdir() or member.name == 'runme.sh':
+                assert member.mode == 493
+            else:
+                assert member.mode == 420
+        manifest_file = tar.extractfile(tar_members[0])
+        try:
+            manifest = json.loads(to_text(manifest_file.read()))
+        finally:
+            manifest_file.close()
+        coll_info = manifest['collection_info']
+        file_manifest = manifest['file_manifest_file']
+        assert manifest['format'] == 1
+        assert len(manifest.keys()) == 3
+        assert coll_info['namespace'] == 'ansible_test'
+        assert coll_info['name'] == 'build_collection'
+        assert coll_info['version'] == '1.0.0'
+        assert coll_info['authors'] == ['your name <example@domain.com>']
+        assert coll_info['readme'] == 'README.md'
+        assert coll_info['tags'] == []
+        assert coll_info['description'] == 'your collection description'
+        assert coll_info['license'] == ['GPL-2.0-or-later']
+        assert coll_info['license_file'] is None
+        assert coll_info['dependencies'] == {}
+        assert coll_info['repository'] == 'http://example.com/repository'
+        assert coll_info['documentation'] == 'http://docs.example.com'
+        assert coll_info['homepage'] == 'http://example.com'
+        assert coll_info['issues'] == 'http://example.com/issue/tracker'
+        assert len(coll_info.keys()) == 14
+        assert file_manifest['name'] == 'FILES.json'
+        assert file_manifest['ftype'] == 'file'
+        assert file_manifest['chksum_type'] == 'sha256'
+        assert file_manifest['chksum_sha256'] is not None
+        assert file_manifest['format'] == 1
+        assert len(file_manifest.keys()) == 5
+        files_file = tar.extractfile(tar_members[1])
+        try:
+            files = json.loads(to_text(files_file.read()))
+        finally:
+            files_file.close()
+        assert len(files['files']) == 9
+        assert files['format'] == 1
+        assert len(files.keys()) == 2
+        valid_files_entries = ['.', 'roles', 'docs', 'plugins', 'plugins/README.md', 'README.md', 'runme.sh', 'meta', 'meta/runtime.yml']
+        for file_entry in files['files']:
+            assert file_entry['name'] in valid_files_entries
+            assert file_entry['format'] == 1
+            if file_entry['name'] in ['plugins/README.md', 'runme.sh', 'meta/runtime.yml']:
+                assert file_entry['ftype'] == 'file'
+                assert file_entry['chksum_type'] == 'sha256'
+                assert file_entry['chksum_sha256'] is not None
+            elif file_entry['name'] == 'README.md':
+                assert file_entry['ftype'] == 'file'
+                assert file_entry['chksum_type'] == 'sha256'
+                assert file_entry['chksum_sha256'] == '6d8b5f9b5d53d346a8cd7638a0ec26e75e8d9773d952162779a49d25da6ef4f5'
+            else:
+                assert file_entry['ftype'] == 'dir'
+                assert file_entry['chksum_type'] is None
+                assert file_entry['chksum_sha256'] is None
+            assert len(file_entry.keys()) == 5
+
+----------
+
+
+
+Test Class Name: TestGalaxyInitSkeleton

@@ -1,0 +1,30 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_raw_headers(app):
+    app.route('/')(lambda _: text(''))
+    (request, _) = app.test_client.get('/', headers={'FOO': 'bar', 'Host': 'example.com', 'User-Agent': 'Sanic-Testing'})
+    assert b'Host: example.com' in request.raw_headers
+    assert b'Accept: */*' in request.raw_headers
+    assert b'Accept-Encoding: gzip, deflate' in request.raw_headers
+    assert b'Connection: keep-alive' in request.raw_headers
+    assert b'User-Agent: Sanic-Testing' in request.raw_headers
+    assert b'FOO: bar' in request.raw_headers
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,40 @@
+def open(self, spider: Spider) -> Optional[Deferred]:
+    """
+        (1) initialize the memory queue
+        (2) initialize the disk queue if the ``jobdir`` attribute is a valid directory
+        (3) return the result of the dupefilter's ``open`` method
+        """
+    self.spider = spider
+    self.mqs = self._mq()
+    self.dqs = self._dq() if self.dqdir else None
+    return self.df.open()
+
+----------
+
+def test_seenreq_newlines(self):
+    """ Checks against adding duplicate \r to
+        line endings on Windows platforms. """
+    r1 = Request('http://scrapytest.org/1')
+    path = tempfile.mkdtemp()
+    crawler = get_crawler(settings_dict={'JOBDIR': path})
+    try:
+        scheduler = Scheduler.from_crawler(crawler)
+        df = scheduler.df
+        df.open()
+        df.request_seen(r1)
+        df.close('finished')
+        with Path(path, 'requests.seen').open('rb') as seen_file:
+            line = next(seen_file).decode()
+            assert not line.endswith('\r\r\n')
+            if sys.platform == 'win32':
+                assert line.endswith('\r\n')
+            else:
+                assert line.endswith('\n')
+    finally:
+        shutil.rmtree(path)
+
+----------
+
+
+
+Test Class Name: RequestFingerprinter

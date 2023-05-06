@@ -1,0 +1,27 @@
+def country(self, allow_random: bool=False) -> str:
+    """Get the country of the current locale.
+
+        :param allow_random: Return a random country name.
+        :return: The Country.
+        """
+    if allow_random:
+        countries: t.List[str] = self.extract(['country', 'name'])
+        return self.random.choice(countries)
+    country: str = self.extract(['country', 'current_locale'])
+    return country
+
+----------
+
+@pytest.mark.parametrize('allow_random, key', [(False, 'current_locale'), (True, 'name')])
+def test_country(self, address, allow_random, key):
+    country = address.country(allow_random=allow_random)
+    if allow_random:
+        assert country in address._data['country'][key]
+    else:
+        assert country == address._data['country'][key]
+
+----------
+
+
+
+Test Class Name: TestAddress

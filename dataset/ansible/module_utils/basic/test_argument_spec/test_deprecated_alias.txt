@@ -1,0 +1,19 @@
+def get_deprecation_messages():
+    """Return a tuple of deprecations accumulated over this run"""
+    return tuple(_global_deprecations)
+
+----------
+
+@pytest.mark.parametrize('stdin', [{'foo': 'hello', 'zodraz': 'one'}], indirect=['stdin'])
+def test_deprecated_alias(self, capfd, mocker, stdin, complex_argspec, monkeypatch):
+    """Test a deprecated alias"""
+    monkeypatch.setattr(warnings, '_global_deprecations', [])
+    am = basic.AnsibleModule(**complex_argspec)
+    assert "Alias 'zodraz' is deprecated." in get_deprecation_messages()[0]['msg']
+    assert get_deprecation_messages()[0]['version'] == '9.99'
+
+----------
+
+
+
+Test Class Name: TestComplexArgSpecs

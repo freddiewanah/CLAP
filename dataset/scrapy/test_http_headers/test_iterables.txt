@@ -1,0 +1,18 @@
+def values(self):
+    return [self[k] for k in self.keys()]
+
+----------
+
+def test_iterables(self):
+    idict = {'Content-Type': 'text/html', 'X-Forwarded-For': ['ip1', 'ip2']}
+    h = Headers(idict)
+    self.assertDictEqual(dict(h), {b'Content-Type': [b'text/html'], b'X-Forwarded-For': [b'ip1', b'ip2']})
+    self.assertSortedEqual(h.keys(), [b'X-Forwarded-For', b'Content-Type'])
+    self.assertSortedEqual(h.items(), [(b'X-Forwarded-For', [b'ip1', b'ip2']), (b'Content-Type', [b'text/html'])])
+    self.assertSortedEqual(h.values(), [b'ip2', b'text/html'])
+
+----------
+
+
+
+Test Class Name: HeadersTest

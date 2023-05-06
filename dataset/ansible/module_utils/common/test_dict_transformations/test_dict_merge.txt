@@ -1,0 +1,44 @@
+def dict_merge(a, b):
+    """recursively merges dicts. not just simple a['key'] = b['key'], if
+    both a and b have a key whose value is a dict then dict_merge is called
+    on both values and the result stored in the returned dictionary."""
+    if not isinstance(b, dict):
+        return b
+    result = deepcopy(a)
+    for (k, v) in b.items():
+        if k in result and isinstance(result[k], dict):
+            result[k] = dict_merge(result[k], v)
+        else:
+            result[k] = deepcopy(v)
+    return result
+
+----------
+
+def test_dict_merge(self):
+    base = dict(obj2=dict(), b1=True, b2=False, b3=False, one=1, two=2, three=3, obj1=dict(key1=1, key2=2), l1=[1, 3], l2=[1, 2, 3], l4=[4], nested=dict(n1=dict(n2=2)))
+    other = dict(b1=True, b2=False, b3=True, b4=True, one=1, three=4, four=4, obj1=dict(key1=2), l1=[2, 1], l2=[3, 2, 1], l3=[1], nested=dict(n1=dict(n2=2, n3=3)))
+    result = dict_merge(base, other)
+    assert 'one' in result
+    assert 'two' in result
+    assert result['three'] == 4
+    assert result['four'] == 4
+    assert 'obj1' in result
+    assert 'key1' in result['obj1']
+    assert 'key2' in result['obj1']
+    assert result['l1'], [2, 1]
+    assert 'l2' in result
+    assert result['l3'], [1]
+    assert 'l4' in result
+    assert 'obj1' in result
+    assert result['obj1']['key1'], 2
+    assert 'key2' in result['obj1']
+    assert 'b1' in result
+    assert 'b2' in result
+    assert result['b3']
+    assert result['b4']
+
+----------
+
+
+
+Test Class Name: TestCaseDictMerge

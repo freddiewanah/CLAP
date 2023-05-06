@@ -1,0 +1,23 @@
+def close(self, reason: str) -> Optional[Deferred]:
+    """
+        Called when the spider is closed by the engine. It receives the reason why the crawl
+        finished as argument and it's useful to execute cleaning code.
+
+        :param reason: a string which describes the reason why the spider was closed
+        :type reason: :class:`str`
+        """
+    pass
+
+----------
+
+def test_open_close(self):
+    with self.assertRaises(AttributeError):
+        self.scheduler.open(Spider('foo'))
+    with self.assertRaises(AttributeError):
+        self.scheduler.close('finished')
+
+----------
+
+
+
+Test Class Name: MinimalSchedulerTest

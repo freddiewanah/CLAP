@@ -1,0 +1,38 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_engine_status(self):
+    from scrapy.utils.engine import get_engine_status
+    est = []
+
+    def cb(response):
+        est.append(get_engine_status(crawler.engine))
+    crawler = get_crawler(SingleRequestSpider)
+    yield crawler.crawl(seed=self.mockserver.url('/'), callback_func=cb, mockserver=self.mockserver)
+    self.assertEqual(len(est), 1, est)
+    s = dict(est[0])
+    self.assertEqual(s['engine.spider.name'], crawler.spider.name)
+    self.assertEqual(s['len(engine.scraper.slot.active)'], 1)
+
+----------
+
+
+
+Test Class Name: CrawlTestCase

@@ -1,0 +1,23 @@
+def dsn(self, dsn_type: t.Optional[DSNType]=None, **kwargs: t.Any) -> str:
+    """Generates a random DSN (Data Source Name).
+
+        :param dsn_type: DSN type.
+        :param kwargs: Additional arguments for Internet.hostname().
+        """
+    hostname = self._internet.hostname(**kwargs)
+    (scheme, port) = self.validate_enum(dsn_type, DSNType)
+    return f'{scheme}://{hostname}:{port}'
+
+----------
+
+@pytest.mark.parametrize('dsn_type', [DSNType.POSTGRES, DSNType.MYSQL, DSNType.MONGODB, DSNType.REDIS, DSNType.COUCHBASE, DSNType.MEMCACHED, DSNType.RABBITMQ])
+def test_dsn(self, dev, dsn_type):
+    (scheme, port) = dsn_type.value
+    assert dev.dsn(dsn_type=dsn_type).endswith(f':{port}')
+    assert dev.dsn(dsn_type=dsn_type).startswith(f'{scheme}://')
+
+----------
+
+
+
+Test Class Name: TestDevelopment

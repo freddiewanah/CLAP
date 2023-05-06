@@ -1,0 +1,19 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_twitter_show_user(self):
+    response = self.fetch('/twitter/client/show_user?name=somebody')
+    response.rethrow()
+    self.assertEqual(json_decode(response.body), {'name': 'Somebody', 'screen_name': 'somebody'})
+
+----------
+
+
+
+Test Class Name: AuthTest

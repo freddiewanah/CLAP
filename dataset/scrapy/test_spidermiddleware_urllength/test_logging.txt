@@ -1,0 +1,17 @@
+def process_spider_output(self, response, result, spider):
+    return (r for r in result or () if self._filter(r, spider))
+
+----------
+
+def test_logging(self):
+    with LogCapture() as log:
+        self.process_spider_output()
+    ric = self.stats.get_value('urllength/request_ignored_count', spider=self.spider)
+    self.assertEqual(ric, 1)
+    self.assertIn(f'Ignoring link (url length > {self.maxlength})', str(log))
+
+----------
+
+
+
+Test Class Name: TestUrlLengthMiddleware

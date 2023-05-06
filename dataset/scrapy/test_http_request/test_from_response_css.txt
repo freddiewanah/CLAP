@@ -1,0 +1,33 @@
+@classmethod
+def from_response(cls: Type[FormRequestTypeVar], response: TextResponse, formname: Optional[str]=None, formid: Optional[str]=None, formnumber: Optional[int]=0, formdata: FormdataType=None, clickdata: Optional[dict]=None, dont_click: bool=False, formxpath: Optional[str]=None, formcss: Optional[str]=None, **kwargs) -> FormRequestTypeVar:
+    kwargs.setdefault('encoding', response.encoding)
+    if formcss is not None:
+        from parsel.csstranslator import HTMLTranslator
+        formxpath = HTMLTranslator().css_to_xpath(formcss)
+    form = _get_form(response, formname, formid, formnumber, formxpath)
+    formdata = _get_inputs(form, formdata, dont_click, clickdata)
+    url = _get_form_url(form, kwargs.pop('url', None))
+    method = kwargs.pop('method', form.method)
+    if method is not None:
+        method = method.upper()
+        if method not in cls.valid_form_methods:
+            method = 'GET'
+    return cls(url=url, method=method, formdata=formdata, **kwargs)
+
+----------
+
+def test_from_response_css(self):
+    response = _buildresponse('<form action="post.php" method="POST">\n            <input type="hidden" name="one" value="1">\n            <input type="hidden" name="two" value="2">\n            </form>\n            <form action="post2.php" method="POST">\n            <input type="hidden" name="three" value="3">\n            <input type="hidden" name="four" value="4">\n            </form>')
+    r1 = self.request_class.from_response(response, formcss="form[action='post.php']")
+    fs = _qs(r1)
+    self.assertEqual(fs[b'one'], [b'1'])
+    r1 = self.request_class.from_response(response, formcss="input[name='four']")
+    fs = _qs(r1)
+    self.assertEqual(fs[b'three'], [b'3'])
+    self.assertRaises(ValueError, self.request_class.from_response, response, formcss="input[name='abc']")
+
+----------
+
+
+
+Test Class Name: FormRequestTest

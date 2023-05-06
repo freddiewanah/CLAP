@@ -1,0 +1,39 @@
+def ping(self, data: Union[str, bytes]=b'') -> None:
+    """Send ping frame to the remote end.
+
+        The data argument allows a small amount of data (up to 125
+        bytes) to be sent as a part of the ping message. Note that not
+        all websocket implementations expose this data to
+        applications.
+
+        Consider using the ``websocket_ping_interval`` application
+        setting instead of sending pings manually.
+
+        .. versionchanged:: 5.1
+
+           The data argument is now optional.
+
+        """
+    data = utf8(data)
+    if self.ws_connection is None or self.ws_connection.is_closing():
+        raise WebSocketClosedError()
+    self.ws_connection.write_ping(data)
+
+----------
+
+@gen_test
+def test_manual_ping(self):
+    ws = (yield self.ws_connect('/'))
+    self.assertRaises(ValueError, ws.ping, 'a' * 126)
+    ws.ping('hello')
+    resp = (yield ws.read_message())
+    self.assertEqual(resp, b'hello')
+    ws.ping(b'binary hello')
+    resp = (yield ws.read_message())
+    self.assertEqual(resp, b'binary hello')
+
+----------
+
+
+
+Test Class Name: PingHandler

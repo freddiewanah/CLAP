@@ -1,0 +1,25 @@
+@eager
+def get_all_matched_commands(stderr, separator='Did you mean'):
+    if not isinstance(separator, list):
+        separator = [separator]
+    should_yield = False
+    for line in stderr.split('\n'):
+        for sep in separator:
+            if sep in line:
+                should_yield = True
+                break
+        else:
+            if should_yield and line:
+                yield line.strip()
+
+----------
+
+@pytest.mark.parametrize('stderr, result', [("git: 'cone' is not a git command. See 'git --help'.\n\nDid you mean one of these?\n\tclone", ['clone']), ("git: 're' is not a git command. See 'git --help'.\n\nDid you mean one of these?\n\trebase\n\treset\n\tgrep\n\trm", ['rebase', 'reset', 'grep', 'rm']), ('tsuru: "target" is not a tsuru command. See "tsuru help".\n\nDid you mean one of these?\n\tservice-add\n\tservice-bind\n\tservice-doc\n\tservice-info\n\tservice-list\n\tservice-remove\n\tservice-status\n\tservice-unbind', ['service-add', 'service-bind', 'service-doc', 'service-info', 'service-list', 'service-remove', 'service-status', 'service-unbind'])])
+def test_get_all_matched_commands(stderr, result):
+    assert list(get_all_matched_commands(stderr)) == result
+
+----------
+
+
+
+Test Class Name: TestGetCloseMatches

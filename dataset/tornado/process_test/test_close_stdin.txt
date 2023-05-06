@@ -1,0 +1,23 @@
+def close(self) -> None:
+    """Closes the HTTPClient, freeing any resources used."""
+    if not self._closed:
+        self._async_client.close()
+        self._io_loop.close()
+        self._closed = True
+
+----------
+
+@gen_test
+def test_close_stdin(self):
+    subproc = Subprocess([sys.executable, '-u', '-i'], stdin=Subprocess.STREAM, stdout=Subprocess.STREAM, stderr=subprocess.STDOUT)
+    self.addCleanup(lambda : self.term_and_wait(subproc))
+    yield subproc.stdout.read_until(b'>>> ')
+    subproc.stdin.close()
+    data = (yield subproc.stdout.read_until_close())
+    self.assertEqual(data, b'\n')
+
+----------
+
+
+
+Test Class Name: SubprocessTest

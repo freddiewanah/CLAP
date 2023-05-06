@@ -1,0 +1,18 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_xmliter(self):
+    body = b'\n            <?xml version="1.0" encoding="UTF-8"?>\n            <products xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n                      xsi:noNamespaceSchemaLocation="someschmea.xsd">\n              <product id="001">\n                <type>Type 1</type>\n                <name>Name 1</name>\n              </product>\n              <product id="002">\n                <type>Type 2</type>\n                <name>Name 2</name>\n              </product>\n            </products>\n        '
+    response = XmlResponse(url='http://example.com', body=body)
+    attrs = []
+    for x in self.xmliter(response, 'product'):
+        attrs.append((x.attrib['id'], x.xpath('name/text()').getall(), x.xpath('./type/text()').getall()))
+    self.assertEqual(attrs, [('001', ['Name 1'], ['Type 1']), ('002', ['Name 2'], ['Type 2'])])
+
+----------
+
+
+
+Test Class Name: XmliterTestCase

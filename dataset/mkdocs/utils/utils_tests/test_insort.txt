@@ -1,0 +1,25 @@
+def insort(a: MutableSequence[T], x: T, *, key=lambda v: v) -> None:
+    kx = key(x)
+    i = len(a)
+    while i > 0 and kx < key(a[i - 1]):
+        i -= 1
+    a.insert(i, x)
+
+----------
+
+def test_insort(self):
+    a = [1, 2, 3]
+    utils.insort(a, 5)
+    self.assertEqual(a, [1, 2, 3, 5])
+    utils.insort(a, -1)
+    self.assertEqual(a, [-1, 1, 2, 3, 5])
+    utils.insort(a, 2)
+    self.assertEqual(a, [-1, 1, 2, 2, 3, 5])
+    utils.insort(a, 4)
+    self.assertEqual(a, [-1, 1, 2, 2, 3, 4, 5])
+
+----------
+
+
+
+Test Class Name: UtilsTests

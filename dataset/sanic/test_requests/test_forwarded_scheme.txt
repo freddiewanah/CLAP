@@ -1,0 +1,33 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_forwarded_scheme(app):
+
+    @app.route('/')
+    async def handler(request):
+        return text(request.remote_addr)
+    app.config.PROXIES_COUNT = 1
+    (request, response) = app.test_client.get('/')
+    assert request.scheme == 'http'
+    (request, response) = app.test_client.get('/', headers={'X-Forwarded-For': '127.1.2.3', 'X-Forwarded-Proto': 'https'})
+    assert request.scheme == 'https'
+    (request, response) = app.test_client.get('/', headers={'X-Forwarded-For': '127.1.2.3', 'X-Scheme': 'https'})
+    assert request.scheme == 'https'
+
+----------
+
+
+
+Test Class Name: Bar

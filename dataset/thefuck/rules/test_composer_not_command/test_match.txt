@@ -1,0 +1,17 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_match(composer_not_command, composer_not_command_one_of_this, composer_require_instead_of_install):
+    assert match(Command('composer udpate', composer_not_command))
+    assert match(Command('composer pdate', composer_not_command_one_of_this))
+    assert match(Command('composer install package', composer_require_instead_of_install))
+    assert not match(Command('ls update', composer_not_command))
+
+----------
+
+
+
+Test Class Name: default

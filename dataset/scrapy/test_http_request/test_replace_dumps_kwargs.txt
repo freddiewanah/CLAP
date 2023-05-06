@@ -1,0 +1,29 @@
+def replace(self, *args, **kwargs) -> Request:
+    body_passed = kwargs.get('body', None) is not None
+    data = kwargs.pop('data', None)
+    data_passed = data is not None
+    if body_passed and data_passed:
+        warnings.warn('Both body and data passed. data will be ignored')
+    elif not body_passed and data_passed:
+        kwargs['body'] = self._dumps(data)
+    return super().replace(*args, **kwargs)
+
+----------
+
+def test_replace_dumps_kwargs(self):
+    """ Test that dumps_kwargs are provided to json.dumps when replace is called """
+    data1 = {'name1': 'value1'}
+    data2 = {'name2': 'value2'}
+    dumps_kwargs = {'ensure_ascii': True, 'allow_nan': True}
+    r1 = self.request_class(url='http://www.example.com/', data=data1, dumps_kwargs=dumps_kwargs)
+    with mock.patch('json.dumps', return_value=b'') as mock_dumps:
+        r1.replace(data=data2)
+        kwargs = mock_dumps.call_args[1]
+        self.assertEqual(kwargs['ensure_ascii'], True)
+        self.assertEqual(kwargs['allow_nan'], True)
+
+----------
+
+
+
+Test Class Name: JsonRequestTest

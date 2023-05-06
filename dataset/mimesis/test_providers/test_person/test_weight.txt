@@ -1,0 +1,24 @@
+def weight(self, minimum: int=38, maximum: int=90) -> int:
+    """Generate a random weight in Kg.
+
+        :param minimum: min value
+        :param maximum: max value
+        :return: Weight.
+
+        :Example:
+            48.
+        """
+    return self.random.randint(minimum, maximum)
+
+----------
+
+def test_weight(self, _person):
+    result = _person.weight(minimum=40, maximum=60)
+    assert result >= 40
+    assert result <= 60
+
+----------
+
+
+
+Test Class Name: TestPerson

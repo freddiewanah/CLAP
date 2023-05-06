@@ -1,0 +1,21 @@
+def fetch_chunk_sizes(self, **kwargs):
+    response = self.fetch('/', method='POST', **kwargs)
+    response.rethrow()
+    chunks = json_decode(response.body)
+    self.assertEqual(len(self.BODY), sum(chunks))
+    for chunk_size in chunks:
+        self.assertLessEqual(chunk_size, self.CHUNK_SIZE, 'oversized chunk: ' + str(chunks))
+        self.assertGreater(chunk_size, 0, 'empty chunk: ' + str(chunks))
+    return chunks
+
+----------
+
+def test_regular_body(self):
+    chunks = self.fetch_chunk_sizes(body=self.BODY)
+    self.assertEqual([16, 16, 16, 2], chunks)
+
+----------
+
+
+
+Test Class Name: App

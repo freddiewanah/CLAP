@@ -1,0 +1,24 @@
+def process_request(self, request, spider):
+    if request.meta.get('dont_merge_cookies', False):
+        return
+    cookiejarkey = request.meta.get('cookiejar')
+    jar = self.jars[cookiejarkey]
+    cookies = self._get_request_cookies(jar, request)
+    self._process_cookies(cookies, jar=jar, request=request)
+    request.headers.pop('Cookie', None)
+    jar.add_cookie_header(request)
+    self._debug_cookie(request, spider)
+
+----------
+
+def test_local_domain(self):
+    request = Request('http://example-host/', cookies={'currencyCookie': 'USD'})
+    assert self.mw.process_request(request, self.spider) is None
+    self.assertIn('Cookie', request.headers)
+    self.assertEqual(b'currencyCookie=USD', request.headers['Cookie'])
+
+----------
+
+
+
+Test Class Name: CookiesMiddlewareTest

@@ -1,0 +1,28 @@
+def documentation_pages(self) -> Sequence[File]:
+    """Return iterable of all Markdown page file objects."""
+    return [file for file in self if file.is_documentation_page()]
+
+----------
+
+@tempdir()
+def test_build_page(self, site_dir):
+    cfg = load_config(site_dir=site_dir, nav=['index.md'], plugins=[])
+    fs = [File('index.md', cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls'])]
+    files = Files(fs)
+    nav = get_navigation(files, cfg)
+    page = files.documentation_pages()[0].page
+    page.title = 'Title'
+    page.markdown = 'page content'
+    page.content = '<p>page content</p>'
+    build._build_page(page, cfg, files, nav, self._get_env_with_null_translations(cfg))
+    self.assertPathIsFile(site_dir, 'index.html')
+
+----------
+
+def _get_env_with_null_translations(self, config):
+    env = config.theme.get_env()
+    env.add_extension('jinja2.ext.i18n')
+    env.install_null_translations()
+    return env
+
+Test Class Name: BuildTests

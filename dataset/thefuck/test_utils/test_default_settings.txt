@@ -1,0 +1,31 @@
+def default_settings(params):
+    """Adds default values to settings if it not presented.
+
+    Usage:
+
+        @default_settings({'apt': '/usr/bin/apt'})
+        def match(command):
+            print(settings.apt)
+
+    """
+
+    def _default_settings(fn, command):
+        for (k, w) in params.items():
+            settings.setdefault(k, w)
+        return fn(command)
+    return decorator(_default_settings)
+
+----------
+
+@pytest.mark.parametrize('override, old, new', [({'key': 'val'}, {}, {'key': 'val'}), ({'key': 'new-val'}, {'key': 'val'}, {'key': 'val'}), ({'key': 'new-val', 'unset': 'unset'}, {'key': 'val'}, {'key': 'val', 'unset': 'unset'})])
+def test_default_settings(settings, override, old, new):
+    settings.clear()
+    settings.update(old)
+    default_settings(override)(lambda _: _)(None)
+    assert settings == new
+
+----------
+
+
+
+Test Class Name: default

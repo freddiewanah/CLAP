@@ -1,0 +1,33 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_response_content_length(app):
+
+    @app.get('/response_with_space')
+    async def response_with_space(request: Request):
+        return json({'message': 'Data', 'details': 'Some Details'}, headers={'CONTENT-TYPE': 'application/json'})
+
+    @app.get('/response_without_space')
+    async def response_without_space(request: Request):
+        return json({'message': 'Data', 'details': 'Some Details'}, headers={'CONTENT-TYPE': 'application/json'})
+    (_, response) = app.test_client.get('/response_with_space')
+    content_length_for_response_with_space = response.headers.get('Content-Length')
+    (_, response) = app.test_client.get('/response_without_space')
+    content_length_for_response_without_space = response.headers.get('Content-Length')
+    assert content_length_for_response_with_space == content_length_for_response_without_space
+    assert content_length_for_response_with_space == '43'
+
+----------
+
+
+
+Test Class Name: default

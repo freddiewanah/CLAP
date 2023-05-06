@@ -1,0 +1,38 @@
+def process_request_2(self, rp, request, spider):
+    if rp is None:
+        return
+    useragent = self._robotstxt_useragent
+    if not useragent:
+        useragent = request.headers.get(b'User-Agent', self._default_useragent)
+    if not rp.allowed(request.url, useragent):
+        logger.debug('Forbidden by robots.txt: %(request)s', {'request': request}, extra={'spider': spider})
+        self.crawler.stats.inc_value('robotstxt/forbidden')
+        raise IgnoreRequest('Forbidden by robots.txt')
+
+----------
+
+def test_robotstxt_user_agent_setting(self):
+    crawler = self._get_successful_crawler()
+    crawler.settings.set('ROBOTSTXT_USER_AGENT', 'Examplebot')
+    crawler.settings.set('USER_AGENT', 'Mozilla/5.0 (X11; Linux x86_64)')
+    middleware = RobotsTxtMiddleware(crawler)
+    rp = mock.MagicMock(return_value=True)
+    middleware.process_request_2(rp, Request('http://site.local/allowed'), None)
+    rp.allowed.assert_called_once_with('http://site.local/allowed', 'Examplebot')
+
+----------
+
+def _get_successful_crawler(self):
+    crawler = self.crawler
+    crawler.settings.set('ROBOTSTXT_OBEY', True)
+    ROBOTS = '\nUser-Agent: *\nDisallow: /admin/\nDisallow: /static/\n# taken from https://en.wikipedia.org/robots.txt\nDisallow: /wiki/K%C3%A4ytt%C3%A4j%C3%A4:\nDisallow: /wiki/Käyttäjä:\nUser-Agent: UnicödeBöt\nDisallow: /some/randome/page.html\n'.encode('utf-8')
+    response = TextResponse('http://site.local/robots.txt', body=ROBOTS)
+
+    def return_response(request):
+        deferred = Deferred()
+        reactor.callFromThread(deferred.callback, response)
+        return deferred
+    crawler.engine.download.side_effect = return_response
+    return crawler
+
+Test Class Name: RobotsTxtMiddlewareTest

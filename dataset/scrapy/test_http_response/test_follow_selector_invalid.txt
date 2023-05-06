@@ -1,0 +1,14 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_follow_selector_invalid(self):
+    resp = self._links_response()
+    self.assertRaisesRegex(ValueError, 'Unsupported', resp.follow, resp.xpath('count(//div)')[0])
+
+----------
+
+
+
+Test Class Name: TextResponseTest

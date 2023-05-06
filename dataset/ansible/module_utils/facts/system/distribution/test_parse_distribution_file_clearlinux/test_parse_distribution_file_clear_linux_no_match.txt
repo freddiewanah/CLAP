@@ -1,0 +1,36 @@
+def parse_distribution_file_ClearLinux(self, name, data, path, collected_facts):
+    clear_facts = {}
+    if 'clearlinux' not in name.lower():
+        return (False, clear_facts)
+    pname = re.search('NAME="(.*)"', data)
+    if pname:
+        if 'Clear Linux' not in pname.groups()[0]:
+            return (False, clear_facts)
+        clear_facts['distribution'] = pname.groups()[0]
+    version = re.search('VERSION_ID=(.*)', data)
+    if version:
+        clear_facts['distribution_major_version'] = version.groups()[0]
+        clear_facts['distribution_version'] = version.groups()[0]
+    release = re.search('ID=(.*)', data)
+    if release:
+        clear_facts['distribution_release'] = release.groups()[0]
+    return (True, clear_facts)
+
+----------
+
+@pytest.mark.parametrize('distro_file', ('CoreOS', 'LinuxMint'))
+def test_parse_distribution_file_clear_linux_no_match(mock_module, distro_file, test_input):
+    """
+    Test against data from Linux Mint and CoreOS to ensure we do not get a reported
+    match from parse_distribution_file_ClearLinux()
+    """
+    test_input['data'] = open(os.path.join(os.path.dirname(__file__), '../../fixtures/distribution_files', distro_file)).read()
+    result = (False, {})
+    distribution = DistributionFiles(module=mock_module())
+    assert result == distribution.parse_distribution_file_ClearLinux(**test_input)
+
+----------
+
+
+
+Test Class Name: default

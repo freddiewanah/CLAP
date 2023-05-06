@@ -1,0 +1,15 @@
+def search(value, pattern='', ignorecase=False, multiline=False):
+    """ Perform a `re.search` returning a boolean """
+    return regex(value, pattern, ignorecase, multiline, 'search')
+
+----------
+
+@pytest.mark.parametrize('testcase, result', COLLECTION_PATHS)
+def test_detect_collection_path_re(self, testcase, result):
+    assert amc.COLLECTION_PATH_RE.search(testcase).group('path') == result
+
+----------
+
+
+
+Test Class Name: TestDetectionRegexes

@@ -1,0 +1,14 @@
+def from_shell(self, command_script):
+    """Prepares command before running in app."""
+    return self._expand_aliases(command_script)
+
+----------
+
+def test_from_shell(self, shell):
+    assert shell.from_shell('pwd') == 'pwd'
+
+----------
+
+
+
+Test Class Name: TestGeneric

@@ -1,0 +1,19 @@
+def street_suffix(self) -> str:
+    """Get a random street suffix.
+
+        :return: Street suffix.
+        """
+    suffixes: t.List[str] = self.extract(['street', 'suffix'])
+    return self.random.choice(suffixes)
+
+----------
+
+def test_street_suffix(self, address):
+    result = address.street_suffix()
+    assert result in address._data['street']['suffix']
+
+----------
+
+
+
+Test Class Name: TestAddress

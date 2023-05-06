@@ -1,0 +1,25 @@
+def age(self, minimum: int=16, maximum: int=66) -> int:
+    """Get a random integer value.
+
+        :param maximum: Maximum value of age.
+        :param minimum: Minimum value of age.
+        :return: Random integer.
+
+        :Example:
+            23.
+        """
+    age = self.random.randint(minimum, maximum)
+    self._store['age'] = age
+    return age
+
+----------
+
+def test_age_update(self, _person):
+    result = _person.age() - _person._store['age']
+    assert result == 0
+
+----------
+
+
+
+Test Class Name: TestPerson

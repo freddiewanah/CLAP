@@ -1,0 +1,17 @@
+def compat_shlex_split(s, comments=False, posix=True):
+    if isinstance(s, compat_str):
+        s = s.encode('utf-8')
+    return list(map(lambda s: s.decode('utf-8'), shlex.split(s, comments, posix)))
+
+----------
+
+def test_compat_shlex_split(self):
+    self.assertEqual(compat_shlex_split('-option "one two"'), ['-option', 'one two'])
+    self.assertEqual(compat_shlex_split('-option "one\ntwo" \n -flag'), ['-option', 'one\ntwo', '-flag'])
+    self.assertEqual(compat_shlex_split('-val 中文'), ['-val', '中文'])
+
+----------
+
+
+
+Test Class Name: TestCompat

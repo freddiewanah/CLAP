@@ -1,0 +1,22 @@
+def close(self) -> None:
+    """Closes the HTTPClient, freeing any resources used."""
+    if not self._closed:
+        self._async_client.close()
+        self._io_loop.close()
+        self._closed = True
+
+----------
+
+@gen_test
+def test_client_close_reason(self):
+    ws = (yield self.ws_connect('/echo'))
+    ws.close(1001, 'goodbye')
+    (code, reason) = (yield self.close_future)
+    self.assertEqual(code, 1001)
+    self.assertEqual(reason, 'goodbye')
+
+----------
+
+
+
+Test Class Name: WebSocketTest

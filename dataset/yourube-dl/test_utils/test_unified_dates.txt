@@ -1,0 +1,51 @@
+def unified_strdate(date_str, day_first=True):
+    """Return a string with the date in the format YYYYMMDD"""
+    if date_str is None:
+        return None
+    upload_date = None
+    date_str = date_str.replace(',', ' ')
+    date_str = re.sub('(?i)\\s*(?:AM|PM)(?:\\s+[A-Z]+)?', '', date_str)
+    (_, date_str) = extract_timezone(date_str)
+    for expression in date_formats(day_first):
+        try:
+            upload_date = datetime.datetime.strptime(date_str, expression).strftime('%Y%m%d')
+        except ValueError:
+            pass
+    if upload_date is None:
+        timetuple = email.utils.parsedate_tz(date_str)
+        if timetuple:
+            try:
+                upload_date = datetime.datetime(*timetuple[:6]).strftime('%Y%m%d')
+            except ValueError:
+                pass
+    if upload_date is not None:
+        return compat_str(upload_date)
+
+----------
+
+def test_unified_dates(self):
+    self.assertEqual(unified_strdate('December 21, 2010'), '20101221')
+    self.assertEqual(unified_strdate('8/7/2009'), '20090708')
+    self.assertEqual(unified_strdate('Dec 14, 2012'), '20121214')
+    self.assertEqual(unified_strdate('2012/10/11 01:56:38 +0000'), '20121011')
+    self.assertEqual(unified_strdate('1968 12 10'), '19681210')
+    self.assertEqual(unified_strdate('1968-12-10'), '19681210')
+    self.assertEqual(unified_strdate('28/01/2014 21:00:00 +0100'), '20140128')
+    self.assertEqual(unified_strdate('11/26/2014 11:30:00 AM PST', day_first=False), '20141126')
+    self.assertEqual(unified_strdate('2/2/2015 6:47:40 PM', day_first=False), '20150202')
+    self.assertEqual(unified_strdate('Feb 14th 2016 5:45PM'), '20160214')
+    self.assertEqual(unified_strdate('25-09-2014'), '20140925')
+    self.assertEqual(unified_strdate('27.02.2016 17:30'), '20160227')
+    self.assertEqual(unified_strdate('UNKNOWN DATE FORMAT'), None)
+    self.assertEqual(unified_strdate('Feb 7, 2016 at 6:35 pm'), '20160207')
+    self.assertEqual(unified_strdate('July 15th, 2013'), '20130715')
+    self.assertEqual(unified_strdate('September 1st, 2013'), '20130901')
+    self.assertEqual(unified_strdate('Sep 2nd, 2013'), '20130902')
+    self.assertEqual(unified_strdate('November 3rd, 2019'), '20191103')
+    self.assertEqual(unified_strdate('October 23rd, 2005'), '20051023')
+
+----------
+
+
+
+Test Class Name: TestUtil

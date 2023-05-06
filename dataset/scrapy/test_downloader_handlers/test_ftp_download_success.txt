@@ -1,0 +1,33 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+def test_ftp_download_success(self):
+    request = Request(url=f'ftp://127.0.0.1:{self.portNum}/file.txt', meta=self.req_meta)
+    d = self.download_handler.download_request(request, None)
+
+    def _test(r):
+        self.assertEqual(r.status, 200)
+        self.assertEqual(r.body, b'I have the power!')
+        self.assertEqual(r.headers, {b'Local Filename': [b''], b'Size': [b'17']})
+        self.assertIsNone(r.protocol)
+    return self._add_test_callbacks(d, _test)
+
+----------
+
+def _add_test_callbacks(self, deferred, callback=None, errback=None):
+
+    def _clean(data):
+        self.download_handler.client.transport.loseConnection()
+        return data
+    deferred.addCallback(_clean)
+    if callback:
+        deferred.addCallback(callback)
+    if errback:
+        deferred.addErrback(errback)
+    return deferred
+
+Test Class Name: BaseFTPTestCase

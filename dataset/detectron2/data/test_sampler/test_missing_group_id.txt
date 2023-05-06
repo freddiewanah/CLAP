@@ -1,0 +1,23 @@
+def list(self) -> List[str]:
+    """
+        List all registered datasets.
+
+        Returns:
+            list[str]
+        """
+    return list(self.keys())
+
+----------
+
+def test_missing_group_id(self):
+    sampler = SequentialSampler(list(range(100)))
+    group_ids = [1] * 100
+    samples = GroupedBatchSampler(sampler, group_ids, 2)
+    for mini_batch in samples:
+        self.assertEqual(len(mini_batch), 2)
+
+----------
+
+
+
+Test Class Name: TestGroupedBatchSampler

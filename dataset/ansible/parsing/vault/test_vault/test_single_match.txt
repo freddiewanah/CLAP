@@ -1,0 +1,19 @@
+def match_secrets(secrets, target_vault_ids):
+    """Find all VaultSecret objects that are mapped to any of the target_vault_ids in secrets"""
+    if not secrets:
+        return []
+    matches = [(vault_id, secret) for (vault_id, secret) in secrets if vault_id in target_vault_ids]
+    return matches
+
+----------
+
+def test_single_match(self):
+    secret = TextVaultSecret('password')
+    matches = vault.match_secrets([('default', secret)], ['default'])
+    self.assertEqual(matches, [('default', secret)])
+
+----------
+
+
+
+Test Class Name: TestMatchSecrets

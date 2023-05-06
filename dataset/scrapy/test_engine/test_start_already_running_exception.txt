@@ -1,0 +1,27 @@
+@inlineCallbacks
+def start(self) -> Deferred:
+    if self.running:
+        raise RuntimeError('Engine already running')
+    self.start_time = time()
+    yield self.signals.send_catch_log_deferred(signal=signals.engine_started)
+    self.running = True
+    self._closewait = Deferred()
+    yield self._closewait
+
+----------
+
+@defer.inlineCallbacks
+def test_start_already_running_exception(self):
+    e = ExecutionEngine(get_crawler(TestSpider), lambda _: None)
+    yield e.open_spider(TestSpider(), [])
+    e.start()
+    try:
+        yield self.assertFailure(e.start(), RuntimeError).addBoth(lambda exc: self.assertEqual(str(exc), 'Engine already running'))
+    finally:
+        yield e.stop()
+
+----------
+
+
+
+Test Class Name: EngineTest

@@ -1,0 +1,43 @@
+def json(body: Any, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='application/json', dumps: Optional[Callable[..., str]]=None, **kwargs: Any) -> JSONResponse:
+    """
+    Returns response object with body in json format.
+
+    :param body: Response data to be serialized.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param kwargs: Remaining arguments that are passed to the json encoder.
+    """
+    return JSONResponse(body, status=status, headers=headers, content_type=content_type, dumps=dumps, **kwargs)
+
+----------
+
+@pytest.mark.parametrize('idx,path,expectation', ((0, '/abc', 'str'), (1, '/123', 'int'), (2, '/123.5', 'float'), (3, '/8af729fe-2b94-4a95-a168-c07068568429', 'UUID')))
+def test_annotated_handlers(app, idx, path, expectation):
+
+    def build_response(num, foo):
+        return json({'num': num, 'type': type(foo).__name__})
+
+    @app.get('/<foo>')
+    def handler0(_, foo: str):
+        return build_response(0, foo)
+
+    @app.get('/<foo>')
+    def handler1(_, foo: int):
+        return build_response(1, foo)
+
+    @app.get('/<foo>')
+    def handler2(_, foo: float):
+        return build_response(2, foo)
+
+    @app.get('/<foo>')
+    def handler3(_, foo: UUID):
+        return build_response(3, foo)
+    (_, response) = app.test_client.get(path)
+    assert response.json['num'] == idx
+    assert response.json['type'] == expectation
+
+----------
+
+
+
+Test Class Name: default

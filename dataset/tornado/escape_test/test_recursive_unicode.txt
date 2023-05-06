@@ -1,0 +1,30 @@
+def recursive_unicode(obj: Any) -> Any:
+    """Walks a simple data structure, converting byte strings to unicode.
+
+    Supports lists, tuples, and dictionaries.
+    """
+    if isinstance(obj, dict):
+        return dict(((recursive_unicode(k), recursive_unicode(v)) for (k, v) in obj.items()))
+    elif isinstance(obj, list):
+        return list((recursive_unicode(i) for i in obj))
+    elif isinstance(obj, tuple):
+        return tuple((recursive_unicode(i) for i in obj))
+    elif isinstance(obj, bytes):
+        return to_unicode(obj)
+    else:
+        return obj
+
+----------
+
+def test_recursive_unicode(self):
+    tests = {'dict': {b'foo': b'bar'}, 'list': [b'foo', b'bar'], 'tuple': (b'foo', b'bar'), 'bytes': b'foo'}
+    self.assertEqual(recursive_unicode(tests['dict']), {'foo': 'bar'})
+    self.assertEqual(recursive_unicode(tests['list']), ['foo', 'bar'])
+    self.assertEqual(recursive_unicode(tests['tuple']), ('foo', 'bar'))
+    self.assertEqual(recursive_unicode(tests['bytes']), 'foo')
+
+----------
+
+
+
+Test Class Name: EscapeTestCase

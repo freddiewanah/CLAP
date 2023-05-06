@@ -1,0 +1,31 @@
+def validate(self) -> Tuple[ConfigErrors, ConfigWarnings]:
+    (failed, warnings) = self._pre_validate()
+    (run_failed, run_warnings) = self._validate()
+    failed.extend(run_failed)
+    warnings.extend(run_warnings)
+    if len(failed) == 0:
+        (post_failed, post_warnings) = self._post_validate()
+        failed.extend(post_failed)
+        warnings.extend(post_warnings)
+    return (failed, warnings)
+
+----------
+
+def test_doc_dir_in_site_dir(self):
+    j = os.path.join
+    test_configs = ({'docs_dir': j('site', 'docs'), 'site_dir': 'site'}, {'docs_dir': 'docs', 'site_dir': '.'}, {'docs_dir': '.', 'site_dir': '.'}, {'docs_dir': 'docs', 'site_dir': ''}, {'docs_dir': '', 'site_dir': ''}, {'docs_dir': 'docs', 'site_dir': 'docs'})
+    cfg = {'config_file_path': j(os.path.abspath('..'), 'mkdocs.yml')}
+    for test_config in test_configs:
+        with self.subTest(test_config):
+            patch = {**cfg, **test_config}
+            conf = config.Config(schema=(('docs_dir', c.Dir(default='docs')), ('site_dir', c.SiteDir(default='site')), ('config_file_path', c.Type(str))))
+            conf.load_dict(patch)
+            (errors, warnings) = conf.validate()
+            self.assertEqual(len(errors), 1)
+            self.assertEqual(warnings, [])
+
+----------
+
+
+
+Test Class Name: ConfigTests

@@ -1,0 +1,18 @@
+def get_close_matches(word, possibilities, n=None, cutoff=0.6):
+    """Overrides `difflib.get_close_match` to control argument `n`."""
+    if n is None:
+        n = settings.num_close_matches
+    return difflib_get_close_matches(word, possibilities, n, cutoff)
+
+----------
+
+@patch('thefuck.utils.difflib_get_close_matches')
+def test_call_without_n(self, difflib_mock, settings):
+    get_close_matches('', [])
+    assert difflib_mock.call_args[0][2] == settings.get('num_close_matches')
+
+----------
+
+
+
+Test Class Name: TestGetCloseMatches

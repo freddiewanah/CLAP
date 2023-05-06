@@ -1,0 +1,35 @@
+def pairwise_iou(boxes1: RotatedBoxes, boxes2: RotatedBoxes) -> None:
+    """
+    Given two lists of rotated boxes of size N and M,
+    compute the IoU (intersection over union)
+    between **all** N x M pairs of boxes.
+    The box order must be (x_center, y_center, width, height, angle).
+
+    Args:
+        boxes1, boxes2 (RotatedBoxes):
+            two `RotatedBoxes`. Contains N & M rotated boxes, respectively.
+
+    Returns:
+        Tensor: IoU, sized [N,M].
+    """
+    return pairwise_iou_rotated(boxes1.tensor, boxes2.tensor)
+
+----------
+
+def test_pairwise_iou_many_boxes(self):
+    for device in ['cpu'] + (['cuda'] if torch.cuda.is_available() else []):
+        num_boxes1 = 100
+        num_boxes2 = 200
+        boxes1 = torch.stack([torch.tensor([5 + 20 * i, 5 + 20 * i, 10, 10, 0], dtype=torch.float32, device=device) for i in range(num_boxes1)])
+        boxes2 = torch.stack([torch.tensor([5 + 20 * i, 5 + 20 * i, 10, 1 + 9 * i / num_boxes2, 0], dtype=torch.float32, device=device) for i in range(num_boxes2)])
+        expected_ious = torch.zeros(num_boxes1, num_boxes2, dtype=torch.float32, device=device)
+        for i in range(min(num_boxes1, num_boxes2)):
+            expected_ious[i][i] = (1 + 9 * i / num_boxes2) / 10.0
+        ious = pairwise_iou(RotatedBoxes(boxes1), RotatedBoxes(boxes2))
+        self.assertTrue(torch.allclose(ious, expected_ious))
+
+----------
+
+
+
+Test Class Name: TestRotatedBoxesStructure

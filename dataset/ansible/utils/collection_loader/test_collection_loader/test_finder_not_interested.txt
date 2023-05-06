@@ -1,0 +1,21 @@
+def find_module(self, fullname, path=None):
+    finder = self._get_finder(fullname)
+    if finder is None:
+        return None
+    elif HAS_FILE_FINDER and isinstance(finder, FileFinder):
+        return finder.find_module(fullname)
+    else:
+        return finder.find_module(fullname, path=[self._pathctx])
+
+----------
+
+def test_finder_not_interested():
+    f = get_default_finder()
+    assert f.find_module('nothanks') is None
+    assert f.find_module('nothanks.sub', path=['/bogus/dir']) is None
+
+----------
+
+
+
+Test Class Name: default

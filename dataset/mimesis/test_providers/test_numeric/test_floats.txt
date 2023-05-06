@@ -1,0 +1,32 @@
+def floats(self, start: float=0, end: float=1, n: int=10, precision: int=15) -> t.List[float]:
+    """Generate a list of random float numbers.
+
+        :param start: Start range.
+        :param end: End range.
+        :param n: Length of the list.
+        :param precision: Round a number to a given
+            precision in decimal digits, default is 15.
+        :return: The list of floating-point numbers.
+        """
+    return [self.float_number(start, end, precision) for _ in range(n)]
+
+----------
+
+@pytest.mark.parametrize('start, end', [(1.2, 10), (10.4, 20.0), (20.3, 30.8)])
+def test_floats(self, numeric, start, end):
+    result = numeric.floats(start, end)
+    assert max(result) <= end
+    assert min(result) >= start
+    assert len(result) == 10
+    assert isinstance(result, list)
+    result = numeric.floats(n=1000)
+    assert len(result) == 1000
+    result = numeric.floats(precision=4)
+    for e in result:
+        assert len(str(e).split('.')[1]) <= 4
+
+----------
+
+
+
+Test Class Name: TestNumbers

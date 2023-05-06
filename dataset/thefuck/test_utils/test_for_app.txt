@@ -1,0 +1,20 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.usefixtures('no_memoize')
+@pytest.mark.parametrize('script, names, result', [('/usr/bin/git diff', ['git', 'hub'], True), ('/bin/hdfs dfs -rm foo', ['hdfs'], True), ('git diff', ['git', 'hub'], True), ('hub diff', ['git', 'hub'], True), ('hg diff', ['git', 'hub'], False)])
+def test_for_app(script, names, result):
+
+    @for_app(*names)
+    def match(command):
+        return True
+    assert match(Command(script, '')) == result
+
+----------
+
+
+
+Test Class Name: TestGetCloseMatches

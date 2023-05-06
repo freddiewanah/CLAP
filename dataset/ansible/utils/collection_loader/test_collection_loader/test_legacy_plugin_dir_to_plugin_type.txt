@@ -1,0 +1,30 @@
+@staticmethod
+def legacy_plugin_dir_to_plugin_type(legacy_plugin_dir_name):
+    """
+        Utility method to convert from a PluginLoader dir name to a plugin ref_type
+        :param legacy_plugin_dir_name: PluginLoader dir name (eg, 'action_plugins', 'library')
+        :return: the corresponding plugin ref_type (eg, 'action', 'role')
+        """
+    legacy_plugin_dir_name = to_text(legacy_plugin_dir_name)
+    plugin_type = legacy_plugin_dir_name.removesuffix(u'_plugins')
+    if plugin_type == u'library':
+        plugin_type = u'modules'
+    if plugin_type not in AnsibleCollectionRef.VALID_REF_TYPES:
+        raise ValueError('{0} cannot be mapped to a valid collection ref type'.format(to_native(legacy_plugin_dir_name)))
+    return plugin_type
+
+----------
+
+@pytest.mark.parametrize('dirname,expected_result', [('become_plugins', 'become'), ('cache_plugins', 'cache'), ('connection_plugins', 'connection'), ('library', 'modules'), ('filter_plugins', 'filter'), ('bogus_plugins', ValueError), (None, ValueError)])
+def test_legacy_plugin_dir_to_plugin_type(dirname, expected_result):
+    if isinstance(expected_result, string_types):
+        assert AnsibleCollectionRef.legacy_plugin_dir_to_plugin_type(dirname) == expected_result
+    else:
+        with pytest.raises(expected_result):
+            AnsibleCollectionRef.legacy_plugin_dir_to_plugin_type(dirname)
+
+----------
+
+
+
+Test Class Name: default

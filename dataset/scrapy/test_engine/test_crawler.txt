@@ -1,0 +1,97 @@
+def run(self, args, opts):
+    if len(args) < 1:
+        raise UsageError()
+    elif len(args) > 1:
+        raise UsageError("running 'scrapy crawl' with more than one spider is not supported")
+    spname = args[0]
+    crawl_defer = self.crawler_process.crawl(spname, **opts.spargs)
+    if getattr(crawl_defer, 'result', None) is not None and issubclass(crawl_defer.result.type, Exception):
+        self.exitcode = 1
+    else:
+        self.crawler_process.start()
+        if self.crawler_process.bootstrap_failed or (hasattr(self.crawler_process, 'has_exception') and self.crawler_process.has_exception):
+            self.exitcode = 1
+
+----------
+
+@defer.inlineCallbacks
+def test_crawler(self):
+    for spider in (TestSpider, DictItemsSpider, AttrsItemsSpider, DataClassItemsSpider):
+        run = CrawlerRun(spider)
+        yield run.run()
+        self._assert_visited_urls(run)
+        self._assert_scheduled_requests(run, count=9)
+        self._assert_downloaded_responses(run, count=9)
+        self._assert_scraped_items(run)
+        self._assert_signals_caught(run)
+        self._assert_bytes_received(run)
+
+----------
+
+def _assert_visited_urls(self, run: CrawlerRun):
+    must_be_visited = ['/', '/redirect', '/redirected', '/item1.html', '/item2.html', '/item999.html']
+    urls_visited = {rp[0].url for rp in run.respplug}
+    urls_expected = {run.geturl(p) for p in must_be_visited}
+    assert urls_expected <= urls_visited, f'URLs not visited: {list(urls_expected - urls_visited)}'
+def _assert_scheduled_requests(self, run: CrawlerRun, count=None):
+    self.assertEqual(count, len(run.reqplug))
+    paths_expected = ['/item999.html', '/item2.html', '/item1.html']
+    urls_requested = {rq[0].url for rq in run.reqplug}
+    urls_expected = {run.geturl(p) for p in paths_expected}
+    assert urls_expected <= urls_requested
+    scheduled_requests_count = len(run.reqplug)
+    dropped_requests_count = len(run.reqdropped)
+    responses_count = len(run.respplug)
+    self.assertEqual(scheduled_requests_count, dropped_requests_count + responses_count)
+    self.assertEqual(len(run.reqreached), responses_count)
+def _assert_downloaded_responses(self, run: CrawlerRun, count):
+    self.assertEqual(count, len(run.respplug))
+    self.assertEqual(count, len(run.reqreached))
+    for (response, _) in run.respplug:
+        if run.getpath(response.url) == '/item999.html':
+            self.assertEqual(404, response.status)
+        if run.getpath(response.url) == '/redirect':
+            self.assertEqual(302, response.status)
+def _assert_scraped_items(self, run: CrawlerRun):
+    self.assertEqual(2, len(run.itemresp))
+    for (item, response) in run.itemresp:
+        item = ItemAdapter(item)
+        self.assertEqual(item['url'], response.url)
+        if 'item1.html' in item['url']:
+            self.assertEqual('Item 1 name', item['name'])
+            self.assertEqual('100', item['price'])
+        if 'item2.html' in item['url']:
+            self.assertEqual('Item 2 name', item['name'])
+            self.assertEqual('200', item['price'])
+def _assert_bytes_received(self, run: CrawlerRun):
+    self.assertEqual(9, len(run.bytes))
+    for (request, data) in run.bytes.items():
+        joined_data = b''.join(data)
+        if run.getpath(request.url) == '/':
+            self.assertEqual(joined_data, get_testdata('test_site', 'index.html'))
+        elif run.getpath(request.url) == '/item1.html':
+            self.assertEqual(joined_data, get_testdata('test_site', 'item1.html'))
+        elif run.getpath(request.url) == '/item2.html':
+            self.assertEqual(joined_data, get_testdata('test_site', 'item2.html'))
+        elif run.getpath(request.url) == '/redirected':
+            self.assertEqual(joined_data, b'Redirected here')
+        elif run.getpath(request.url) == '/redirect':
+            self.assertEqual(joined_data, b'\n<html>\n    <head>\n        <meta http-equiv="refresh" content="0;URL=/redirected">\n    </head>\n    <body bgcolor="#FFFFFF" text="#000000">\n    <a href="/redirected">click here</a>\n    </body>\n</html>\n')
+        elif run.getpath(request.url) == '/tem999.html':
+            self.assertEqual(joined_data, b'\n<html>\n  <head><title>404 - No Such Resource</title></head>\n  <body>\n    <h1>No Such Resource</h1>\n    <p>File not found.</p>\n  </body>\n</html>\n')
+        elif run.getpath(request.url) == '/numbers':
+            self.assertTrue(len(data) > 1)
+            numbers = [str(x).encode('utf8') for x in range(2 ** 18)]
+            self.assertEqual(joined_data, b''.join(numbers))
+def _assert_signals_caught(self, run: CrawlerRun):
+    assert signals.engine_started in run.signals_caught
+    assert signals.engine_stopped in run.signals_caught
+    assert signals.spider_opened in run.signals_caught
+    assert signals.spider_idle in run.signals_caught
+    assert signals.spider_closed in run.signals_caught
+    assert signals.headers_received in run.signals_caught
+    self.assertEqual({'spider': run.spider}, run.signals_caught[signals.spider_opened])
+    self.assertEqual({'spider': run.spider}, run.signals_caught[signals.spider_idle])
+    self.assertEqual({'spider': run.spider, 'reason': 'finished'}, run.signals_caught[signals.spider_closed])
+
+Test Class Name: EngineTest

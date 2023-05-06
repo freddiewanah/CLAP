@@ -1,0 +1,31 @@
+def add_host(self, host):
+    added = False
+    if host.name not in self.host_names:
+        self.hosts.append(host)
+        self._hosts.add(host.name)
+        host.add_group(self)
+        self.clear_hosts_cache()
+        added = True
+    return added
+
+----------
+
+def test_populates_descendant_hosts(self):
+    A = Group('A')
+    B = Group('B')
+    C = Group('C')
+    h = Host('h')
+    C.add_host(h)
+    A.add_child_group(B)
+    B.add_child_group(C)
+    A.add_child_group(B)
+    self.assertEqual(set(h.groups), set([C, B, A]))
+    h2 = Host('h2')
+    C.add_host(h2)
+    self.assertEqual(set(h2.groups), set([C, B, A]))
+
+----------
+
+
+
+Test Class Name: TestGroup

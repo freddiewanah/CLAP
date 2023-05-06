@@ -1,0 +1,32 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.parametrize('number', [3, -3, 13.123, -13.123])
+def test_passes_with_negative_number_message(app, number):
+
+    @app.route('path/<possibly_neg:float>/another-word')
+    def good(request, possibly_neg):
+        assert isinstance(possibly_neg, (int, float))
+        return text(f'this should pass with `{possibly_neg}`')
+    u = app.url_for('good', possibly_neg=number)
+    assert u == f'/path/{number}/another-word', u
+    (request, response) = app.test_client.get(u)
+    assert response.text == f'this should pass with `{float(number)}`'
+
+----------
+
+
+
+Test Class Name: default

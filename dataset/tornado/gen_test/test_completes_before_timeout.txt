@@ -1,0 +1,72 @@
+def with_timeout(timeout: Union[float, datetime.timedelta], future: _Yieldable, quiet_exceptions: 'Union[Type[Exception], Tuple[Type[Exception], ...]]'=()) -> Future:
+    """Wraps a `.Future` (or other yieldable object) in a timeout.
+
+    Raises `tornado.util.TimeoutError` if the input future does not
+    complete before ``timeout``, which may be specified in any form
+    allowed by `.IOLoop.add_timeout` (i.e. a `datetime.timedelta` or
+    an absolute time relative to `.IOLoop.time`)
+
+    If the wrapped `.Future` fails after it has timed out, the exception
+    will be logged unless it is either of a type contained in
+    ``quiet_exceptions`` (which may be an exception type or a sequence of
+    types), or an ``asyncio.CancelledError``.
+
+    The wrapped `.Future` is not canceled when the timeout expires,
+    permitting it to be reused. `asyncio.wait_for` is similar to this
+    function but it does cancel the wrapped `.Future` on timeout.
+
+    .. versionadded:: 4.0
+
+    .. versionchanged:: 4.1
+       Added the ``quiet_exceptions`` argument and the logging of unhandled
+       exceptions.
+
+    .. versionchanged:: 4.4
+       Added support for yieldable objects other than `.Future`.
+
+    .. versionchanged:: 6.0.3
+       ``asyncio.CancelledError`` is now always considered "quiet".
+
+    .. versionchanged:: 6.2
+       ``tornado.util.TimeoutError`` is now an alias to ``asyncio.TimeoutError``.
+
+    """
+    future_converted = convert_yielded(future)
+    result = _create_future()
+    chain_future(future_converted, result)
+    io_loop = IOLoop.current()
+
+    def error_callback(future: Future) -> None:
+        try:
+            future.result()
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            if not isinstance(e, quiet_exceptions):
+                app_log.error('Exception in Future %r after timeout', future, exc_info=True)
+
+    def timeout_callback() -> None:
+        if not result.done():
+            result.set_exception(TimeoutError('Timeout'))
+        future_add_done_callback(future_converted, error_callback)
+    timeout_handle = io_loop.add_timeout(timeout, timeout_callback)
+    if isinstance(future_converted, Future):
+        future_add_done_callback(future_converted, lambda future: io_loop.remove_timeout(timeout_handle))
+    else:
+        io_loop.add_future(future_converted, lambda future: io_loop.remove_timeout(timeout_handle))
+    return result
+
+----------
+
+@gen_test
+def test_completes_before_timeout(self):
+    future = Future()
+    self.io_loop.add_timeout(datetime.timedelta(seconds=0.1), lambda : future.set_result('asdf'))
+    result = (yield gen.with_timeout(datetime.timedelta(seconds=3600), future))
+    self.assertEqual(result, 'asdf')
+
+----------
+
+
+
+Test Class Name: WithTimeoutTest

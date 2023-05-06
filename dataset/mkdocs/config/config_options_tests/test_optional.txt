@@ -1,0 +1,31 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_optional(self) -> None:
+
+    class Sub(Config):
+        opt = c.Optional(c.Type(int))
+
+    class Schema(Config):
+        sub = c.Optional(c.ListOfItems(c.SubConfig(Sub)))
+    conf = self.get_config(Schema, {})
+    self.assertEqual(conf.sub, None)
+    conf = self.get_config(Schema, {'sub': None})
+    self.assertEqual(conf.sub, None)
+    conf = self.get_config(Schema, {'sub': [{'opt': 1}, {}]})
+    assert_type(conf.sub, Optional[List[Sub]])
+    self.assertEqual(conf.sub, [{'opt': 1}, {'opt': None}])
+    assert conf.sub is not None
+    assert_type(conf.sub[0].opt, Optional[int])
+    self.assertEqual(conf.sub[0].opt, 1)
+    conf = self.get_config(Schema, {'sub': []})
+    conf = self.get_config(Schema, {'sub': [{'opt': 1}, {'opt': 2}]})
+    self.assertEqual(conf.sub, [{'opt': 1}, {'opt': 2}])
+
+----------
+
+
+
+Test Class Name: default

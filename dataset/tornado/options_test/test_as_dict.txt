@@ -1,0 +1,23 @@
+def as_dict(self) -> Dict[str, Any]:
+    """The names and values of all options.
+
+        .. versionadded:: 3.1
+        """
+    return dict(((opt.name, opt.value()) for (name, opt) in self._options.items()))
+
+----------
+
+def test_as_dict(self):
+    options = self._sample_options()
+    expected = {'a': 1, 'b': 2, 'help': options.help}
+    self.assertEqual(expected, options.as_dict())
+
+----------
+
+def _sample_options(self):
+    options = OptionParser()
+    options.define('a', default=1)
+    options.define('b', default=2)
+    return options
+
+Test Class Name: OptionsTest

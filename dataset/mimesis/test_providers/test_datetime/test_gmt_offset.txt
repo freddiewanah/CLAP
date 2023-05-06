@@ -1,0 +1,18 @@
+def gmt_offset(self) -> str:
+    """Get a random GMT offset value.
+
+        :return: GMT Offset.
+        """
+    return self.random.choice(GMT_OFFSETS)
+
+----------
+
+def test_gmt_offset(self, _datetime):
+    result = _datetime.gmt_offset()
+    assert result in GMT_OFFSETS
+
+----------
+
+
+
+Test Class Name: TestDatetime

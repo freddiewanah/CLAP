@@ -1,0 +1,29 @@
+def fingerprint(self, request: Request):
+    return self._fingerprint(request)
+
+----------
+
+def test_dont_canonicalize(self):
+
+    class RequestFingerprinter:
+        cache = WeakKeyDictionary()
+
+        def fingerprint(self, request):
+            if request not in self.cache:
+                fp = sha1()
+                fp.update(to_bytes(request.url))
+                self.cache[request] = fp.digest()
+            return self.cache[request]
+    settings = {'REQUEST_FINGERPRINTER_CLASS': RequestFingerprinter}
+    crawler = get_crawler(settings_dict=settings)
+    r1 = Request('http://www.example.com?a=1&a=2')
+    fp1 = crawler.request_fingerprinter.fingerprint(r1)
+    r2 = Request('http://www.example.com?a=2&a=1')
+    fp2 = crawler.request_fingerprinter.fingerprint(r2)
+    self.assertNotEqual(fp1, fp2)
+
+----------
+
+
+
+Test Class Name: RequestFingerprinter

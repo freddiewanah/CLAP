@@ -1,0 +1,15 @@
+def to_dict(self, encode_json=False) -> Dict[str, Json]:
+    return _asdict(self, encode_json=encode_json)
+
+----------
+
+def test_undefined_parameters_catch_all_invalid_back(invalid_response):
+    dump = UnknownAPIDump.from_dict(invalid_response)
+    inverse_dict = dump.to_dict()
+    assert inverse_dict == invalid_response
+
+----------
+
+
+
+Test Class Name: DontCareAPIDump

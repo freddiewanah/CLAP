@@ -1,0 +1,20 @@
+def get(self, *args: Any, **kwargs: Any) -> None:
+    to_url = self._url.format(*args, **kwargs)
+    if self.request.query_arguments:
+        to_url = httputil.url_concat(to_url, list(httputil.qs_to_qsl(self.request.query_arguments)))
+    self.redirect(to_url, permanent=self._permanent)
+
+----------
+
+def test_finish_exception(self):
+    for u in ['/', '/?finish_value=1']:
+        response = self.fetch(u)
+        self.assertEqual(response.code, 401)
+        self.assertEqual('Basic realm="something"', response.headers.get('WWW-Authenticate'))
+        self.assertEqual(b'authentication required', response.body)
+
+----------
+
+
+
+Test Class Name: Handler

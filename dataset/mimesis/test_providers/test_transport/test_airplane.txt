@@ -1,0 +1,21 @@
+def airplane(self) -> str:
+    """Generate a dummy airplane model.
+
+        :return: Airplane model.
+
+        :Example:
+            Boeing 727.
+        """
+    return self.random.choice(AIRPLANES)
+
+----------
+
+def test_airplane(self, transport):
+    result = transport.airplane()
+    assert result in AIRPLANES
+
+----------
+
+
+
+Test Class Name: TestTransport

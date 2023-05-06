@@ -1,0 +1,21 @@
+def occupation(self) -> str:
+    """Get a random job.
+
+        :return: The name of job.
+
+        :Example:
+            Programmer.
+        """
+    jobs: t.List[str] = self.extract(['occupation'])
+    return self.random.choice(jobs)
+
+----------
+
+def test_occupation(self, p1, p2):
+    assert p1.occupation() == p2.occupation()
+
+----------
+
+
+
+Test Class Name: TestSeededPerson

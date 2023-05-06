@@ -1,0 +1,67 @@
+def guess_mime(req: Request, fallback: str) -> str:
+    formats = {}
+    name = ''
+    if req.route:
+        name = req.route.name
+        f = req.route.extra.error_format
+        if f in MIME_BY_CONFIG:
+            formats[f] = name
+    if not formats and fallback in MIME_BY_CONFIG:
+        formats[fallback] = 'FALLBACK_ERROR_FORMAT'
+    if not formats and fallback == 'auto' and req.accept.match(JSON):
+        if JSON in req.accept:
+            formats['json'] = 'request.accept'
+        elif JSON in req.headers.getone('content-type', ''):
+            formats['json'] = 'content-type'
+        else:
+            c = None
+            try:
+                c = req.json
+            except BadRequest:
+                pass
+            if c:
+                formats['json'] = 'request.json'
+                deprecation(f'Response type was determined by the JSON content of the request. This behavior is deprecated and will be removed in v24.3. Please specify the format either by\n  error_format="json" on route {name}, by\n  FALLBACK_ERROR_FORMAT = "json", or by adding header\n  accept: application/json to your requests.', 24.3)
+    if fallback == 'auto':
+        for k in MIME_BY_CONFIG:
+            if k not in formats:
+                formats[k] = 'any'
+    mimes = [MIME_BY_CONFIG[k] for k in formats]
+    m = req.accept.match(*mimes)
+    if m:
+        format = CONFIG_BY_MIME[m.mime]
+        source = formats[format]
+        logger.debug(f"The client accepts {m.header}, using '{format}' from {source}")
+    else:
+        logger.debug(f'No format found, the client accepts {req.accept!r}')
+    return m.mime
+
+----------
+
+@pytest.mark.parametrize('route_format,fallback,accept,expected', (('json', 'html', '*/*', "The client accepts */*, using 'json' from fakeroute"), ('json', 'auto', 'text/html,*/*;q=0.8', "The client accepts text/html, using 'html' from any"), ('json', 'json', 'text/html,*/*;q=0.8', "The client accepts */*;q=0.8, using 'json' from fakeroute"), ('', 'html', 'text/*,*/plain', "The client accepts text/*, using 'html' from FALLBACK_ERROR_FORMAT"), ('', 'json', 'text/*,*/*', "The client accepts */*, using 'json' from FALLBACK_ERROR_FORMAT"), ('', 'auto', '*/*,application/json;q=0.5', "The client accepts */*, using 'json' from request.accept"), ('', 'auto', '*/*', "The client accepts */*, using 'json' from content-type"), ('', 'auto', 'text/html,text/plain', "The client accepts text/plain, using 'text' from any"), ('', 'auto', 'text/html,text/plain;q=0.9', "The client accepts text/html, using 'html' from any"), ('html', 'json', 'application/xml', 'No format found, the client accepts [application/xml]'), ('', 'auto', '*/*', "The client accepts */*, using 'text' from any"), ('', '', '*/*', 'No format found, the client accepts [*/*]'), ('', 'auto', '*/*', "The client accepts */*, using 'json' from request.json")))
+def test_guess_mime_logging(caplog, fake_request, route_format, fallback, accept, expected):
+
+    class FakeObject:
+        pass
+    fake_request.route = FakeObject()
+    fake_request.route.name = 'fakeroute'
+    fake_request.route.extra = FakeObject()
+    fake_request.route.extra.error_format = route_format
+    if accept is None:
+        del fake_request.headers['accept']
+    else:
+        fake_request.headers['accept'] = accept
+    if 'content-type' in expected:
+        fake_request.headers['content-type'] = 'application/json'
+    if 'request.json' in expected:
+        fake_request.parsed_json = {'foo': 'bar'}
+    with caplog.at_level(logging.DEBUG, logger='sanic.root'):
+        guess_mime(fake_request, fallback)
+    (logmsg,) = [r.message for r in caplog.records if r.funcName == 'guess_mime']
+    assert logmsg == expected
+
+----------
+
+
+
+Test Class Name: MyConfig

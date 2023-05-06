@@ -1,0 +1,28 @@
+@gen.coroutine
+def f1():
+    1 / 0
+
+----------
+
+@gen_test
+def test_swallow_yieldpoint_exception(self):
+
+    @gen.coroutine
+    def f1():
+        1 / 0
+
+    @gen.coroutine
+    def f2():
+        try:
+            yield f1()
+        except ZeroDivisionError:
+            raise gen.Return(42)
+    result = (yield f2())
+    self.assertEqual(result, 42)
+    self.finished = True
+
+----------
+
+
+
+Test Class Name: GenCoroutineTest

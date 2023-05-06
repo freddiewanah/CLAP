@@ -1,0 +1,29 @@
+def enable_websocket(self, enable=True):
+    """Enable or disable the support for websocket.
+
+        Websocket is enabled automatically if websocket routes are
+        added to the application.
+        """
+    if not self.websocket_enabled:
+        self.listener('before_server_stop')(self._cancel_websocket_tasks)
+    self.websocket_enabled = enable
+
+----------
+
+@pytest.mark.parametrize('websocket_enabled', [True, False])
+@pytest.mark.parametrize('enable', [True, False])
+def test_app_enable_websocket(app: Sanic, websocket_enabled, enable):
+    app.websocket_enabled = websocket_enabled
+    app.enable_websocket(enable=enable)
+    assert app.websocket_enabled == enable
+
+    @app.websocket('/ws')
+    async def handler(request, ws):
+        await ws.send('test')
+    assert app.websocket_enabled is True
+
+----------
+
+
+
+Test Class Name: default

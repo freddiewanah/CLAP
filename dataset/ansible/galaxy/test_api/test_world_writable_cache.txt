@@ -1,0 +1,33 @@
+def write(data):
+    if not isinstance(data, basestring):
+        data = str(data)
+    if isinstance(fp, file) and isinstance(data, unicode) and (fp.encoding is not None):
+        errors = getattr(fp, 'errors', None)
+        if errors is None:
+            errors = 'strict'
+        data = data.encode(fp.encoding, errors)
+    fp.write(data)
+
+----------
+
+def test_world_writable_cache(cache_dir, monkeypatch):
+    mock_warning = MagicMock()
+    monkeypatch.setattr(Display, 'warning', mock_warning)
+    cache_file = os.path.join(cache_dir, 'api.json')
+    with open(cache_file, mode='w') as fd:
+        fd.write('{"version": 2}')
+        os.chmod(cache_file, 438)
+    api = GalaxyAPI(None, 'test', 'https://galaxy.ansible.com/', no_cache=False)
+    assert api._cache is None
+    with open(cache_file) as fd:
+        actual_cache = fd.read()
+    assert actual_cache == '{"version": 2}'
+    assert stat.S_IMODE(os.stat(cache_file).st_mode) == 438
+    assert mock_warning.call_count == 1
+    assert mock_warning.call_args[0][0] == 'Galaxy cache has world writable access (%s), ignoring it as a cache source.' % cache_file
+
+----------
+
+
+
+Test Class Name: default

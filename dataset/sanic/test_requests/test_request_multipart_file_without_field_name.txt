@@ -1,0 +1,32 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_request_multipart_file_without_field_name(app, caplog):
+
+    @app.route('/', methods=['POST'])
+    async def post(request):
+        return text('OK')
+    payload = '------sanic\r\nContent-Disposition: form-data; filename="test.json"\r\nContent-Type: application/json\r\n\r\n\r\n------sanic--'
+    headers = {'content-type': 'multipart/form-data; boundary=------sanic'}
+    (request, _) = app.test_client.post(data=payload, headers=headers, debug=True)
+    with caplog.at_level(logging.DEBUG):
+        request.form
+    assert caplog.record_tuples[-1] == ('sanic.root', logging.DEBUG, "Form-data field does not have a 'name' parameter in the Content-Disposition header")
+
+----------
+
+
+
+Test Class Name: Bar

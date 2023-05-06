@@ -1,0 +1,21 @@
+def car(self) -> str:
+    """Get a random vehicle.
+
+        :return: A vehicle.
+
+        :Example:
+            Tesla Model S.
+        """
+    return self.random.choice(CARS)
+
+----------
+
+def test_car(self, transport):
+    result = transport.car()
+    assert result in CARS
+
+----------
+
+
+
+Test Class Name: TestTransport

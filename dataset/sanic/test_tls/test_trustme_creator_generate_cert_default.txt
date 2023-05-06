@@ -1,0 +1,24 @@
+@abstractmethod
+def generate_cert(self, localhost: str) -> ssl.SSLContext:
+    ...
+
+----------
+
+def test_trustme_creator_generate_cert_default(app, monkeypatch, trustme, issue_cert, server_cert, ca):
+    monkeypatch.setattr(sanic.http.tls.creators, 'trustme', trustme)
+    cert_creator = TrustmeCreator(app, _default, _default)
+    cert = cert_creator.generate_cert('localhost')
+    assert isinstance(cert, SanicSSLContext)
+    trustme.CA.assert_called_once_with()
+    issue_cert.assert_called_once_with('localhost')
+    server_cert.configure_cert.assert_called_once()
+    ca.configure_trust.assert_called_once()
+    ca.cert_pem.write_to_path.assert_called_once_with(str(cert.sanic['cert']))
+    write_to_path = server_cert.private_key_and_cert_chain_pem.write_to_path
+    write_to_path.assert_called_once_with(str(cert.sanic['key']))
+
+----------
+
+
+
+Test Class Name: Creator

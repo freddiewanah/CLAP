@@ -1,0 +1,22 @@
+@abstractmethod
+def binarize_line(self, line: str, summary: BinarizeSummary) -> torch.IntTensor:
+    ...
+
+----------
+
+def test_can_binarize_line(self):
+    data = make_data(length=1)
+    vocab = build_vocab(data)
+    binarizer = VocabularyDatasetBinarizer(vocab)
+    sentence = data[0]
+    summary = BinarizeSummary()
+    tensor = binarizer.binarize_line(' '.join(sentence), summary)
+    self.assertEqual(len(tensor), len(sentence) + 1)
+    self.assertEqual(summary.num_tok, len(sentence) + 1)
+    self.assertEqual(summary.num_seq, 1)
+
+----------
+
+
+
+Test Class Name: TestBinarizer

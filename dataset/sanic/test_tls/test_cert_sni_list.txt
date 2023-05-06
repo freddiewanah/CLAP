@@ -1,0 +1,52 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_cert_sni_list(app):
+    ssl_list = [sanic_dir, localhost_dir]
+
+    @app.get('/sni')
+    async def handler1(request):
+        return text(request.conn_info.server_name)
+
+    @app.get('/commonname')
+    async def handler2(request):
+        return text(request.conn_info.cert.get('commonName'))
+    port = app.test_client.port
+    (_, response) = app.test_client.get(f'https://localhost:{port}/sni', server_kwargs={'ssl': ssl_list})
+    assert response.status == 200
+    assert response.text == 'localhost'
+    (request, response) = app.test_client.get(f'https://localhost:{port}/commonname', server_kwargs={'ssl': ssl_list})
+    assert response.status == 200
+    assert response.text == 'localhost'
+    with replace_server_name('www.sanic.example'):
+        (_, response) = app.test_client.get(f'https://127.0.0.1:{port}/sni', server_kwargs={'ssl': ssl_list})
+        assert response.status == 200
+        assert response.text == 'www.sanic.example'
+        (_, response) = app.test_client.get(f'https://127.0.0.1:{port}/commonname', server_kwargs={'ssl': ssl_list})
+        assert response.status == 200
+        assert response.text == 'sanic.example'
+    with replace_server_name('invalid.test'):
+        (_, response) = app.test_client.get(f'https://127.0.0.1:{port}/sni', server_kwargs={'ssl': ssl_list})
+        assert response.status == 200
+        assert response.text == 'invalid.test'
+        (_, response) = app.test_client.get(f'https://127.0.0.1:{port}/commonname', server_kwargs={'ssl': ssl_list})
+        assert response.status == 200
+        assert response.text == 'sanic.example'
+
+----------
+
+
+
+Test Class Name: Creator

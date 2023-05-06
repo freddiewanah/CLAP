@@ -1,0 +1,36 @@
+def http_event_received(self, event: H3Event) -> None:
+    logger.debug(f'{Colors.BLUE}[http_event_received]: {Colors.YELLOW}{event}{Colors.END}', extra={'verbosity': 2})
+    (receiver, created_new) = self.get_or_make_receiver(event)
+    receiver = cast(HTTPReceiver, receiver)
+    if isinstance(event, HeadersReceived) and created_new:
+        receiver.future = asyncio.ensure_future(receiver.run())
+    elif isinstance(event, DataReceived):
+        try:
+            receiver.receive_body(event.data)
+        except Exception as e:
+            receiver.future.cancel()
+            receiver.future = asyncio.ensure_future(receiver.run(e))
+    else:
+        ...
+        logger.debug(f'{Colors.RED}DOING NOTHING{Colors.END}', extra={'verbosity': 2})
+
+----------
+
+def test_http3_events(app):
+    protocol = generate_protocol(app)
+    http3 = Http3(protocol, protocol.transmit)
+    http3.http_event_received(HeadersReceived([(b':method', b'GET'), (b':path', b'/location'), (b':scheme', b'https'), (b':authority', b'localhost:8443'), (b'foo', b'bar')], 1, False))
+    http3.http_event_received(DataReceived(b'foobar', 1, False))
+    receiver = http3.receivers[1]
+    assert len(http3.receivers) == 1
+    assert receiver.request.stream_id == 1
+    assert receiver.request.path == '/location'
+    assert receiver.request.method == 'GET'
+    assert receiver.request.headers['foo'] == 'bar'
+    assert receiver.request.body == b'foobar'
+
+----------
+
+
+
+Test Class Name: mock_handle

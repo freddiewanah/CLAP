@@ -1,0 +1,19 @@
+def street_name(self) -> str:
+    """Get a random street name.
+
+        :return: Street name.
+        """
+    street_names: t.List[str] = self.extract(['street', 'name'])
+    return self.random.choice(street_names)
+
+----------
+
+def test_generic_address(self, g1, g2):
+    assert g1.address.street_number() == g2.address.street_number()
+    assert g1.address.street_name() == g2.address.street_name()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

@@ -1,0 +1,24 @@
+@classmethod
+def from_crawler(cls, crawler):
+    try:
+        return cls.from_settings(crawler.settings, fingerprinter=crawler.request_fingerprinter)
+    except TypeError:
+        warn("RFPDupeFilter subclasses must either modify their overridden '__init__' method and 'from_settings' class method to support a 'fingerprinter' parameter, or reimplement the 'from_crawler' class method.", ScrapyDeprecationWarning)
+        result = cls.from_settings(crawler.settings)
+        result.fingerprinter = crawler.request_fingerprinter
+        return result
+
+----------
+
+def test_df_from_settings_scheduler(self):
+    settings = {'DUPEFILTER_DEBUG': True, 'DUPEFILTER_CLASS': FromSettingsRFPDupeFilter, 'REQUEST_FINGERPRINTER_IMPLEMENTATION': '2.7'}
+    crawler = get_crawler(settings_dict=settings)
+    scheduler = Scheduler.from_crawler(crawler)
+    self.assertTrue(scheduler.df.debug)
+    self.assertEqual(scheduler.df.method, 'from_settings')
+
+----------
+
+
+
+Test Class Name: RFPDupeFilterTest

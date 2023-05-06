@@ -1,0 +1,21 @@
+def resolution(self) -> str:
+    """Get a random screen resolution.
+
+        :return: Resolution of screen.
+
+        :Example:
+            1280x720.
+        """
+    return self.random.choice(RESOLUTIONS)
+
+----------
+
+def test_resolution(self, hard):
+    result = hard.resolution()
+    assert result in RESOLUTIONS
+
+----------
+
+
+
+Test Class Name: TestHardware

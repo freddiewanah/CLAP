@@ -1,0 +1,19 @@
+@classmethod
+def from_crawler(cls, crawler, uri, *, feed_options=None):
+    return build_storage(cls, uri, access_key=crawler.settings['AWS_ACCESS_KEY_ID'], secret_key=crawler.settings['AWS_SECRET_ACCESS_KEY'], session_token=crawler.settings['AWS_SESSION_TOKEN'], acl=crawler.settings['FEED_STORAGE_S3_ACL'] or None, endpoint_url=crawler.settings['AWS_ENDPOINT_URL'] or None, feed_options=feed_options)
+
+----------
+
+def get_test_spider(self, settings=None):
+
+    class TestSpider(scrapy.Spider):
+        name = 'test_spider'
+    crawler = get_crawler(settings_dict=settings)
+    spider = TestSpider.from_crawler(crawler)
+    return spider
+
+----------
+
+
+
+Test Class Name: BlockingFeedStorageTest

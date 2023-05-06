@@ -1,0 +1,30 @@
+def run(app, level=logging.DEBUG):
+
+    @app.after_server_start
+    async def stop(app, _):
+        app.stop()
+    with caplog.at_level(level):
+        Sanic.serve()
+    return caplog.record_tuples
+
+----------
+
+@pytest.mark.parametrize('version', (3, HTTP.VERSION_3))
+@pytest.mark.skipif(sys.version_info < (3, 8) and (not UVLOOP_INSTALLED), reason='In 3.7 w/o uvloop the port is not always released')
+def test_server_starts_http3(app: Sanic, version, caplog):
+    ev = Event()
+
+    @app.after_server_start
+    def shutdown(*_):
+        ev.set()
+        app.stop()
+    with caplog.at_level(logging.INFO):
+        app.run(version=version, ssl={'cert': localhost_dir / 'fullchain.pem', 'key': localhost_dir / 'privkey.pem'}, single_process=True)
+    assert ev.is_set()
+    assert ('sanic.root', logging.INFO, 'server: sanic, HTTP/3') in caplog.record_tuples
+
+----------
+
+
+
+Test Class Name: default

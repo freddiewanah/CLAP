@@ -1,0 +1,24 @@
+def compat_getenv(key, default=None):
+    from .utils import get_filesystem_encoding
+    env = os.getenv(key, default)
+    if env:
+        env = env.decode(get_filesystem_encoding())
+    return env
+
+----------
+
+def test_expand_path(self):
+
+    def env(var):
+        return '%{0}%'.format(var) if sys.platform == 'win32' else '${0}'.format(var)
+    compat_setenv('YOUTUBE_DL_EXPATH_PATH', 'expanded')
+    self.assertEqual(expand_path(env('YOUTUBE_DL_EXPATH_PATH')), 'expanded')
+    self.assertEqual(expand_path(env('HOME')), compat_getenv('HOME'))
+    self.assertEqual(expand_path('~'), compat_getenv('HOME'))
+    self.assertEqual(expand_path('~/%s' % env('YOUTUBE_DL_EXPATH_PATH')), '%s/expanded' % compat_getenv('HOME'))
+
+----------
+
+
+
+Test Class Name: TestUtil

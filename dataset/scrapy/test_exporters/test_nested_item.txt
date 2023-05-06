@@ -1,0 +1,21 @@
+def finish_exporting(self):
+    pass
+
+----------
+
+def test_nested_item(self):
+    i1 = self.item_class(name='Joseph£', age='22')
+    i2 = self.item_class(name='Maria', age=i1)
+    i3 = self.item_class(name='Jesus', age=i2)
+    self.ie.start_exporting()
+    self.ie.export_item(i3)
+    self.ie.finish_exporting()
+    exported = json.loads(to_unicode(self.output.getvalue()))
+    expected = {'name': 'Jesus', 'age': {'name': 'Maria', 'age': ItemAdapter(i1).asdict()}}
+    self.assertEqual(exported, [expected])
+
+----------
+
+
+
+Test Class Name: JsonItemExporterTest

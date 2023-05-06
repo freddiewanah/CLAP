@@ -1,0 +1,47 @@
+def eos(self):
+    """Helper to get index of end-of-sentence symbol"""
+    return self.eos_index
+
+----------
+
+def test_word_dropout_without_eos(self):
+    """Same result as word dropout with eos except no EOS at end"""
+    (vocab, x, x_len) = self._get_test_data_with_bpe_cont_marker(append_eos=False)
+    with data_utils.numpy_seed(1234):
+        noising_gen = noising.WordDropout(vocab)
+        (x_noised, l_noised) = noising_gen.noising(x, x_len, 0.2)
+        self.assert_word_dropout_correct(x=x, x_noised=x_noised, x_len=x_len, l_noised=l_noised)
+        self.assert_no_eos_at_end(x=x_noised, x_len=l_noised, eos=vocab.eos())
+
+----------
+
+def _get_test_data_with_bpe_cont_marker(self, append_eos=True):
+    """
+        Args:
+            append_eos: if True, each input sentence in the source tokens tensor
+                will have an EOS appended to the end.
+
+        Returns:
+            vocabs: BPE vocab with continuation markers as suffixes to denote
+                non-end of word tokens. This is the standard BPE format used in
+                fairseq's preprocessing.
+            x: input tensor containing numberized source tokens, with EOS at the
+                end if append_eos is true
+            src_lengths: and source lengths.
+        """
+    vocab = Dictionary()
+    vocab.add_symbol('he@@')
+    vocab.add_symbol('llo')
+    vocab.add_symbol('how')
+    vocab.add_symbol('are')
+    vocab.add_symbol('y@@')
+    vocab.add_symbol('ou')
+    vocab.add_symbol('n@@')
+    vocab.add_symbol('ew')
+    vocab.add_symbol('or@@')
+    vocab.add_symbol('k')
+    src_tokens = [['he@@', 'llo', 'n@@', 'ew', 'y@@', 'or@@', 'k'], ['how', 'are', 'y@@', 'ou']]
+    (x, src_lengths) = (x, src_lengths) = self._convert_src_tokens_to_tensor(vocab=vocab, src_tokens=src_tokens, append_eos=append_eos)
+    return (vocab, x, src_lengths)
+
+Test Class Name: TestDataNoising

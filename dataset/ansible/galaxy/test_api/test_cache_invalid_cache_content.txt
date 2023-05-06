@@ -1,0 +1,29 @@
+def write(data):
+    if not isinstance(data, basestring):
+        data = str(data)
+    if isinstance(fp, file) and isinstance(data, unicode) and (fp.encoding is not None):
+        errors = getattr(fp, 'errors', None)
+        if errors is None:
+            errors = 'strict'
+        data = data.encode(fp.encoding, errors)
+    fp.write(data)
+
+----------
+
+@pytest.mark.parametrize('content', ['', 'value', '{"de" "finit" "ely" [\'invalid"]}', '[]', '{"version": 2, "test": "json"}', '{"version": 2, "key": "ÅÑŚÌβŁÈ"}'])
+def test_cache_invalid_cache_content(content, cache_dir):
+    cache_file = os.path.join(cache_dir, 'api.json')
+    with open(cache_file, mode='w') as fd:
+        fd.write(content)
+        os.chmod(cache_file, 436)
+    GalaxyAPI(None, 'test', 'https://galaxy.ansible.com/', no_cache=False)
+    with open(cache_file) as fd:
+        actual_cache = fd.read()
+    assert actual_cache == '{"version": 1}'
+    assert stat.S_IMODE(os.stat(cache_file).st_mode) == 436
+
+----------
+
+
+
+Test Class Name: default

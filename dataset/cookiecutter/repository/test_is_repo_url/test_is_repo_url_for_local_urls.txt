@@ -1,0 +1,15 @@
+def is_repo_url(value):
+    """Return True if value is a repository URL."""
+    return bool(REPO_REGEX.match(value))
+
+----------
+
+def test_is_repo_url_for_local_urls(local_repo_url):
+    """Verify is_repo_url works."""
+    assert is_repo_url(local_repo_url) is False
+
+----------
+
+
+
+Test Class Name: default

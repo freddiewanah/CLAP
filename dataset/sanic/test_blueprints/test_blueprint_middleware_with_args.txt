@@ -1,0 +1,42 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_blueprint_middleware_with_args(app: Sanic):
+    bp = Blueprint(name='with_args_bp', url_prefix='/wa')
+
+    @bp.middleware
+    def middleware_with_no_tag(request: Request):
+        if request.headers.get('content-type') == 'application/json':
+            request.headers['accepts'] = 'plain/text'
+        else:
+            request.headers['accepts'] = 'application/json'
+
+    @bp.route('/')
+    def default_route(request):
+        if request.headers.get('accepts') == 'application/json':
+            return json({'test': 'value'})
+        else:
+            return text('value')
+    app.blueprint(bp)
+    (_, response) = app.test_client.get('/wa', headers={'content-type': 'application/json'})
+    assert response.text == 'value'
+    (_, response) = app.test_client.get('/wa', headers={'content-type': 'plain/text'})
+    assert response.json.get('test') == 'value'
+
+----------
+
+
+
+Test Class Name: Error

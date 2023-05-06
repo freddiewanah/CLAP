@@ -1,0 +1,19 @@
+def fingerprint(self, request: Request):
+    return self._fingerprint(request)
+
+----------
+
+def test_component_backward_compatibility(self):
+    for request_object in REQUEST_OBJECTS_TO_TEST:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            crawler = get_crawler(prevent_warnings=False)
+            fp = crawler.request_fingerprinter.fingerprint(request_object)
+        old_fp = request_fingerprint_2_6(request_object)
+        self.assertEqual(fp.hex(), old_fp)
+
+----------
+
+
+
+Test Class Name: BackwardCompatibilityTestCase

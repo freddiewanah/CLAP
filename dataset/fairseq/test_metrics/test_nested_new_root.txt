@@ -1,0 +1,38 @@
+def log_scalar(key: str, value: float, weight: float=1, priority: int=10, round: Optional[int]=None):
+    """Log a scalar value.
+
+    Args:
+        key (str): name of the field to log
+        value (float): value to log
+        weight (float): weight that this value contributes to the average.
+            A weight of 0 will always log the latest value.
+        priority (int): smaller values are logged earlier in the output
+        round (Optional[int]): number of digits to round to when displaying
+    """
+    for agg in get_active_aggregators():
+        if key not in agg:
+            agg.add_meter(key, AverageMeter(round=round), priority)
+        agg[key].update(value, weight)
+
+----------
+
+def test_nested_new_root(self):
+    with metrics.aggregate() as layer1:
+        metrics.log_scalar('loss', 1)
+        with metrics.aggregate(new_root=True) as layer2:
+            metrics.log_scalar('loss', 2)
+            with metrics.aggregate() as layer3:
+                metrics.log_scalar('loss', 3)
+                with metrics.aggregate(new_root=True) as layer4:
+                    metrics.log_scalar('loss', 4)
+        metrics.log_scalar('loss', 1.5)
+    self.assertEqual(layer4.get_smoothed_values()['loss'], 4)
+    self.assertEqual(layer3.get_smoothed_values()['loss'], 3)
+    self.assertEqual(layer2.get_smoothed_values()['loss'], 2.5)
+    self.assertEqual(layer1.get_smoothed_values()['loss'], 1.25)
+
+----------
+
+
+
+Test Class Name: TestMetrics

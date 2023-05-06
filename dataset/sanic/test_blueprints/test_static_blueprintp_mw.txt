@@ -1,0 +1,50 @@
+def url_for(self, view_name: str, **kwargs) -> str:
+    """
+        Same as :func:`sanic.Sanic.url_for`, but automatically determine
+        `scheme` and `netloc` base on the request. Since this method is aiming
+        to generate correct schema & netloc, `_external` is implied.
+
+        :param kwargs: takes same parameters as in :func:`sanic.Sanic.url_for`
+        :return: an absolute url to the given view
+        :rtype: str
+        """
+    try:
+        if '//' in self.app.config.SERVER_NAME:
+            return self.app.url_for(view_name, _external=True, **kwargs)
+    except AttributeError:
+        pass
+    scheme = self.scheme
+    host = self.server_name
+    port = self.server_port
+    if scheme.lower() in ('http', 'ws') and port == 80 or (scheme.lower() in ('https', 'wss') and port == 443):
+        netloc = host
+    else:
+        netloc = f'{host}:{port}'
+    return self.app.url_for(view_name, _external=True, _scheme=scheme, _server=netloc, **kwargs)
+
+----------
+
+@pytest.mark.parametrize('file_name', ['test.file'])
+def test_static_blueprintp_mw(app: Sanic, static_file_directory, file_name):
+    current_file = inspect.getfile(inspect.currentframe())
+    with open(current_file, 'rb') as file:
+        file.read()
+    triggered = False
+    bp = Blueprint(name='test_mw', url_prefix='')
+
+    @bp.middleware('request')
+    def bp_mw1(request):
+        nonlocal triggered
+        triggered = True
+    bp.static('/test.file', get_file_path(static_file_directory, file_name), strict_slashes=True, name='static')
+    app.blueprint(bp)
+    uri = app.url_for('test_mw.static')
+    assert uri == '/test.file'
+    (_, response) = app.test_client.get('/test.file')
+    assert triggered is True
+
+----------
+
+
+
+Test Class Name: Error

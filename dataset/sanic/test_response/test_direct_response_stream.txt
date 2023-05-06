@@ -1,0 +1,24 @@
+def respond(self, response: BaseHTTPResponse) -> BaseHTTPResponse:
+    raise NotImplementedError('Not implemented')
+
+----------
+
+def test_direct_response_stream(app: Sanic):
+
+    @app.route('/')
+    async def test(request: Request):
+        response = await request.respond(content_type='text/csv')
+        await response.send('foo,')
+        await response.send('bar')
+        await response.eof()
+    (_, response) = app.test_client.get('/')
+    assert response.text == 'foo,bar'
+    assert response.headers['Transfer-Encoding'] == 'chunked'
+    assert response.headers['Content-Type'] == 'text/csv'
+    assert 'Content-Length' not in response.headers
+
+----------
+
+
+
+Test Class Name: default

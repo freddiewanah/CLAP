@@ -1,0 +1,29 @@
+@staticmethod
+def start(path=DEFAULT_PLASMA_PATH, nbytes: int=GB100) -> subprocess.Popen:
+    if not PYARROW_AVAILABLE:
+        raise ImportError('please run pip install pyarrow to use --use_plasma_view')
+    _server = subprocess.Popen(['plasma_store', '-m', str(nbytes), '-s', path])
+    plasma.connect(path, num_retries=200)
+    return _server
+
+----------
+
+def test_two_servers_do_not_share_object_id_space(self):
+    data_server_1 = np.array([0, 1])
+    data_server_2 = np.array([2, 3])
+    server_2_path = self.path
+    with tempfile.NamedTemporaryFile() as server_1_path:
+        server = PlasmaStore.start(path=server_1_path.name, nbytes=10000)
+        arr1 = PlasmaView(data_server_1, dummy_path, 1, plasma_path=server_1_path.name)
+        assert len(arr1.client.list()) == 1
+        assert (arr1.array == data_server_1).all()
+        arr2 = PlasmaView(data_server_2, dummy_path, 1, plasma_path=server_2_path)
+        assert (arr2.array == data_server_2).all()
+        assert (arr1.array == data_server_1).all()
+        server.kill()
+
+----------
+
+
+
+Test Class Name: TestPlasmaView

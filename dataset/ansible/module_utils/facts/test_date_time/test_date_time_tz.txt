@@ -1,0 +1,25 @@
+@pass_environment
+def difference(environment, a, b):
+    if isinstance(a, Hashable) and isinstance(b, Hashable):
+        c = set(a) - set(b)
+    else:
+        c = unique(environment, [x for x in a if x not in b], True)
+    return c
+
+----------
+
+@pytest.mark.parametrize('fact_name', ('tz', 'tz_dst'))
+def test_date_time_tz(fake_date_facts, fact_name):
+    """
+    Test the returned value for timezone consists of only uppercase
+    letters and is the expected length.
+    """
+    assert fake_date_facts['date_time'][fact_name].isupper()
+    assert 2 <= len(fake_date_facts['date_time'][fact_name]) <= 5
+    assert not set(fake_date_facts['date_time'][fact_name]).difference(set(string.ascii_uppercase))
+
+----------
+
+
+
+Test Class Name: FakeNow

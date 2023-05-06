@@ -1,0 +1,31 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_missing_cert_path(app):
+
+    @app.get('/test')
+    async def handler(request):
+        return text('ssl test')
+    ssl_list = [invalid_dir]
+    with pytest.raises(ValueError) as excinfo:
+        app.test_client.get('/test', server_kwargs={'ssl': ssl_list})
+    assert 'not found' in str(excinfo.value)
+    assert invalid_dir + '/privkey.pem' in str(excinfo.value)
+
+----------
+
+
+
+Test Class Name: Creator

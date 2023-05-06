@@ -1,0 +1,21 @@
+def run(app, level=logging.DEBUG):
+
+    @app.after_server_start
+    async def stop(app, _):
+        app.stop()
+    with caplog.at_level(level):
+        Sanic.serve()
+    return caplog.record_tuples
+
+----------
+
+def test_app_run_raise_type_error(app: Sanic):
+    with pytest.raises(TypeError) as excinfo:
+        app.run(loop='loop')
+    assert str(excinfo.value) == 'loop is not a valid argument. To use an existing loop, change to create_server().\nSee more: https://sanic.readthedocs.io/en/latest/sanic/deploying.html#asynchronous-support'
+
+----------
+
+
+
+Test Class Name: default

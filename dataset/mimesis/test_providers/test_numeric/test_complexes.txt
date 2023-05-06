@@ -1,0 +1,42 @@
+def complexes(self, start_real: float=0, end_real: float=1, start_imag: float=0, end_imag: float=1, precision_real: int=15, precision_imag: int=15, n: int=10) -> t.List[complex]:
+    """Generate a list of random complex numbers.
+
+        :param start_real: Start real range.
+        :param end_real: End real range.
+        :param start_imag: Start imaginary range.
+        :param end_imag: End imaginary range.
+        :param precision_real:  Round a real part of
+            number to a given precision.
+        :param precision_imag:  Round the imaginary part of
+            number to a given precision.
+        :param n: Length of the list.
+        :return: A list of random complex numbers.
+        """
+    numbers = []
+    for _ in range(n):
+        numbers.append(self.complex_number(start_real=start_real, end_real=end_real, start_imag=start_imag, end_imag=end_imag, precision_real=precision_real, precision_imag=precision_imag))
+    return numbers
+
+----------
+
+@pytest.mark.parametrize('start_real, end_real, start_imag, end_imag', [(1.2, 10, 1, 2.4), (10.4, 20.0, 2.3, 10), (20.3, 30.8, 2.4, 4.5)])
+def test_complexes(self, numeric, start_real, end_real, start_imag, end_imag):
+    result = numeric.complexes(start_real, end_real, start_imag, end_imag)
+    assert max((e.real for e in result)) <= end_real
+    assert min((e.real for e in result)) >= start_real
+    assert max((e.imag for e in result)) <= end_imag
+    assert min((e.imag for e in result)) >= start_imag
+    assert len(result) == 10
+    assert isinstance(result, list)
+    result = numeric.complexes(n=1000)
+    assert len(result) == 1000
+    result = numeric.complexes(precision_real=4, precision_imag=6)
+    for e in result:
+        assert len(str(e.real).split('.')[1]) <= 4
+        assert len(str(e.imag).split('.')[1]) <= 6
+
+----------
+
+
+
+Test Class Name: TestNumbers

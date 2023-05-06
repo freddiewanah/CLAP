@@ -1,0 +1,41 @@
+def parse_cookie(cookie: str) -> Dict[str, str]:
+    """Parse a ``Cookie`` HTTP header into a dict of name/value pairs.
+
+    This function attempts to mimic browser cookie parsing behavior;
+    it specifically does not follow any of the cookie-related RFCs
+    (because browsers don't either).
+
+    The algorithm used is identical to that used by Django version 1.9.10.
+
+    .. versionadded:: 4.4.2
+    """
+    cookiedict = {}
+    for chunk in cookie.split(str(';')):
+        if str('=') in chunk:
+            (key, val) = chunk.split(str('='), 1)
+        else:
+            (key, val) = (str(''), chunk)
+        (key, val) = (key.strip(), val.strip())
+        if key or val:
+            cookiedict[key] = _unquote_cookie(val)
+    return cookiedict
+
+----------
+
+def test_invalid_cookies(self):
+    """
+        Cookie strings that go against RFC6265 but browsers will send if set
+        via document.cookie.
+        """
+    self.assertIn('django_language', parse_cookie('abc=def; unnamed; django_language=en').keys())
+    self.assertEqual(parse_cookie('a=b; "; c=d'), {'a': 'b', '': '"', 'c': 'd'})
+    self.assertEqual(parse_cookie('a b c=d e = f; gh=i'), {'a b c': 'd e = f', 'gh': 'i'})
+    self.assertEqual(parse_cookie('a   b,c<>@:/[]?{}=d  "  =e,f g'), {'a   b,c<>@:/[]?{}': 'd  "  =e,f g'})
+    self.assertEqual(parse_cookie('saint=André Bessette'), {'saint': native_str('André Bessette')})
+    self.assertEqual(parse_cookie('  =  b  ;  ;  =  ;   c  =  ;  '), {'': 'b', 'c': ''})
+
+----------
+
+
+
+Test Class Name: ParseCookieTest

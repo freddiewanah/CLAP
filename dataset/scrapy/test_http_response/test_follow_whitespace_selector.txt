@@ -1,0 +1,15 @@
+def css(self, query):
+    return self.selector.css(query)
+
+----------
+
+def test_follow_whitespace_selector(self):
+    resp = self.response_class('http://example.com', body=b'<html><body><a href=" foo\n">click me</a></body></html>')
+    self._assert_followed_url(resp.css('a')[0], 'http://example.com/foo', response=resp)
+    self._assert_followed_url(resp.css('a::attr(href)')[0], 'http://example.com/foo', response=resp)
+
+----------
+
+
+
+Test Class Name: TextResponseTest

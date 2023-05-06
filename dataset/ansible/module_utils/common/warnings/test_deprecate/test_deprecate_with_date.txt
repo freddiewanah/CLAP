@@ -1,0 +1,20 @@
+def deprecate(msg, version=None, date=None, collection_name=None):
+    if isinstance(msg, string_types):
+        if date is not None:
+            _global_deprecations.append({'msg': msg, 'date': date, 'collection_name': collection_name})
+        else:
+            _global_deprecations.append({'msg': msg, 'version': version, 'collection_name': collection_name})
+    else:
+        raise TypeError('deprecate requires a string not a %s' % type(msg))
+
+----------
+
+def test_deprecate_with_date(reset):
+    deprecate(msg='Deprecation message', date='2199-12-31')
+    assert warnings._global_deprecations == [{'msg': 'Deprecation message', 'date': '2199-12-31', 'collection_name': None}]
+
+----------
+
+
+
+Test Class Name: default

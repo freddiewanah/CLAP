@@ -1,0 +1,21 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+def test_mediatype_parameters(self):
+
+    def _test(response):
+        self.assertEqual(response.text, 'ΎΣΎ')
+        self.assertEqual(type(response), responsetypes.from_mimetype('text/plain'))
+        self.assertEqual(response.encoding, 'utf-8')
+    request = Request('data:text/plain;foo=%22foo;bar%5C%22%22;charset=utf-8;bar=%22foo;%5C%22 foo ;/,%22,%CE%8E%CE%A3%CE%8E')
+    return self.download_request(request, self.spider).addCallback(_test)
+
+----------
+
+
+
+Test Class Name: DataURITestCase

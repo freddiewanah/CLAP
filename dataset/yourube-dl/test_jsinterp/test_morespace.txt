@@ -1,0 +1,16 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_morespace(self):
+    jsi = JSInterpreter('function x (a) { return 2 * a + 1 ; }')
+    self.assertEqual(jsi.call_function('x', 3), 7)
+    jsi = JSInterpreter('function f () { x =  2  ; return x; }')
+    self.assertEqual(jsi.call_function('f'), 2)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

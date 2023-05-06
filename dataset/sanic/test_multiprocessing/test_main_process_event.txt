@@ -1,0 +1,42 @@
+def run(app, level=logging.DEBUG):
+
+    @app.after_server_start
+    async def stop(app, _):
+        app.stop()
+    with caplog.at_level(level):
+        Sanic.serve()
+    return caplog.record_tuples
+
+----------
+
+@pytest.mark.skipif(sys.platform not in ('linux', 'darwin'), reason='This test requires fork context')
+def test_main_process_event(app, caplog):
+    num_workers = random.choice(range(2, multiprocessing.cpu_count() * 2 + 1))
+    app.after_server_start(stop)
+
+    @app.listener('main_process_start')
+    def main_process_start(app, loop):
+        logger.info('main_process_start')
+
+    @app.listener('main_process_stop')
+    def main_process_stop(app, loop):
+        logger.info('main_process_stop')
+
+    @app.main_process_start
+    def main_process_start2(app, loop):
+        logger.info('main_process_start')
+
+    @app.main_process_stop
+    def main_process_stop2(app, loop):
+        logger.info('main_process_stop')
+    with use_context('fork'):
+        with caplog.at_level(logging.INFO):
+            app.run(HOST, PORT, workers=num_workers)
+    assert caplog.record_tuples.count(('sanic.root', 20, 'main_process_start')) == 2
+    assert caplog.record_tuples.count(('sanic.root', 20, 'main_process_stop')) == 2
+
+----------
+
+
+
+Test Class Name: default

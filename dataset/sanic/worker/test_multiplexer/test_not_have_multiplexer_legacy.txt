@@ -1,0 +1,31 @@
+def run(app, level=logging.DEBUG):
+
+    @app.after_server_start
+    async def stop(app, _):
+        app.stop()
+    with caplog.at_level(level):
+        Sanic.serve()
+    return caplog.record_tuples
+
+----------
+
+def test_not_have_multiplexer_legacy(app: Sanic):
+    event = Event()
+
+    @app.main_process_start
+    async def setup(app, _):
+        app.shared_ctx.event = event
+
+    @app.after_server_start
+    def stop(app):
+        if hasattr(app, 'm') and isinstance(app.m, WorkerMultiplexer):
+            app.shared_ctx.event.set()
+        app.stop()
+    app.run(legacy=True)
+    assert not event.is_set()
+
+----------
+
+
+
+Test Class Name: default

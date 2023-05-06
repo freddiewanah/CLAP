@@ -1,0 +1,27 @@
+def mimetype2ext(mt):
+    if mt is None:
+        return None
+    ext = {'audio/mp4': 'm4a', 'audio/mpeg': 'mp3'}.get(mt)
+    if ext is not None:
+        return ext
+    (_, _, res) = mt.rpartition('/')
+    res = res.split(';')[0].strip().lower()
+    return {'3gpp': '3gp', 'smptett+xml': 'tt', 'ttaf+xml': 'dfxp', 'ttml+xml': 'ttml', 'x-flv': 'flv', 'x-mp4-fragmented': 'mp4', 'x-ms-sami': 'sami', 'x-ms-wmv': 'wmv', 'mpegurl': 'm3u8', 'x-mpegurl': 'm3u8', 'vnd.apple.mpegurl': 'm3u8', 'dash+xml': 'mpd', 'f4m+xml': 'f4m', 'hds+xml': 'f4m', 'vnd.ms-sstr+xml': 'ism', 'quicktime': 'mov', 'mp2t': 'ts', 'x-wav': 'wav'}.get(res, res)
+
+----------
+
+def test_mimetype2ext(self):
+    self.assertEqual(mimetype2ext(None), None)
+    self.assertEqual(mimetype2ext('video/x-flv'), 'flv')
+    self.assertEqual(mimetype2ext('application/x-mpegURL'), 'm3u8')
+    self.assertEqual(mimetype2ext('text/vtt'), 'vtt')
+    self.assertEqual(mimetype2ext('text/vtt;charset=utf-8'), 'vtt')
+    self.assertEqual(mimetype2ext('text/html; charset=utf-8'), 'html')
+    self.assertEqual(mimetype2ext('audio/x-wav'), 'wav')
+    self.assertEqual(mimetype2ext('audio/x-wav;codec=pcm'), 'wav')
+
+----------
+
+
+
+Test Class Name: TestUtil

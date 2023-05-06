@@ -1,0 +1,21 @@
+def get_protocol(self) -> str:
+    return 'http'
+
+----------
+
+@skipIfNoIPv6
+def test_ipv6(self: typing.Any):
+    [sock] = bind_sockets(0, '::1', family=socket.AF_INET6)
+    port = sock.getsockname()[1]
+    self.http_server.add_socket(sock)
+    url = '%s://[::1]:%d/hello' % (self.get_protocol(), port)
+    with self.assertRaises(Exception):
+        self.fetch(url, allow_ipv6=False, raise_error=True)
+    response = self.fetch(url)
+    self.assertEqual(response.body, b'Hello world!')
+
+----------
+
+
+
+Test Class Name: TimeoutResolver

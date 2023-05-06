@@ -1,0 +1,29 @@
+def json(body: Any, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='application/json', dumps: Optional[Callable[..., str]]=None, **kwargs: Any) -> JSONResponse:
+    """
+    Returns response object with body in json format.
+
+    :param body: Response data to be serialized.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param kwargs: Remaining arguments that are passed to the json encoder.
+    """
+    return JSONResponse(body, status=status, headers=headers, content_type=content_type, dumps=dumps, **kwargs)
+
+----------
+
+def test_test_client_port_default(app):
+
+    @app.get('/get')
+    def handler(request):
+        return json(request.transport.get_extra_info('sockname')[1])
+    test_client = SanicTestClient(app)
+    assert test_client.port == PORT
+    (request, response) = test_client.get('/get')
+    assert test_client.port > 0
+    assert response.json == test_client.port
+
+----------
+
+
+
+Test Class Name: default

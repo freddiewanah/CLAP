@@ -1,0 +1,45 @@
+def read_bytes(self, num_bytes: int, partial: bool=False) -> Awaitable[bytes]:
+    """Asynchronously read a number of bytes.
+
+        If ``partial`` is true, data is returned as soon as we have
+        any bytes to return (but never more than ``num_bytes``)
+
+        .. versionchanged:: 4.0
+            Added the ``partial`` argument.  The callback argument is now
+            optional and a `.Future` will be returned if it is omitted.
+
+        .. versionchanged:: 6.0
+
+           The ``callback`` and ``streaming_callback`` arguments have
+           been removed. Use the returned `.Future` (and
+           ``partial=True`` for ``streaming_callback``) instead.
+
+        """
+    future = self._start_read()
+    assert isinstance(num_bytes, numbers.Integral)
+    self._read_bytes = num_bytes
+    self._read_partial = partial
+    try:
+        self._try_inline_read()
+    except:
+        future.add_done_callback(lambda f: f.exception())
+        raise
+    return future
+
+----------
+
+@gen_test
+def test_pipe_iostream_big_write(self):
+    (rs, ws) = (yield self.make_iostream_pair())
+    NUM_BYTES = 1048576
+    ws.write(b'1' * NUM_BYTES)
+    data = (yield rs.read_bytes(NUM_BYTES))
+    self.assertEqual(data, b'1' * NUM_BYTES)
+    ws.close()
+    rs.close()
+
+----------
+
+
+
+Test Class Name: TestPipeIOStream

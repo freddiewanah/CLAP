@@ -1,0 +1,35 @@
+def extract_links(self, response):
+    """Returns a list of :class:`~scrapy.link.Link` objects from the
+        specified :class:`response <scrapy.http.Response>`.
+
+        Only links that match the settings passed to the ``__init__`` method of
+        the link extractor are returned.
+
+        Duplicate links are omitted if the ``unique`` attribute is set to ``True``,
+        otherwise they are returned.
+        """
+    base_url = get_base_url(response)
+    if self.restrict_xpaths:
+        docs = [subdoc for x in self.restrict_xpaths for subdoc in response.xpath(x)]
+    else:
+        docs = [response.selector]
+    all_links = []
+    for doc in docs:
+        links = self._extract_links(doc, response.url, response.encoding, base_url)
+        all_links.extend(self._process_links(links))
+    if self.link_extractor.unique:
+        return unique_list(all_links)
+    return all_links
+
+----------
+
+def test_extract_all_links(self):
+    lx = self.extractor_cls()
+    page4_url = 'http://example.com/page%204.html'
+    self.assertEqual([link for link in lx.extract_links(self.response)], [Link(url='http://example.com/sample1.html', text=''), Link(url='http://example.com/sample2.html', text='sample 2'), Link(url='http://example.com/sample3.html', text='sample 3 text'), Link(url='http://example.com/sample3.html#foo', text='sample 3 repetition with fragment'), Link(url='http://www.google.com/something', text=''), Link(url='http://example.com/innertag.html', text='inner tag'), Link(url=page4_url, text='href with whitespaces')])
+
+----------
+
+
+
+Test Class Name: LinkExtractorTestCase

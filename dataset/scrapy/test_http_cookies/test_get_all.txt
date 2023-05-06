@@ -1,0 +1,13 @@
+def get_all(self, name, default=None):
+    return [to_unicode(v, errors='replace') for v in self.response.headers.getlist(name)]
+
+----------
+
+def test_get_all(self):
+    self.assertEqual(self.wrapped.get_all('content-type'), ['text/html'])
+
+----------
+
+
+
+Test Class Name: WrappedResponseTest

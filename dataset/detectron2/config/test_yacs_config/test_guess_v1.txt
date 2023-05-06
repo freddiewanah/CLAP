@@ -1,0 +1,31 @@
+def get_cfg() -> CfgNode:
+    """
+    Get a copy of the default config.
+
+    Returns:
+        a detectron2 CfgNode instance.
+    """
+    from .defaults import _C
+    return _C.clone()
+
+----------
+
+def test_guess_v1(self):
+    cfg = get_cfg()
+    latest_ver = cfg.VERSION
+    self._merge_cfg_str(cfg, _V1_CFG)
+    self.assertEqual(cfg.VERSION, latest_ver)
+
+----------
+
+def _merge_cfg_str(self, cfg, merge_str):
+    f = tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False)
+    try:
+        f.write(merge_str)
+        f.close()
+        cfg.merge_from_file(f.name)
+    finally:
+        os.remove(f.name)
+    return cfg
+
+Test Class Name: TestConfigVersioning

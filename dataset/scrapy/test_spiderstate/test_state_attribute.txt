@@ -1,0 +1,19 @@
+def spider_closed(self, spider):
+    if self.jobdir:
+        with Path(self.statefn).open('wb') as f:
+            pickle.dump(spider.state, f, protocol=4)
+
+----------
+
+def test_state_attribute(self):
+    spider = Spider(name='default')
+    ss = SpiderState()
+    ss.spider_opened(spider)
+    self.assertEqual(spider.state, {})
+    ss.spider_closed(spider)
+
+----------
+
+
+
+Test Class Name: SpiderStateTest

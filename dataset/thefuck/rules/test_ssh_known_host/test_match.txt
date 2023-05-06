@@ -1,0 +1,21 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_match(ssh_error):
+    (errormsg, _, _, _) = ssh_error
+    assert match(Command('ssh', errormsg))
+    assert match(Command('ssh', errormsg))
+    assert match(Command('scp something something', errormsg))
+    assert match(Command('scp something something', errormsg))
+    assert not match(Command(errormsg, ''))
+    assert not match(Command('notssh', errormsg))
+    assert not match(Command('ssh', ''))
+
+----------
+
+
+
+Test Class Name: default

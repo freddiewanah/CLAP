@@ -1,0 +1,26 @@
+@git_support
+def get_new_command(command):
+    command_parts = command.script_parts[:]
+    upstream_option_index = _get_upstream_option_index(command_parts)
+    if upstream_option_index is not None:
+        command_parts.pop(upstream_option_index)
+        if len(command_parts) > upstream_option_index:
+            command_parts.pop(upstream_option_index)
+    else:
+        push_idx = command_parts.index('push') + 1
+        while len(command_parts) > push_idx and command_parts[len(command_parts) - 1][0] != '-':
+            command_parts.pop(len(command_parts) - 1)
+    arguments = re.findall('git push (.*)', command.output)[-1].replace("'", "\\'").strip()
+    return replace_argument(' '.join(command_parts), 'push', 'push {}'.format(arguments))
+
+----------
+
+@pytest.mark.parametrize('command, output', [(Command('git push', git_err), 'git pull && git push'), (Command('git push nvbn', git_err), 'git pull nvbn && git push nvbn'), (Command('git push nvbn master', git_err), 'git pull nvbn master && git push nvbn master'), (Command('git push', git_err2), 'git pull && git push'), (Command('git push nvbn', git_err2), 'git pull nvbn && git push nvbn'), (Command('git push nvbn master', git_err2), 'git pull nvbn master && git push nvbn master')])
+def test_get_new_command(command, output):
+    assert get_new_command(command) == output
+
+----------
+
+
+
+Test Class Name: default

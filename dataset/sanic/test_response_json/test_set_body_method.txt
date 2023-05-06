@@ -1,0 +1,27 @@
+def set_body(self, body: Any, dumps: Optional[Callable[..., str]]=None, **dumps_kwargs: Any) -> None:
+    """Sets a new response body using the given dumps function
+        and kwargs, or falling back to the defaults given when
+        creating the object if none are specified.
+        """
+    self._body_manually_set = False
+    self._raw_body = body
+    use_dumps = dumps or self._use_dumps
+    use_dumps_kwargs = dumps_kwargs if dumps else self._use_dumps_kwargs
+    self._body = self._encode_body(use_dumps(body, **use_dumps_kwargs))
+
+----------
+
+def test_set_body_method(json_app: Sanic):
+    new_body = {'lorem': 'ipsum'}
+
+    @json_app.on_response
+    def set_body(request: Request, response: JSONResponse):
+        response.set_body(new_body)
+    (_, resp) = json_app.test_client.get('/json')
+    assert resp.body == json_dumps(new_body).encode()
+
+----------
+
+
+
+Test Class Name: default

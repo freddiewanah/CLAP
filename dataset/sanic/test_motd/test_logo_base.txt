@@ -1,0 +1,29 @@
+@pytest.fixture(scope='function')
+def run_startup(caplog):
+
+    def run(app):
+        nonlocal caplog
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        with caplog.at_level(logging.DEBUG):
+            server = app.create_server(debug=True, return_asyncio_server=True, port=PORT)
+            loop._stopping = False
+            _server = loop.run_until_complete(server)
+            _server.close()
+            loop.run_until_complete(_server.wait_closed())
+            app.stop()
+        return caplog.record_tuples
+    return run
+
+----------
+
+def test_logo_base(app, run_startup):
+    logs = run_startup(app)
+    assert logs[0][1] == logging.DEBUG
+    assert logs[0][2] == BASE_LOGO
+
+----------
+
+
+
+Test Class Name: default

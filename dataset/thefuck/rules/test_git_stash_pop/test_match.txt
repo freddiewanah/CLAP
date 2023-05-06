@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_match(output):
+    assert match(Command('git stash pop', output))
+    assert not match(Command('git stash', ''))
+
+----------
+
+
+
+Test Class Name: default

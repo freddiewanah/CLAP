@@ -1,0 +1,30 @@
+def fetch(self, request: Union['HTTPRequest', str], **kwargs: Any) -> 'HTTPResponse':
+    """Executes a request, returning an `HTTPResponse`.
+
+        The request may be either a string URL or an `HTTPRequest` object.
+        If it is a string, we construct an `HTTPRequest` using any additional
+        kwargs: ``HTTPRequest(request, **kwargs)``
+
+        If an error occurs during the fetch, we raise an `HTTPError` unless
+        the ``raise_error`` keyword argument is set to False.
+        """
+    response = self._io_loop.run_sync(functools.partial(self._async_client.fetch, request, **kwargs))
+    return response
+
+----------
+
+def test_304_headers(self):
+    response1 = self.fetch('/')
+    self.assertEqual(response1.headers['Content-Length'], '5')
+    self.assertEqual(response1.headers['Content-Language'], 'en_US')
+    response2 = self.fetch('/', headers={'If-None-Match': response1.headers['Etag']})
+    self.assertEqual(response2.code, 304)
+    self.assertTrue('Content-Length' not in response2.headers)
+    self.assertTrue('Content-Language' not in response2.headers)
+    self.assertTrue('Transfer-Encoding' not in response2.headers)
+
+----------
+
+
+
+Test Class Name: Handler

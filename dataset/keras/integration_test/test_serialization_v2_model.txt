@@ -1,0 +1,26 @@
+def get_config(self):
+    config = {'num_units': self._num_units, 'kernel_initializer': initializers.serialize(self._kernel_initializer), 'bias_initializer': initializers.serialize(self._bias_initializer), 'activation': activations.serialize(self._activation), 'reuse': self._reuse}
+    base_config = super().get_config()
+    return dict(list(base_config.items()) + list(config.items()))
+
+----------
+
+def test_serialization_v2_model(self):
+    np.random.seed(1337)
+    ((x_train, y_train), _) = test_utils.get_test_data(train_samples=100, test_samples=0, input_shape=(10,), num_classes=2)
+    y_train = utils.to_categorical(y_train)
+    model = keras.Sequential([keras.layers.Flatten(input_shape=x_train.shape[1:]), keras.layers.Dense(10, activation=tf.nn.relu), keras.layers.Dense(y_train.shape[-1], activation=tf.math.softmax)])
+    last_layer_activation = model.get_layer(index=2).get_config()['activation']
+    self.assertEqual(last_layer_activation, 'softmax')
+    model.compile(loss='categorical_crossentropy', optimizer=keras.optimizers.legacy.adam.Adam(0.005), metrics=['accuracy'], run_eagerly=test_utils.should_run_eagerly())
+    model.fit(x_train, y_train, epochs=2, batch_size=10, validation_data=(x_train, y_train), verbose=2)
+    output_path = os.path.join(self.get_temp_dir(), 'tf_keras_saved_model')
+    model.save(output_path, save_format='tf')
+    loaded_model = keras.models.load_model(output_path)
+    self.assertEqual(model.summary(), loaded_model.summary())
+
+----------
+
+
+
+Test Class Name: ActivationV2IntegrationTest

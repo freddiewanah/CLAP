@@ -1,0 +1,26 @@
+def dev_dir(self) -> str:
+    """Generate a random path to development directory.
+
+        :return: Path.
+
+        :Example:
+            /home/sherrell/Development/Python
+        """
+    user = self.user()
+    folder = self.random.choice(['Development', 'Dev'])
+    stack = self.random.choice(PROGRAMMING_LANGS)
+    return str(self._pathlib_home / user / folder / stack)
+
+----------
+
+def test_dev_dir(self, path):
+    dev_dir = path.dev_dir()
+    dev_dir = dev_dir.split(self.directory_separator(path))
+    assert len(dev_dir) == 5
+    assert dev_dir[4] in PROGRAMMING_LANGS
+
+----------
+
+
+
+Test Class Name: TestPath

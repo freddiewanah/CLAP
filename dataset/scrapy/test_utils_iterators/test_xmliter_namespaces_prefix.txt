@@ -1,0 +1,22 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_xmliter_namespaces_prefix(self):
+    body = b'\n        <?xml version="1.0" encoding="UTF-8"?>\n        <root>\n            <h:table xmlns:h="http://www.w3.org/TR/html4/">\n              <h:tr>\n                <h:td>Apples</h:td>\n                <h:td>Bananas</h:td>\n              </h:tr>\n            </h:table>\n\n            <f:table xmlns:f="http://www.w3schools.com/furniture">\n              <f:name>African Coffee Table</f:name>\n              <f:width>80</f:width>\n              <f:length>120</f:length>\n            </f:table>\n\n        </root>\n        '
+    response = XmlResponse(url='http://mydummycompany.com', body=body)
+    my_iter = self.xmliter(response, 'table', 'http://www.w3.org/TR/html4/', 'h')
+    node = next(my_iter)
+    self.assertEqual(len(node.xpath('h:tr/h:td').getall()), 2)
+    self.assertEqual(node.xpath('h:tr/h:td[1]/text()').getall(), ['Apples'])
+    self.assertEqual(node.xpath('h:tr/h:td[2]/text()').getall(), ['Bananas'])
+    my_iter = self.xmliter(response, 'table', 'http://www.w3schools.com/furniture', 'f')
+    node = next(my_iter)
+    self.assertEqual(node.xpath('f:name/text()').getall(), ['African Coffee Table'])
+
+----------
+
+
+
+Test Class Name: LxmlXmliterTestCase

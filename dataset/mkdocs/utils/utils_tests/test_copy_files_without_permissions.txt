@@ -1,0 +1,40 @@
+def copy_file(self, dirty: bool=False) -> None:
+    """Copy source file to destination, ensuring parent directories exist."""
+    if dirty and (not self.is_modified()):
+        log.debug(f"Skip copying unmodified file: '{self.src_uri}'")
+    else:
+        log.debug(f"Copying media file: '{self.src_uri}'")
+        try:
+            utils.copy_file(self.abs_src_path, self.abs_dest_path)
+        except shutil.SameFileError:
+            pass
+
+----------
+
+@tempdir()
+@tempdir()
+def test_copy_files_without_permissions(self, src_dir, dst_dir):
+    cases = [dict(src_path='foo.txt', expected='foo.txt'), dict(src_path='bar.txt', expected='bar.txt'), dict(src_path='baz.txt', expected='baz.txt')]
+    try:
+        for case in cases:
+            (src, expected) = (case['src_path'], case['expected'])
+            with self.subTest(src):
+                src = os.path.join(src_dir, src)
+                with open(src, 'w') as f:
+                    f.write('content')
+                os.chmod(src, stat.S_IRUSR)
+                utils.copy_file(src, dst_dir)
+                self.assertTrue(os.path.isfile(os.path.join(dst_dir, expected)))
+                self.assertNotEqual(os.stat(src).st_mode, os.stat(os.path.join(dst_dir, expected)).st_mode)
+                self.assertTrue(os.access(os.path.join(dst_dir, expected), os.W_OK))
+    finally:
+        for case in cases:
+            src = os.path.join(src_dir, case['src_path'])
+            if os.path.exists(src):
+                os.chmod(src, stat.S_IRUSR | stat.S_IWUSR)
+
+----------
+
+
+
+Test Class Name: UtilsTests

@@ -1,0 +1,102 @@
+def process_ie_result(self, ie_result, download=True, extra_info={}):
+    """
+        Take the result of the ie(may be modified) and resolve all unresolved
+        references (URLs, playlist items).
+
+        It will also download the videos if 'download'.
+        Returns the resolved ie_result.
+        """
+    result_type = ie_result.get('_type', 'video')
+    if result_type in ('url', 'url_transparent'):
+        ie_result['url'] = sanitize_url(ie_result['url'])
+        extract_flat = self.params.get('extract_flat', False)
+        if extract_flat == 'in_playlist' and 'playlist' in extra_info or extract_flat is True:
+            self.__forced_printings(ie_result, self.prepare_filename(ie_result), incomplete=True)
+            return ie_result
+    if result_type == 'video':
+        self.add_extra_info(ie_result, extra_info)
+        return self.process_video_result(ie_result, download=download)
+    elif result_type == 'url':
+        return self.extract_info(ie_result['url'], download, ie_key=ie_result.get('ie_key'), extra_info=extra_info)
+    elif result_type == 'url_transparent':
+        info = self.extract_info(ie_result['url'], ie_key=ie_result.get('ie_key'), extra_info=extra_info, download=False, process=False)
+        if not info:
+            return info
+        force_properties = dict(((k, v) for (k, v) in ie_result.items() if v is not None))
+        for f in ('_type', 'url', 'id', 'extractor', 'extractor_key', 'ie_key'):
+            if f in force_properties:
+                del force_properties[f]
+        new_result = info.copy()
+        new_result.update(force_properties)
+        if new_result.get('_type') == 'url':
+            new_result['_type'] = 'url_transparent'
+        return self.process_ie_result(new_result, download=download, extra_info=extra_info)
+    elif result_type in ('playlist', 'multi_video'):
+        webpage_url = ie_result['webpage_url']
+        if webpage_url in self._playlist_urls:
+            self.to_screen('[download] Skipping already downloaded playlist: %s' % ie_result.get('title') or ie_result.get('id'))
+            return
+        self._playlist_level += 1
+        self._playlist_urls.add(webpage_url)
+        try:
+            return self.__process_playlist(ie_result, download)
+        finally:
+            self._playlist_level -= 1
+            if not self._playlist_level:
+                self._playlist_urls.clear()
+    elif result_type == 'compat_list':
+        self.report_warning('Extractor %s returned a compat_list result. It needs to be updated.' % ie_result.get('extractor'))
+
+        def _fixup(r):
+            self.add_extra_info(r, {'extractor': ie_result['extractor'], 'webpage_url': ie_result['webpage_url'], 'webpage_url_basename': url_basename(ie_result['webpage_url']), 'extractor_key': ie_result['extractor_key']})
+            return r
+        ie_result['entries'] = [self.process_ie_result(_fixup(r), download, extra_info) for r in ie_result['entries']]
+        return ie_result
+    else:
+        raise Exception('Invalid result type: %s' % result_type)
+
+----------
+
+def test_prefer_free_formats(self):
+    ydl = YDL()
+    ydl.params['prefer_free_formats'] = True
+    formats = [{'ext': 'webm', 'height': 460, 'url': TEST_URL}, {'ext': 'mp4', 'height': 460, 'url': TEST_URL}]
+    info_dict = _make_result(formats)
+    yie = YoutubeIE(ydl)
+    yie._sort_formats(info_dict['formats'])
+    ydl.process_ie_result(info_dict)
+    downloaded = ydl.downloaded_info_dicts[0]
+    self.assertEqual(downloaded['ext'], 'webm')
+    ydl = YDL()
+    ydl.params['prefer_free_formats'] = True
+    formats = [{'ext': 'webm', 'height': 720, 'url': TEST_URL}, {'ext': 'mp4', 'height': 1080, 'url': TEST_URL}]
+    info_dict['formats'] = formats
+    yie = YoutubeIE(ydl)
+    yie._sort_formats(info_dict['formats'])
+    ydl.process_ie_result(info_dict)
+    downloaded = ydl.downloaded_info_dicts[0]
+    self.assertEqual(downloaded['ext'], 'mp4')
+    ydl = YDL()
+    ydl.params['prefer_free_formats'] = False
+    formats = [{'ext': 'webm', 'height': 720, 'url': TEST_URL}, {'ext': 'mp4', 'height': 720, 'url': TEST_URL}, {'ext': 'flv', 'height': 720, 'url': TEST_URL}]
+    info_dict['formats'] = formats
+    yie = YoutubeIE(ydl)
+    yie._sort_formats(info_dict['formats'])
+    ydl.process_ie_result(info_dict)
+    downloaded = ydl.downloaded_info_dicts[0]
+    self.assertEqual(downloaded['ext'], 'mp4')
+    ydl = YDL()
+    ydl.params['prefer_free_formats'] = False
+    formats = [{'ext': 'flv', 'height': 720, 'url': TEST_URL}, {'ext': 'webm', 'height': 720, 'url': TEST_URL}]
+    info_dict['formats'] = formats
+    yie = YoutubeIE(ydl)
+    yie._sort_formats(info_dict['formats'])
+    ydl.process_ie_result(info_dict)
+    downloaded = ydl.downloaded_info_dicts[0]
+    self.assertEqual(downloaded['ext'], 'flv')
+
+----------
+
+
+
+Test Class Name: TestFormatSelection

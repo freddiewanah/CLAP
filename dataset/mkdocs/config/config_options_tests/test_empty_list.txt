@@ -1,0 +1,18 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_empty_list(self) -> None:
+
+    class Schema(Config):
+        option = c.ListOfPaths()
+    conf = self.get_config(Schema, {'option': []})
+    assert_type(conf.option, List[str])
+    self.assertEqual(conf.option, [])
+
+----------
+
+
+
+Test Class Name: default

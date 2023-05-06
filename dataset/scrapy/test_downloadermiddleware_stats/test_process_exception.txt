@@ -1,0 +1,17 @@
+def process_exception(self, request, exception, spider):
+    ex_class = global_object_name(exception.__class__)
+    self.stats.inc_value('downloader/exception_count', spider=spider)
+    self.stats.inc_value(f'downloader/exception_type_count/{ex_class}', spider=spider)
+
+----------
+
+def test_process_exception(self):
+    self.mw.process_exception(self.req, MyException(), self.spider)
+    self.assertStatsEqual('downloader/exception_count', 1)
+    self.assertStatsEqual('downloader/exception_type_count/tests.test_downloadermiddleware_stats.MyException', 1)
+
+----------
+
+
+
+Test Class Name: TestDownloaderStats

@@ -1,0 +1,30 @@
+def do_request(server, content):
+    request = FakeRequest(content + ' HTTP/1.1')
+    server.RequestHandlerClass(request, ('127.0.0.1', 0), server)
+    response = request.out_file.getvalue()
+    (headers, _, content) = response.partition(b'\r\n\r\n')
+    (status, _, headers) = headers.partition(b'\r\n')
+    status = status.split(None, 1)[1].decode()
+    headers = email.message_from_bytes(headers)
+    headers['_status'] = status
+    return (headers, content.decode())
+
+----------
+
+@tempdir()
+@tempdir()
+def test_serves_polling_after_event(self, site_dir, docs_dir):
+    with testing_server(site_dir) as server:
+        initial_epoch = server._visible_epoch
+        server.watch(docs_dir)
+        time.sleep(0.01)
+        Path(docs_dir, 'foo.docs').write_text('b')
+        (_, output) = do_request(server, f'GET /livereload/{initial_epoch}/0')
+        self.assertNotEqual(server._visible_epoch, initial_epoch)
+        self.assertEqual(output, str(server._visible_epoch))
+
+----------
+
+
+
+Test Class Name: BuildTests

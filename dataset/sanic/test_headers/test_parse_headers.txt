@@ -1,0 +1,31 @@
+def parse_content_header(value: str) -> Tuple[str, Options]:
+    """Parse content-type and content-disposition header values.
+
+    E.g. `form-data; name=upload; filename="file.txt"` to
+    ('form-data', {'name': 'upload', 'filename': 'file.txt'})
+
+    Mostly identical to cgi.parse_header and werkzeug.parse_options_header
+    but runs faster and handles special characters better.
+
+    Unescapes %22 to `"` and %0D%0A to `
+` in field values.
+    """
+    pos = value.find(';')
+    if pos == -1:
+        options: Dict[str, Union[int, str]] = {}
+    else:
+        options = {m.group(1).lower(): (m.group(2) or m.group(3)).replace('%22', '"').replace('%0D%0A', '\n') for m in _param.finditer(value[pos:])}
+        value = value[:pos]
+    return (value.strip().lower(), options)
+
+----------
+
+@pytest.mark.parametrize('input, expected', [('text/plain', ('text/plain', {})), ('text/vnd.just.made.this.up ; ', ('text/vnd.just.made.this.up', {})), ('text/plain;charset=us-ascii', ('text/plain', {'charset': 'us-ascii'})), ('text/plain ; charset="us-ascii"', ('text/plain', {'charset': 'us-ascii'})), ('text/plain ; charset="us-ascii"; another=opt', ('text/plain', {'charset': 'us-ascii', 'another': 'opt'})), ('attachment; filename="silly.txt"', ('attachment', {'filename': 'silly.txt'})), ('attachment; filename="strange;name"', ('attachment', {'filename': 'strange;name'})), ('attachment; filename="strange;name";size=123;', ('attachment', {'filename': 'strange;name', 'size': '123'})), ('form-data; name="foo"; value="%22\\%0D%0A"', ('form-data', {'name': 'foo', 'value': '"\\\n'})), ('form-data; name="foo%22;bar\\"; filename="😀"', ('form-data', {'name': 'foo";bar\\', 'filename': '😀'}))])
+def test_parse_headers(input, expected):
+    assert headers.parse_content_header(input) == expected
+
+----------
+
+
+
+Test Class Name: default

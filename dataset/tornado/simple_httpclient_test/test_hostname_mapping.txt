@@ -1,0 +1,19 @@
+def get_http_port(self) -> int:
+    """Returns the port used by the server.
+
+        A new port is chosen for each test.
+        """
+    return self.__port
+
+----------
+
+def test_hostname_mapping(self):
+    response = self.fetch('http://www.example.com:%d/hello' % self.get_http_port())
+    response.rethrow()
+    self.assertEqual(response.body, b'Hello world!')
+
+----------
+
+
+
+Test Class Name: HostnameMappingTestCase

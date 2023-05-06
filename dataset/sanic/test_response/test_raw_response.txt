@@ -1,0 +1,27 @@
+def raw(body: Optional[AnyStr], status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str=DEFAULT_HTTP_CONTENT_TYPE) -> HTTPResponse:
+    """
+    Returns response object without encoding the body.
+
+    :param body: Response data.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response.
+    """
+    return HTTPResponse(body=body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_raw_response(app):
+
+    @app.get('/test')
+    def handler(request: Request):
+        return raw(b'raw_response')
+    (request, response) = app.test_client.get('/test')
+    assert response.content_type == 'application/octet-stream'
+    assert response.body == b'raw_response'
+
+----------
+
+
+
+Test Class Name: default

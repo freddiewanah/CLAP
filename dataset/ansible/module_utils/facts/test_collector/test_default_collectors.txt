@@ -1,0 +1,33 @@
+def select_collector_classes(collector_names, all_fact_subsets):
+    seen_collector_classes = set()
+    selected_collector_classes = []
+    for collector_name in collector_names:
+        collector_classes = all_fact_subsets.get(collector_name, [])
+        for collector_class in collector_classes:
+            if collector_class not in seen_collector_classes:
+                selected_collector_classes.append(collector_class)
+                seen_collector_classes.add(collector_class)
+    return selected_collector_classes
+
+----------
+
+def test_default_collectors(self):
+    platform_info = {'system': 'Generic'}
+    compat_platforms = [platform_info]
+    collectors_for_platform = collector.find_collectors_for_platform(default_collectors.collectors, compat_platforms)
+    (all_fact_subsets, aliases_map) = collector.build_fact_id_to_collector_map(collectors_for_platform)
+    all_valid_subsets = frozenset(all_fact_subsets.keys())
+    collector_names = collector.get_collector_names(valid_subsets=all_valid_subsets, aliases_map=aliases_map, platform_info=platform_info)
+    complete_collector_names = collector._solve_deps(collector_names, all_fact_subsets)
+    dep_map = collector.build_dep_data(complete_collector_names, all_fact_subsets)
+    ordered_deps = collector.tsort(dep_map)
+    ordered_collector_names = [x[0] for x in ordered_deps]
+    res = collector.select_collector_classes(ordered_collector_names, all_fact_subsets)
+    self.assertTrue(res.index(default_collectors.ServiceMgrFactCollector) > res.index(default_collectors.DistributionFactCollector), res)
+    self.assertTrue(res.index(default_collectors.ServiceMgrFactCollector) > res.index(default_collectors.PlatformFactCollector), res)
+
+----------
+
+
+
+Test Class Name: TestSelectCollectorNames

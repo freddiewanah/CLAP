@@ -1,0 +1,16 @@
+@classmethod
+def parse(cls, raw: str) -> Matched:
+    media_type = MediaType._parse(raw)
+    return cls(raw, media_type)
+
+----------
+
+def test_accept_parsed_against_str():
+    accept = headers.Matched.parse('foo/bar')
+    assert accept == 'foo/bar; q=0.1'
+
+----------
+
+
+
+Test Class Name: default

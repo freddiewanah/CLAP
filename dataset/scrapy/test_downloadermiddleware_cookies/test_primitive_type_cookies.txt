@@ -1,0 +1,32 @@
+def process_request(self, request, spider):
+    if request.meta.get('dont_merge_cookies', False):
+        return
+    cookiejarkey = request.meta.get('cookiejar')
+    jar = self.jars[cookiejarkey]
+    cookies = self._get_request_cookies(jar, request)
+    self._process_cookies(cookies, jar=jar, request=request)
+    request.headers.pop('Cookie', None)
+    jar.add_cookie_header(request)
+    self._debug_cookie(request, spider)
+
+----------
+
+def test_primitive_type_cookies(self):
+    req1 = Request('http://example.org', cookies={'a': True})
+    assert self.mw.process_request(req1, self.spider) is None
+    self.assertCookieValEqual(req1.headers['Cookie'], b'a=True')
+    req2 = Request('http://example.org', cookies={'a': 9.5})
+    assert self.mw.process_request(req2, self.spider) is None
+    self.assertCookieValEqual(req2.headers['Cookie'], b'a=9.5')
+    req3 = Request('http://example.org', cookies={'a': 10})
+    assert self.mw.process_request(req3, self.spider) is None
+    self.assertCookieValEqual(req3.headers['Cookie'], b'a=10')
+    req4 = Request('http://example.org', cookies={'a': 'b'})
+    assert self.mw.process_request(req4, self.spider) is None
+    self.assertCookieValEqual(req4.headers['Cookie'], b'a=b')
+
+----------
+
+
+
+Test Class Name: CookiesMiddlewareTest

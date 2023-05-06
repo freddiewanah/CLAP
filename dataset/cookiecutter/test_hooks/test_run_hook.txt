@@ -1,0 +1,33 @@
+def run_hook(hook_name, project_dir, context):
+    """
+    Try to find and execute a hook from the specified project directory.
+
+    :param hook_name: The hook to execute.
+    :param project_dir: The directory to execute the script from.
+    :param context: Cookiecutter project context.
+    """
+    scripts = find_hook(hook_name)
+    if not scripts:
+        logger.debug('No %s hook found', hook_name)
+        return
+    logger.debug('Running hook %s', hook_name)
+    for script in scripts:
+        run_script_with_context(script, project_dir, context)
+
+----------
+
+def test_run_hook(self):
+    """Execute hook from specified template in specified output         directory."""
+    tests_dir = os.path.join(self.repo_path, 'input{{hooks}}')
+    with utils.work_in(self.repo_path):
+        hooks.run_hook('pre_gen_project', tests_dir, {})
+        assert os.path.isfile(os.path.join(tests_dir, 'python_pre.txt'))
+        assert os.path.isfile(os.path.join(tests_dir, 'shell_pre.txt'))
+        hooks.run_hook('post_gen_project', tests_dir, {})
+        assert os.path.isfile(os.path.join(tests_dir, 'shell_post.txt'))
+
+----------
+
+
+
+Test Class Name: TestExternalHooks

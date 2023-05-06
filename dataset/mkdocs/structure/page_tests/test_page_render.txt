@@ -1,0 +1,21 @@
+def dedent(text):
+    return textwrap.dedent(text).strip()
+
+----------
+
+def test_page_render(self):
+    cfg = load_config()
+    fl = File('testing.md', cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls'])
+    pg = Page('Foo', fl, cfg)
+    pg.read_source(cfg)
+    self.assertEqual(pg.content, None)
+    self.assertEqual(pg.toc, [])
+    pg.render(cfg, [fl])
+    self.assertTrue(pg.content.startswith('<h1 id="welcome-to-mkdocs">Welcome to MkDocs</h1>\n'))
+    self.assertEqual(str(pg.toc).strip(), dedent('\n                Welcome to MkDocs - #welcome-to-mkdocs\n                    Commands - #commands\n                    Project layout - #project-layout\n                '))
+
+----------
+
+
+
+Test Class Name: PageTests

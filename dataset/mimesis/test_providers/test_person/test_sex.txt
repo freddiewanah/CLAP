@@ -1,0 +1,40 @@
+def gender(self, iso5218: bool=False, symbol: bool=False) -> t.Union[str, int]:
+    """Get a random gender.
+
+        Get a random title of gender, code for the representation
+        of human sexes is an international standard that defines a
+        representation of human sexes through a language-neutral single-digit
+        code or symbol of gender.
+
+        :param iso5218:
+            Codes for the representation of human sexes is an international
+            standard (0 - not known, 1 - male, 2 - female, 9 - not applicable).
+        :param symbol: Symbol of gender.
+        :return: Title of gender.
+
+        :Example:
+            Male
+        """
+    if iso5218:
+        return self.random.choice([0, 1, 2, 9])
+    if symbol:
+        return self.random.choice(GENDER_SYMBOLS)
+    genders: t.List[str] = self.extract(['gender'])
+    return self.random.choice(genders)
+
+----------
+
+def test_sex(self, person):
+    result = person.sex()
+    assert result in person._data['gender']
+    result = person.gender(symbol=True)
+    assert result in GENDER_SYMBOLS
+    codes = [0, 1, 2, 9]
+    iso5218 = person.gender(iso5218=True)
+    assert iso5218 in codes
+
+----------
+
+
+
+Test Class Name: TestPerson

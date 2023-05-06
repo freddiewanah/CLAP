@@ -1,0 +1,41 @@
+def schema(cls, mixin, infer_missing):
+    schema = {}
+    overrides = _user_overrides_or_exts(cls)
+    for field in dc_fields(cls):
+        metadata = (field.metadata or {}).get('dataclasses_json', {})
+        metadata = overrides[field.name]
+        if metadata.mm_field is not None:
+            schema[field.name] = metadata.mm_field
+        else:
+            type_ = field.type
+            options = {}
+            missing_key = 'missing' if infer_missing else 'default'
+            if field.default is not MISSING:
+                options[missing_key] = field.default
+            elif field.default_factory is not MISSING:
+                options[missing_key] = field.default_factory
+            if options.get(missing_key, ...) is None:
+                options['allow_none'] = True
+            if _is_optional(type_):
+                options.setdefault(missing_key, None)
+                options['allow_none'] = True
+                if len(type_.__args__) == 2:
+                    type_ = type_.__args__[0]
+            if metadata.letter_case is not None:
+                options['data_key'] = metadata.letter_case(field.name)
+            t = build_type(type_, options, mixin, field, cls)
+            if field.type != typing.Optional[CatchAllVar]:
+                schema[field.name] = t
+    return schema
+
+----------
+
+@pytest.mark.skipif(sys.version_info < (3, 7), reason='requires python3.7')
+def test_datetime_override_schema_encode(self):
+    assert DataClassWithIsoDatetime.schema().dumps(self.dc_iso) == self.dc_iso_json
+
+----------
+
+
+
+Test Class Name: TestTime

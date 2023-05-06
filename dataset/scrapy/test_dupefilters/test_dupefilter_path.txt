@@ -1,0 +1,40 @@
+def request_seen(self, request: Request) -> bool:
+    fp = self.request_fingerprint(request)
+    if fp in self.fingerprints:
+        return True
+    self.fingerprints.add(fp)
+    if self.file:
+        self.file.write(fp + '\n')
+    return False
+
+----------
+
+def test_dupefilter_path(self):
+    r1 = Request('http://scrapytest.org/1')
+    r2 = Request('http://scrapytest.org/2')
+    path = tempfile.mkdtemp()
+    try:
+        df = _get_dupefilter(settings={'JOBDIR': path}, open=False)
+        try:
+            df.open()
+            assert not df.request_seen(r1)
+            assert df.request_seen(r1)
+        finally:
+            df.close('finished')
+        df2 = _get_dupefilter(settings={'JOBDIR': path}, open=False)
+        assert df != df2
+        try:
+            df2.open()
+            assert df2.request_seen(r1)
+            assert not df2.request_seen(r2)
+            assert df2.request_seen(r2)
+        finally:
+            df2.close('finished')
+    finally:
+        shutil.rmtree(path)
+
+----------
+
+
+
+Test Class Name: RFPDupeFilterTest

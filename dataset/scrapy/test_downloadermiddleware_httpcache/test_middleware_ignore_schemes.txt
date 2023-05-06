@@ -1,0 +1,57 @@
+def process_request(self, request: Request, spider: Spider) -> Optional[Response]:
+    if request.meta.get('dont_cache', False):
+        return None
+    if not self.policy.should_cache_request(request):
+        request.meta['_dont_cache'] = True
+        return None
+    cachedresponse = self.storage.retrieve_response(spider, request)
+    if cachedresponse is None:
+        self.stats.inc_value('httpcache/miss', spider=spider)
+        if self.ignore_missing:
+            self.stats.inc_value('httpcache/ignore', spider=spider)
+            raise IgnoreRequest(f'Ignored request not in cache: {request}')
+        return None
+    cachedresponse.flags.append('cached')
+    if self.policy.is_cached_response_fresh(cachedresponse, request):
+        self.stats.inc_value('httpcache/hit', spider=spider)
+        return cachedresponse
+    request.meta['cached_response'] = cachedresponse
+    return None
+
+----------
+
+def test_middleware_ignore_schemes(self):
+    (req, res) = (Request('http://test.com/'), Response('http://test.com/'))
+    with self._middleware() as mw:
+        assert mw.process_request(req, self.spider) is None
+        mw.process_response(req, res, self.spider)
+        cached = mw.process_request(req, self.spider)
+        assert isinstance(cached, Response), type(cached)
+        self.assertEqualResponse(res, cached)
+        assert 'cached' in cached.flags
+    (req, res) = (Request('file:///tmp/t.txt'), Response('file:///tmp/t.txt'))
+    with self._middleware() as mw:
+        assert mw.process_request(req, self.spider) is None
+        mw.process_response(req, res, self.spider)
+        assert mw.storage.retrieve_response(self.spider, req) is None
+        assert mw.process_request(req, self.spider) is None
+    (req, res) = (Request('s3://bucket/key'), Response('http://bucket/key'))
+    with self._middleware() as mw:
+        assert mw.process_request(req, self.spider) is None
+        mw.process_response(req, res, self.spider)
+        cached = mw.process_request(req, self.spider)
+        assert isinstance(cached, Response), type(cached)
+        self.assertEqualResponse(res, cached)
+        assert 'cached' in cached.flags
+    (req, res) = (Request('s3://bucket/key2'), Response('http://bucket/key2'))
+    with self._middleware(HTTPCACHE_IGNORE_SCHEMES=['s3']) as mw:
+        assert mw.process_request(req, self.spider) is None
+        mw.process_response(req, res, self.spider)
+        assert mw.storage.retrieve_response(self.spider, req) is None
+        assert mw.process_request(req, self.spider) is None
+
+----------
+
+
+
+Test Class Name: DummyPolicyTest

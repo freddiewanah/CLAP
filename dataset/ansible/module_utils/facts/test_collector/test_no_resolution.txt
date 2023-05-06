@@ -1,0 +1,15 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_no_resolution(self):
+    unresolved = ['required_thing1', 'required_thing2']
+    all_fact_subsets = {'env': [default_collectors.EnvFactCollector], 'network': [default_collectors.LinuxNetworkCollector], 'virtual': [default_collectors.LinuxVirtualCollector]}
+    self.assertRaisesRegex(collector.UnresolvedFactDep, 'unresolved fact dep.*required_thing2', collector.resolve_requires, unresolved, all_fact_subsets)
+
+----------
+
+
+
+Test Class Name: TestResolveRequires

@@ -1,0 +1,37 @@
+def pop(self):
+    if self.curprio is None:
+        return
+    q = self.queues[self.curprio]
+    m = q.pop()
+    if not q:
+        del self.queues[self.curprio]
+        q.close()
+        prios = [p for (p, q) in self.queues.items() if q]
+        self.curprio = min(prios) if prios else None
+    return m
+
+----------
+
+def test_push_pop(self):
+    self.assertEqual(len(self.queue), 0)
+    self.assertIsNone(self.queue.pop())
+    req1 = Request('http://www.example.com/1')
+    req2 = Request('http://www.example.com/2')
+    req3 = Request('http://www.example.com/3')
+    self.queue.push(req1)
+    self.queue.push(req2)
+    self.queue.push(req3)
+    self.assertEqual(len(self.queue), 3)
+    self.assertEqual(self.queue.pop().url, req1.url)
+    self.assertEqual(len(self.queue), 2)
+    self.assertEqual(self.queue.pop().url, req2.url)
+    self.assertEqual(len(self.queue), 1)
+    self.assertEqual(self.queue.pop().url, req3.url)
+    self.assertEqual(len(self.queue), 0)
+    self.assertIsNone(self.queue.pop())
+
+----------
+
+
+
+Test Class Name: DownloaderAwarePriorityQueueTest

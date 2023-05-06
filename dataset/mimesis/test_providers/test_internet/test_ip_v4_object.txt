@@ -1,0 +1,21 @@
+def ip_v4_object(self) -> IPv4Address:
+    """Generate random :py:class:`ipaddress.IPv4Address` object.
+
+        :return: :py:class:`ipaddress.IPv4Address` object.
+        """
+    return IPv4Address(self.random.randint(0, self._MAX_IPV4))
+
+----------
+
+def test_ip_v4_object(self, net):
+    ip = net.ip_v4_object()
+    assert ip.version == 4
+    assert ip.max_prefixlen == 32
+    assert re.match(patterns.IP_V4_REGEX, ip.exploded)
+    assert isinstance(ip, IPv4Address)
+
+----------
+
+
+
+Test Class Name: TestInternet

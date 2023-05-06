@@ -1,0 +1,22 @@
+def get_all(self) -> Iterable[Tuple[str, str]]:
+    """Returns an iterable of all (name, value) pairs.
+
+        If a header has multiple values, multiple pairs will be
+        returned with the same name.
+        """
+    for (name, values) in self._as_list.items():
+        for value in values:
+            yield (name, value)
+
+----------
+
+def test_header_reuse(self: typing.Any):
+    headers = HTTPHeaders({'User-Agent': 'Foo'})
+    self.fetch('/hello', headers=headers)
+    self.assertEqual(list(headers.get_all()), [('User-Agent', 'Foo')])
+
+----------
+
+
+
+Test Class Name: SimpleHTTPClientTestMixin

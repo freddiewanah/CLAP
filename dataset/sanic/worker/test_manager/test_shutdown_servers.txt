@@ -1,0 +1,37 @@
+def shutdown_server(self, ident: Optional[str]=None) -> None:
+    if not ident:
+        servers = [worker for worker in self.transient.values() if worker.ident.startswith(WorkerProcess.SERVER_LABEL)]
+        if not servers:
+            error_logger.error('Server shutdown failed because a server was not found.')
+            return
+        worker = choice(servers)
+    else:
+        worker = self.transient[ident]
+    for process in worker.processes:
+        process.terminate()
+    del self.transient[worker.ident]
+
+----------
+
+def test_shutdown_servers(caplog):
+    p1 = Mock()
+    p1.pid = 1234
+    context = Mock()
+    context.Process.side_effect = [p1]
+    pub = Mock()
+    manager = WorkerManager(1, fake_serve, {}, context, (pub, Mock()), {})
+    with patch('os.kill') as kill:
+        with caplog.at_level(ERROR):
+            manager.shutdown_server()
+            kill.assert_called_once_with(1234, SIGINT)
+            kill.reset_mock()
+            assert not caplog.record_tuples
+            manager.shutdown_server()
+            kill.assert_not_called()
+            assert ('sanic.error', ERROR, 'Server shutdown failed because a server was not found.') in caplog.record_tuples
+
+----------
+
+
+
+Test Class Name: default

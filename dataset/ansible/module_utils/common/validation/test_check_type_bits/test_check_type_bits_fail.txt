@@ -1,0 +1,26 @@
+def check_type_bits(value):
+    """Convert a human-readable string bits value to bits in integer.
+
+    Example: ``check_type_bits('1Mb')`` returns integer 1048576.
+
+    Raises :class:`TypeError` if unable to covert the value.
+    """
+    try:
+        return human_to_bytes(value, isbits=True)
+    except ValueError:
+        raise TypeError('%s cannot be converted to a Bit value' % type(value))
+
+----------
+
+def test_check_type_bits_fail():
+    test_cases = ('foo', '2KB', '1MB', '1GB')
+    for case in test_cases:
+        with pytest.raises(TypeError) as e:
+            check_type_bits(case)
+        assert 'cannot be converted to a Bit value' in to_native(e.value)
+
+----------
+
+
+
+Test Class Name: default

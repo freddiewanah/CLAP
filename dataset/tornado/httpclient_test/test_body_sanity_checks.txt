@@ -1,0 +1,35 @@
+def fetch(self, request: Union['HTTPRequest', str], **kwargs: Any) -> 'HTTPResponse':
+    """Executes a request, returning an `HTTPResponse`.
+
+        The request may be either a string URL or an `HTTPRequest` object.
+        If it is a string, we construct an `HTTPRequest` using any additional
+        kwargs: ``HTTPRequest(request, **kwargs)``
+
+        If an error occurs during the fetch, we raise an `HTTPError` unless
+        the ``raise_error`` keyword argument is set to False.
+        """
+    response = self._io_loop.run_sync(functools.partial(self._async_client.fetch, request, **kwargs))
+    return response
+
+----------
+
+def test_body_sanity_checks(self):
+    for method in ('POST', 'PUT', 'PATCH'):
+        with self.assertRaises(ValueError) as context:
+            self.fetch('/all_methods', method=method, raise_error=True)
+        self.assertIn('must not be None', str(context.exception))
+        resp = self.fetch('/all_methods', method=method, allow_nonstandard_methods=True)
+        self.assertEqual(resp.code, 200)
+    for method in ('GET', 'DELETE', 'OPTIONS'):
+        with self.assertRaises(ValueError) as context:
+            self.fetch('/all_methods', method=method, body=b'asdf', raise_error=True)
+        self.assertIn('must be None', str(context.exception))
+        if method != 'GET':
+            self.fetch('/all_methods', method=method, body=b'asdf', allow_nonstandard_methods=True, raise_error=True)
+            self.assertEqual(resp.code, 200)
+
+----------
+
+
+
+Test Class Name: HTTPClientCommonTestCase

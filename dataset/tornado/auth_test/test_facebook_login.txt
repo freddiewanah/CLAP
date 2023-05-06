@@ -1,0 +1,24 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_facebook_login(self):
+    response = self.fetch('/facebook/client/login', follow_redirects=False)
+    self.assertEqual(response.code, 302)
+    self.assertTrue('/facebook/server/authorize?' in response.headers['Location'])
+    response = self.fetch('/facebook/client/login?code=1234', follow_redirects=False)
+    self.assertEqual(response.code, 200)
+    user = json_decode(response.body)
+    self.assertEqual(user['access_token'], 'asdf')
+    self.assertEqual(user['session_expires'], '3600')
+
+----------
+
+
+
+Test Class Name: AuthTest

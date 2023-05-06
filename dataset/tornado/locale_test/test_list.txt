@@ -1,0 +1,28 @@
+def list(self, parts: Any) -> str:
+    """Returns a comma-separated list for the given list of parts.
+
+        The format is, e.g., "A, B and C", "A and B" or just "A" for lists
+        of size 1.
+        """
+    _ = self.translate
+    if len(parts) == 0:
+        return ''
+    if len(parts) == 1:
+        return parts[0]
+    comma = ' و ' if self.code.startswith('fa') else ', '
+    return _('%(commas)s and %(last)s') % {'commas': comma.join(parts[:-1]), 'last': parts[len(parts) - 1]}
+
+----------
+
+def test_list(self):
+    locale = tornado.locale.get('en_US')
+    self.assertEqual(locale.list([]), '')
+    self.assertEqual(locale.list(['A']), 'A')
+    self.assertEqual(locale.list(['A', 'B']), 'A and B')
+    self.assertEqual(locale.list(['A', 'B', 'C']), 'A, B and C')
+
+----------
+
+
+
+Test Class Name: EnglishTest

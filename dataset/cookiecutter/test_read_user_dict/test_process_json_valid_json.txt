@@ -1,0 +1,30 @@
+def process_json(user_value, default_value=None):
+    """Load user-supplied value as a JSON dict.
+
+    :param str user_value: User-supplied value to load as a JSON dict
+    """
+    if user_value == DEFAULT_DISPLAY:
+        return default_value
+    try:
+        user_dict = json.loads(user_value, object_pairs_hook=OrderedDict)
+    except Exception as error:
+        raise click.UsageError('Unable to decode to JSON.') from error
+    if not isinstance(user_dict, dict):
+        raise click.UsageError('Requires JSON dict.')
+    return user_dict
+
+----------
+
+def test_process_json_valid_json():
+    """Test `process_json` for correct output on JSON input.
+
+    Test for simple dict with list.
+    """
+    user_value = '{"name": "foobar", "bla": ["a", 1, "b", false]}'
+    assert process_json(user_value) == {'name': 'foobar', 'bla': ['a', 1, 'b', False]}
+
+----------
+
+
+
+Test Class Name: default

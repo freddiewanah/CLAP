@@ -1,0 +1,19 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_if(self):
+    jsi = JSInterpreter('\n        function x() {\n            let a = 9;\n            if (0==0) {a++}\n            return a\n        }')
+    self.assertEqual(jsi.call_function('x'), 10)
+    jsi = JSInterpreter('\n        function x() {\n            if (0==0) {return 10}\n        }')
+    self.assertEqual(jsi.call_function('x'), 10)
+    jsi = JSInterpreter('\n        function x() {\n            if (0!=0) {return 1}\n            else {return 10}\n        }')
+    self.assertEqual(jsi.call_function('x'), 10)
+    "  # Unsupported\n        jsi = JSInterpreter('''\n        function x() {\n            if (0!=0) return 1;\n            else {return 10}\n        }''')\n        self.assertEqual(jsi.call_function('x'), 10)\n        "
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

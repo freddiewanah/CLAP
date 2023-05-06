@@ -1,0 +1,23 @@
+def month(self, abbr: bool=False) -> str:
+    """Get a random month.
+
+        :param abbr: Abbreviated month name.
+        :return: Month name.
+        """
+    key = 'abbr' if abbr else 'name'
+    months: t.List[str] = self.extract(['month', key])
+    return self.random.choice(months)
+
+----------
+
+def test_month(self, dt):
+    result = dt.month()
+    assert result is not None
+    result_abbr = dt.month(abbr=True)
+    assert isinstance(result_abbr, str)
+
+----------
+
+
+
+Test Class Name: TestDatetime

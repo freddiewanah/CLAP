@@ -1,0 +1,25 @@
+def is_css(self) -> bool:
+    """Return True if file is a CSS file."""
+    return self.src_uri.endswith('.css')
+
+----------
+
+def test_md_file(self):
+    f = File('foo.md', '/path/to/docs', '/path/to/site', use_directory_urls=False)
+    self.assertEqual(f.src_uri, 'foo.md')
+    self.assertPathsEqual(f.abs_src_path, '/path/to/docs/foo.md')
+    self.assertEqual(f.dest_uri, 'foo.html')
+    self.assertPathsEqual(f.abs_dest_path, '/path/to/site/foo.html')
+    self.assertEqual(f.url, 'foo.html')
+    self.assertEqual(f.name, 'foo')
+    self.assertTrue(f.is_documentation_page())
+    self.assertFalse(f.is_static_page())
+    self.assertFalse(f.is_media_file())
+    self.assertFalse(f.is_javascript())
+    self.assertFalse(f.is_css())
+
+----------
+
+
+
+Test Class Name: TestFiles

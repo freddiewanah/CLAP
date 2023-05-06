@@ -1,0 +1,31 @@
+@classmethod
+def from_raw_script(cls, raw_script):
+    """Creates instance of `Command` from a list of script parts.
+
+        :type raw_script: [basestring]
+        :rtype: Command
+        :raises: EmptyCommand
+
+        """
+    script = format_raw_script(raw_script)
+    if not script:
+        raise EmptyCommand
+    expanded = shell.from_shell(script)
+    output = get_output(script, expanded)
+    return cls(expanded, output)
+
+----------
+
+@pytest.mark.parametrize('script, result', [([], None), ([''], None), (['', ''], None), (['ls', '-la'], 'ls -la'), (['ls'], 'ls'), (['echo \\ '], 'echo \\ '), (['echo \\\n'], 'echo \\\n')])
+def test_from_script(self, script, result):
+    if result:
+        assert Command.from_raw_script(script).script == result
+    else:
+        with pytest.raises(EmptyCommand):
+            Command.from_raw_script(script)
+
+----------
+
+
+
+Test Class Name: TestCommand

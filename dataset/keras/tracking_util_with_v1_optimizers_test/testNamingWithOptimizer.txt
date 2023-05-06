@@ -1,0 +1,178 @@
+@traceback_utils.filter_traceback
+def evaluate(self, x=None, y=None, batch_size=None, verbose='auto', sample_weight=None, steps=None, callbacks=None, max_queue_size=10, workers=1, use_multiprocessing=False, return_dict=False, **kwargs):
+    """Returns the loss value & metrics values for the model in test mode.
+
+        Computation is done in batches (see the `batch_size` arg.)
+
+        Args:
+            x: Input data. It could be:
+              - A Numpy array (or array-like), or a list of arrays
+                (in case the model has multiple inputs).
+              - A TensorFlow tensor, or a list of tensors
+                (in case the model has multiple inputs).
+              - A dict mapping input names to the corresponding array/tensors,
+                if the model has named inputs.
+              - A `tf.data` dataset. Should return a tuple
+                of either `(inputs, targets)` or
+                `(inputs, targets, sample_weights)`.
+              - A generator or `keras.utils.Sequence` returning `(inputs,
+                targets)` or `(inputs, targets, sample_weights)`.
+              A more detailed description of unpacking behavior for iterator
+              types (Dataset, generator, Sequence) is given in the `Unpacking
+              behavior for iterator-like inputs` section of `Model.fit`.
+            y: Target data. Like the input data `x`, it could be either Numpy
+              array(s) or TensorFlow tensor(s). It should be consistent with `x`
+              (you cannot have Numpy inputs and tensor targets, or inversely).
+              If `x` is a dataset, generator or `keras.utils.Sequence` instance,
+              `y` should not be specified (since targets will be obtained from
+              the iterator/dataset).
+            batch_size: Integer or `None`. Number of samples per batch of
+              computation. If unspecified, `batch_size` will default to 32. Do
+              not specify the `batch_size` if your data is in the form of a
+              dataset, generators, or `keras.utils.Sequence` instances (since
+              they generate batches).
+            verbose: `"auto"`, 0, 1, or 2. Verbosity mode.
+                0 = silent, 1 = progress bar, 2 = single line.
+                `"auto"` defaults to 1 for most cases, and to 2 when used with
+                `ParameterServerStrategy`. Note that the progress bar is not
+                particularly useful when logged to a file, so `verbose=2` is
+                recommended when not running interactively (e.g. in a production
+                environment).
+            sample_weight: Optional Numpy array of weights for the test samples,
+              used for weighting the loss function. You can either pass a flat
+              (1D) Numpy array with the same length as the input samples
+                (1:1 mapping between weights and samples), or in the case of
+                  temporal data, you can pass a 2D array with shape `(samples,
+                  sequence_length)`, to apply a different weight to every
+                  timestep of every sample. This argument is not supported when
+                  `x` is a dataset, instead pass sample weights as the third
+                  element of `x`.
+            steps: Integer or `None`. Total number of steps (batches of samples)
+              before declaring the evaluation round finished. Ignored with the
+              default value of `None`. If x is a `tf.data` dataset and `steps`
+              is None, 'evaluate' will run until the dataset is exhausted. This
+              argument is not supported with array inputs.
+            callbacks: List of `keras.callbacks.Callback` instances. List of
+              callbacks to apply during evaluation. See
+              [callbacks](https://www.tensorflow.org/api_docs/python/tf/keras/callbacks).
+            max_queue_size: Integer. Used for generator or
+              `keras.utils.Sequence` input only. Maximum size for the generator
+              queue. If unspecified, `max_queue_size` will default to 10.
+            workers: Integer. Used for generator or `keras.utils.Sequence` input
+              only. Maximum number of processes to spin up when using
+              process-based threading. If unspecified, `workers` will default to
+              1.
+            use_multiprocessing: Boolean. Used for generator or
+              `keras.utils.Sequence` input only. If `True`, use process-based
+              threading. If unspecified, `use_multiprocessing` will default to
+              `False`. Note that because this implementation relies on
+              multiprocessing, you should not pass non-picklable arguments to
+              the generator as they can't be passed easily to children
+              processes.
+            return_dict: If `True`, loss and metric results are returned as a
+              dict, with each key being the name of the metric. If `False`, they
+              are returned as a list.
+            **kwargs: Unused at this time.
+
+        See the discussion of `Unpacking behavior for iterator-like inputs` for
+        `Model.fit`.
+
+        Returns:
+            Scalar test loss (if the model has a single output and no metrics)
+            or list of scalars (if the model has multiple outputs
+            and/or metrics). The attribute `model.metrics_names` will give you
+            the display labels for the scalar outputs.
+
+        Raises:
+            RuntimeError: If `model.evaluate` is wrapped in a `tf.function`.
+        """
+    base_layer.keras_api_gauge.get_cell('evaluate').set(True)
+    version_utils.disallow_legacy_graph('Model', 'evaluate')
+    self._assert_compile_was_called()
+    self._check_call_args('evaluate')
+    self._check_sample_weight_warning(x, sample_weight)
+    _disallow_inside_tf_function('evaluate')
+    use_cached_eval_dataset = kwargs.pop('_use_cached_eval_dataset', False)
+    if kwargs:
+        raise TypeError(f'Invalid keyword arguments: {list(kwargs.keys())}')
+    if self.distribute_strategy._should_use_with_coordinator:
+        self._cluster_coordinator = tf.distribute.experimental.coordinator.ClusterCoordinator(self.distribute_strategy)
+    verbose = _get_verbosity(verbose, self.distribute_strategy)
+    if self._pss_evaluation_shards:
+        self._disallow_exact_eval_with_add_metrics()
+    with self.distribute_strategy.scope():
+        if use_cached_eval_dataset and getattr(self, '_eval_data_handler', None) is not None:
+            data_handler = self._eval_data_handler
+        else:
+            data_handler = data_adapter.get_data_handler(x=x, y=y, sample_weight=sample_weight, batch_size=batch_size, steps_per_epoch=steps, initial_epoch=0, epochs=1, max_queue_size=max_queue_size, workers=workers, use_multiprocessing=use_multiprocessing, model=self, steps_per_execution=self._steps_per_execution, pss_evaluation_shards=self._pss_evaluation_shards)
+        if not isinstance(callbacks, callbacks_module.CallbackList):
+            callbacks = callbacks_module.CallbackList(callbacks, add_history=True, add_progbar=verbose != 0, model=self, verbose=verbose, epochs=1, steps=data_handler.inferred_steps)
+        logs = {}
+        test_function_runner = self._get_test_function_runner(callbacks)
+        self._test_counter.assign(0)
+        callbacks.on_test_begin()
+        for (_, dataset_or_iterator) in data_handler.enumerate_epochs():
+            self.reset_metrics()
+            with data_handler.catch_stop_iteration():
+                for step in data_handler.steps():
+                    with tf.profiler.experimental.Trace('test', step_num=step, _r=1):
+                        callbacks.on_test_batch_begin(step)
+                        logs = test_function_runner.run_step(dataset_or_iterator, data_handler, step, self._pss_evaluation_shards)
+        logs = tf_utils.sync_to_numpy_or_python_type(logs)
+        if self._pss_evaluation_shards:
+            logs = self._aggregate_exact_metrics(logs)
+        else:
+            logs = self._validate_and_get_metrics_result(logs)
+        callbacks.on_test_end(logs=logs)
+        if return_dict:
+            return logs
+        else:
+            return flatten_metrics_in_order(logs, self.metrics_names)
+
+----------
+
+@tf_test_utils.run_in_graph_and_eager_modes(assert_no_eager_garbage=True)
+def testNamingWithOptimizer(self):
+    input_value = tf.constant([[3.0]])
+    model = MyModel()
+    other_model = MyModel()
+    optimizer = tf.compat.v1.train.AdamOptimizer(0.001)
+    optimizer_step = tf.compat.v1.train.get_or_create_global_step()
+    root_trackable = tf.train.Checkpoint(optimizer=optimizer, model=model, optimizer_step=optimizer_step)
+    if tf.executing_eagerly():
+        optimizer.minimize(lambda : model(input_value), global_step=optimizer_step)
+        optimizer.minimize(lambda : other_model(input_value), global_step=optimizer_step)
+    else:
+        train_op = optimizer.minimize(model(input_value), global_step=optimizer_step)
+        optimizer.minimize(other_model(input_value), global_step=optimizer_step)
+        self.evaluate(trackable_utils.gather_initializers(root_trackable))
+        self.evaluate(train_op)
+    (named_variables, serialized_graph, _) = tf.__internal__.tracking.ObjectGraphView(root_trackable).serialize_object_graph()
+    expected_checkpoint_names = ('optimizer_step', 'model/_second/kernel', 'model/_named_dense/kernel', 'model/_named_dense/bias', 'model/_non_layer/a_variable', 'optimizer/beta1_power', 'optimizer/beta2_power', 'model/_second/kernel/.OPTIMIZER_SLOT/optimizer/m', 'model/_second/kernel/.OPTIMIZER_SLOT/optimizer/v', 'model/_named_dense/kernel/.OPTIMIZER_SLOT/optimizer/m', 'model/_named_dense/kernel/.OPTIMIZER_SLOT/optimizer/v', 'model/_named_dense/bias/.OPTIMIZER_SLOT/optimizer/m', 'model/_named_dense/bias/.OPTIMIZER_SLOT/optimizer/v')
+    suffix = '/.ATTRIBUTES/VARIABLE_VALUE'
+    expected_checkpoint_names = [name + suffix for name in expected_checkpoint_names]
+    named_variables = {v.name: v for v in named_variables}
+    self.assertEqual(len(expected_checkpoint_names), len(named_variables.keys()))
+    expected_names = {'optimizer_step' + suffix: 'global_step', 'model/_second/kernel' + suffix: 'my_model/dense_1/kernel', 'model/_named_dense/kernel' + suffix: 'my_model/dense/kernel', 'optimizer/beta1_power' + suffix: 'beta1_power', 'optimizer/beta2_power' + suffix: 'beta2_power'}
+    for nodes in serialized_graph.nodes:
+        for attribute in nodes.attributes:
+            expected_name = expected_names.pop(attribute.checkpoint_key, None)
+            if expected_name is not None:
+                self.assertEqual(expected_name, attribute.full_name)
+    self.assertEmpty(expected_names)
+    self.assertEqual('optimizer', serialized_graph.nodes[0].children[1].local_name)
+    optimizer_node = serialized_graph.nodes[serialized_graph.nodes[0].children[1].node_id]
+    self.assertEqual('beta1_power', optimizer_node.children[0].local_name)
+    self.assertEqual('beta1_power', serialized_graph.nodes[optimizer_node.children[0].node_id].attributes[0].full_name)
+    self.assertEqual('my_model/dense/kernel', serialized_graph.nodes[optimizer_node.slot_variables[0].original_variable_node_id].attributes[0].full_name)
+    self.assertEqual('my_model/dense/kernel/Adam', serialized_graph.nodes[optimizer_node.slot_variables[0].slot_variable_node_id].attributes[0].full_name)
+    self.assertEqual('my_model/dense/kernel/Adam:0', optimizer.get_slot(var=model._named_dense.kernel, name='m').name)
+    self.assertEqual('model/_named_dense/kernel' + suffix, serialized_graph.nodes[optimizer_node.slot_variables[0].original_variable_node_id].attributes[0].checkpoint_key)
+    self.assertEqual('m', optimizer_node.slot_variables[0].slot_name)
+    self.assertEqual('model/_named_dense/kernel/.OPTIMIZER_SLOT/optimizer/m' + suffix, serialized_graph.nodes[optimizer_node.slot_variables[0].slot_variable_node_id].attributes[0].checkpoint_key)
+
+----------
+
+
+
+Test Class Name: CheckpointingTests

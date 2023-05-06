@@ -1,0 +1,32 @@
+def serve_single(server_settings):
+    main_start = server_settings.pop('main_start', None)
+    main_stop = server_settings.pop('main_stop', None)
+    if not server_settings.get('run_async'):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        server_settings['loop'] = loop
+    trigger_events(main_start, server_settings['loop'])
+    serve(**server_settings)
+    trigger_events(main_stop, server_settings['loop'])
+    server_settings['loop'].close()
+
+----------
+
+@pytest.mark.skipif(sys.version_info < (3, 8) and (not UVLOOP_INSTALLED), reason='In 3.7 w/o uvloop the port is not always released')
+def test_server_starts_http1_and_http3(app: Sanic, caplog):
+
+    @app.after_server_start
+    def shutdown(*_):
+        app.stop()
+    app.prepare(version=3, ssl={'cert': localhost_dir / 'fullchain.pem', 'key': localhost_dir / 'privkey.pem'})
+    app.prepare(version=1, ssl={'cert': localhost_dir / 'fullchain.pem', 'key': localhost_dir / 'privkey.pem'})
+    with caplog.at_level(logging.INFO):
+        Sanic.serve_single()
+    assert ('sanic.root', logging.INFO, 'server: sanic, HTTP/1.1') in caplog.record_tuples
+    assert ('sanic.root', logging.INFO, 'server: sanic, HTTP/3') in caplog.record_tuples
+
+----------
+
+
+
+Test Class Name: default

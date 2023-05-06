@@ -1,0 +1,35 @@
+def area(self) -> torch.Tensor:
+    """
+        Computes the area of all the boxes.
+
+        Returns:
+            torch.Tensor: a vector with areas of each box.
+        """
+    box = self.tensor
+    area = box[:, 2] * box[:, 3]
+    return area
+
+----------
+
+def test_clip_area_arbitrary_angle(self):
+    num_boxes = 100
+    boxes_5d = torch.zeros(num_boxes, 5)
+    boxes_5d[:, 0] = torch.FloatTensor(num_boxes).uniform_(-100, 500)
+    boxes_5d[:, 1] = torch.FloatTensor(num_boxes).uniform_(-100, 500)
+    boxes_5d[:, 2] = torch.FloatTensor(num_boxes).uniform_(0, 500)
+    boxes_5d[:, 3] = torch.FloatTensor(num_boxes).uniform_(0, 500)
+    boxes_5d[:, 4] = torch.FloatTensor(num_boxes).uniform_(-1800, 1800)
+    clip_angle_threshold = random.uniform(0, 180)
+    image_size = (500, 600)
+    test_boxes_5d = RotatedBoxes(boxes_5d)
+    areas_before = test_boxes_5d.area()
+    test_boxes_5d.clip(image_size, clip_angle_threshold)
+    areas_diff = test_boxes_5d.area() - areas_before
+    self.assertTrue(torch.all(areas_diff <= 0))
+    self.assertTrue(torch.all(torch.abs(test_boxes_5d.tensor[:, 4][torch.where(areas_diff < 0)]) < clip_angle_threshold))
+
+----------
+
+
+
+Test Class Name: TestRotatedBoxesStructure

@@ -1,0 +1,20 @@
+def iter_modules(self, prefix):
+    return _iter_modules_impl(self._subpackage_search_paths, prefix)
+
+----------
+
+def test_iter_modules_namespaces():
+    finder = get_default_finder()
+    reset_collections_loader_state(finder)
+    paths = extend_paths(default_test_collection_paths, 'ansible_collections')
+    modules = list(pkgutil.iter_modules(paths, 'ansible_collections.'))
+    assert len(modules) == 2
+    assert all((m[2] is True for m in modules))
+    assert all((isinstance(m[0], _AnsiblePathHookFinder) for m in modules))
+    assert set(['ansible_collections.testns', 'ansible_collections.ansible']) == set((m[1] for m in modules))
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,29 @@
+@staticmethod
+def token_hex(entropy: int=32) -> str:
+    """Return a random text string, in hexadecimal.
+
+        The string has *entropy* random bytes, each byte converted to two
+        hex digits.  If *entropy* is ``None`` or not supplied, a reasonable
+        default is used.
+
+        .. warning:: Seed is not applicable to this method,
+            because of its cryptographic-safe nature.
+
+        :param entropy: Number of bytes (default: 32).
+        :return: Token.
+        """
+    return secrets.token_hex(entropy)
+
+----------
+
+@pytest.mark.parametrize('entropy', [32, 64, 128])
+def test_token_hex(self, crypto, entropy):
+    result = crypto.token_hex(entropy=entropy)
+    assert len(result) == entropy * 2
+    assert isinstance(result, str)
+
+----------
+
+
+
+Test Class Name: TestCryptographic

@@ -1,0 +1,23 @@
+def download_request(self, request: Request, spider: Spider) -> Deferred:
+    agent = ScrapyH2Agent(context_factory=self._context_factory, pool=self._pool, crawler=self._crawler)
+    return agent.download_request(request, spider)
+
+----------
+
+def test_concurrent_requests_same_domain(self):
+    spider = Spider('foo')
+    request1 = Request(self.getURL('file'))
+    d1 = self.download_request(request1, spider)
+    d1.addCallback(lambda r: r.body)
+    d1.addCallback(self.assertEqual, b'0123456789')
+    request2 = Request(self.getURL('echo'), method='POST')
+    d2 = self.download_request(request2, spider)
+    d2.addCallback(lambda r: r.headers['Content-Length'])
+    d2.addCallback(self.assertEqual, b'79')
+    return defer.DeferredList([d1, d2])
+
+----------
+
+
+
+Test Class Name: Https2TestCase

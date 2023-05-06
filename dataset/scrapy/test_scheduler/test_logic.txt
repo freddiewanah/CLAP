@@ -1,0 +1,42 @@
+@abstractmethod
+def next_request(self) -> Optional[Request]:
+    """
+        Return the next :class:`~scrapy.http.Request` to be processed, or ``None``
+        to indicate that there are no requests to be considered ready at the moment.
+
+        Returning ``None`` implies that no request from the scheduler will be sent
+        to the downloader in the current reactor cycle. The engine will continue
+        calling ``next_request`` until ``has_pending_requests`` is ``False``.
+        """
+    raise NotImplementedError()
+
+----------
+
+def test_logic(self):
+    for (url, slot) in _URLS_WITH_SLOTS:
+        request = Request(url)
+        request.meta[Downloader.DOWNLOAD_SLOT] = slot
+        self.scheduler.enqueue_request(request)
+    if self.reopen:
+        self.close_scheduler()
+        self.create_scheduler()
+    dequeued_slots = []
+    requests = []
+    downloader = self.mock_crawler.engine.downloader
+    while self.scheduler.has_pending_requests():
+        request = self.scheduler.next_request()
+        slot = downloader._get_slot_key(request, None)
+        dequeued_slots.append(slot)
+        downloader.increment(slot)
+        requests.append(request)
+    for request in requests:
+        slot = downloader._get_slot_key(request, None)
+        downloader.decrement(slot)
+    self.assertTrue(_is_scheduling_fair(list((s for (u, s) in _URLS_WITH_SLOTS)), dequeued_slots))
+    self.assertEqual(sum((len(s.active) for s in downloader.slots.values())), 0)
+
+----------
+
+
+
+Test Class Name: DownloaderAwareSchedulerTestMixin

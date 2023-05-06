@@ -1,0 +1,31 @@
+def nationality(self, gender: t.Optional[Gender]=None) -> str:
+    """Get a random nationality.
+
+        :param gender: Gender.
+        :return: Nationality.
+
+        :Example:
+            Russian
+        """
+    nationalities: t.List[str] = self.extract(['nationality'])
+    if isinstance(nationalities, dict):
+        key = self.validate_enum(gender, Gender)
+        nationalities = nationalities[key]
+    return self.random.choice(nationalities)
+
+----------
+
+@pytest.mark.parametrize('gender', [Gender.FEMALE, Gender.MALE])
+def test_nationality(self, person, gender):
+    nationality = person._data['nationality']
+    if isinstance(nationality, dict):
+        result = person.nationality(gender=gender)
+        assert result in person._data['nationality'][gender.value]
+    result = person.nationality()
+    assert result is not None
+
+----------
+
+
+
+Test Class Name: TestPerson

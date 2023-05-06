@@ -1,0 +1,29 @@
+def process_request(self, request, spider):
+    if request.meta.get('dont_obey_robotstxt'):
+        return
+    d = maybeDeferred(self.robot_parser, request, spider)
+    d.addCallback(self.process_request_2, request, spider)
+    return d
+
+----------
+
+def test_robotstxt_error(self):
+    self.crawler.settings.set('ROBOTSTXT_OBEY', True)
+    err = error.DNSLookupError('Robotstxt address not found')
+
+    def return_failure(request):
+        deferred = Deferred()
+        reactor.callFromThread(deferred.errback, failure.Failure(err))
+        return deferred
+    self.crawler.engine.download.side_effect = return_failure
+    middleware = RobotsTxtMiddleware(self.crawler)
+    middleware._logerror = mock.MagicMock(side_effect=middleware._logerror)
+    deferred = middleware.process_request(Request('http://site.local'), None)
+    deferred.addCallback(lambda _: self.assertTrue(middleware._logerror.called))
+    return deferred
+
+----------
+
+
+
+Test Class Name: RobotsTxtMiddlewareTest

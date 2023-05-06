@@ -1,0 +1,29 @@
+@staticmethod
+def check_file(filename, mtimes) -> bool:
+    need_reload = False
+    mtime = os.stat(filename).st_mtime
+    old_time = mtimes.get(filename)
+    if old_time is None:
+        mtimes[filename] = mtime
+    elif mtime > old_time:
+        mtimes[filename] = mtime
+        need_reload = True
+    return need_reload
+
+----------
+
+def test_check_file(tmp_path):
+    current = tmp_path / 'testing.txt'
+    current.touch()
+    mtimes = {}
+    assert Reloader.check_file(current, mtimes) is False
+    assert len(mtimes) == 1
+    assert Reloader.check_file(current, mtimes) is False
+    mtimes[current] = mtimes[current] - 1
+    assert Reloader.check_file(current, mtimes) is True
+
+----------
+
+
+
+Test Class Name: default

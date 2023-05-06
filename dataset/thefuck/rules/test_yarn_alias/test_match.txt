@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('yarn rm', output_remove), Command('yarn etil', output_etl), Command('yarn ls', output_list)])
+def test_match(command):
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

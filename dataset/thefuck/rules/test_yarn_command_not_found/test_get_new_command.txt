@@ -1,0 +1,29 @@
+@git_support
+def get_new_command(command):
+    command_parts = command.script_parts[:]
+    upstream_option_index = _get_upstream_option_index(command_parts)
+    if upstream_option_index is not None:
+        command_parts.pop(upstream_option_index)
+        if len(command_parts) > upstream_option_index:
+            command_parts.pop(upstream_option_index)
+    else:
+        push_idx = command_parts.index('push') + 1
+        while len(command_parts) > push_idx and command_parts[len(command_parts) - 1][0] != '-':
+            command_parts.pop(len(command_parts) - 1)
+    arguments = re.findall('git push (.*)', command.output)[-1].replace("'", "\\'").strip()
+    return replace_argument(' '.join(command_parts), 'push', 'push {}'.format(arguments))
+
+----------
+
+@pytest.mark.parametrize('command, result', [(Command('yarn whyy webpack', output('whyy')), 'yarn why webpack'), (Command('yarn require lodash', output('require')), 'yarn add lodash')])
+def test_get_new_command(command, result):
+    fixed_command = get_new_command(command)
+    if isinstance(fixed_command, list):
+        fixed_command = fixed_command[0]
+    assert fixed_command == result
+
+----------
+
+
+
+Test Class Name: default

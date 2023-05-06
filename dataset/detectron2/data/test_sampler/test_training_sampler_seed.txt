@@ -1,0 +1,26 @@
+def list(self) -> List[str]:
+    """
+        List all registered datasets.
+
+        Returns:
+            list[str]
+        """
+    return list(self.keys())
+
+----------
+
+def test_training_sampler_seed(self):
+    seed_all_rng(42)
+    sampler = TrainingSampler(30)
+    data = list(itertools.islice(sampler, 65))
+    seed_all_rng(42)
+    sampler = TrainingSampler(30)
+    seed_all_rng(999)
+    data2 = list(itertools.islice(sampler, 65))
+    self.assertEqual(data, data2)
+
+----------
+
+
+
+Test Class Name: TestSamplerDeterministic

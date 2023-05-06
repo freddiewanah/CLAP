@@ -1,0 +1,32 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_dns_server_ip_address_none(self):
+    crawler = get_crawler(SingleRequestSpider)
+    url = self.mockserver.url('/status?n=200')
+    yield crawler.crawl(seed=url, mockserver=self.mockserver)
+    ip_address = crawler.spider.meta['responses'][0].ip_address
+    self.assertIsNone(ip_address)
+
+----------
+
+
+
+Test Class Name: CrawlSpiderTestCase

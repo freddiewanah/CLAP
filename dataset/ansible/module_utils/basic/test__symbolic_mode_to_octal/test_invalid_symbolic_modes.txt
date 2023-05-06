@@ -1,0 +1,19 @@
+def match(value, pattern='', ignorecase=False, multiline=False):
+    """ Perform a `re.match` returning a boolean """
+    return regex(value, pattern, ignorecase, multiline, 'match')
+
+----------
+
+@pytest.mark.parametrize('stat_info, mode_string, expected', INVALID_DATA)
+def test_invalid_symbolic_modes(mocker, stat_info, mode_string, expected):
+    mock_stat = mocker.MagicMock()
+    mock_stat.st_mode = stat_info
+    with pytest.raises(ValueError) as exc:
+        assert AnsibleModule._symbolic_mode_to_octal(mock_stat, mode_string) == 'blah'
+    assert exc.match(expected)
+
+----------
+
+
+
+Test Class Name: default

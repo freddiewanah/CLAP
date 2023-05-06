@@ -1,0 +1,72 @@
+def cookiecutter(template, checkout=None, no_input=False, extra_context=None, replay=None, overwrite_if_exists=False, output_dir='.', config_file=None, default_config=False, password=None, directory=None, skip_if_file_exists=False, accept_hooks=True, keep_project_on_failure=False):
+    """
+    Run Cookiecutter just as if using it from the command line.
+
+    :param template: A directory containing a project template directory,
+        or a URL to a git repository.
+    :param checkout: The branch, tag or commit ID to checkout after clone.
+    :param no_input: Do not prompt for user input.
+        Use default values for template parameters taken from `cookiecutter.json`, user
+        config and `extra_dict`. Force a refresh of cached resources.
+    :param extra_context: A dictionary of context that overrides default
+        and user configuration.
+    :param replay: Do not prompt for input, instead read from saved json. If
+        ``True`` read from the ``replay_dir``.
+        if it exists
+    :param output_dir: Where to output the generated project dir into.
+    :param config_file: User configuration file path.
+    :param default_config: Use default values rather than a config file.
+    :param password: The password to use when extracting the repository.
+    :param directory: Relative path to a cookiecutter template in a repository.
+    :param accept_hooks: Accept pre and post hooks if set to `True`.
+    :param keep_project_on_failure: If `True` keep generated project directory even when
+        generation fails
+    """
+    if replay and (no_input is not False or extra_context is not None):
+        err_msg = 'You can not use both replay and no_input or extra_context at the same time.'
+        raise InvalidModeException(err_msg)
+    config_dict = get_user_config(config_file=config_file, default_config=default_config)
+    (repo_dir, cleanup) = determine_repo_dir(template=template, abbreviations=config_dict['abbreviations'], clone_to_dir=config_dict['cookiecutters_dir'], checkout=checkout, no_input=no_input, password=password, directory=directory)
+    import_patch = _patch_import_path_for_repo(repo_dir)
+    template_name = os.path.basename(os.path.abspath(repo_dir))
+    if replay:
+        with import_patch:
+            if isinstance(replay, bool):
+                context = load(config_dict['replay_dir'], template_name)
+            else:
+                (path, template_name) = os.path.split(os.path.splitext(replay)[0])
+                context = load(path, template_name)
+    else:
+        context_file = os.path.join(repo_dir, 'cookiecutter.json')
+        logger.debug('context_file is %s', context_file)
+        context = generate_context(context_file=context_file, default_context=config_dict['default_context'], extra_context=extra_context)
+        with import_patch:
+            context['cookiecutter'] = prompt_for_config(context, no_input)
+        context['cookiecutter']['_template'] = template
+        context['cookiecutter']['_repo_dir'] = repo_dir
+        context['cookiecutter']['_output_dir'] = os.path.abspath(output_dir)
+        dump(config_dict['replay_dir'], template_name, context)
+    with import_patch:
+        result = generate_files(repo_dir=repo_dir, context=context, overwrite_if_exists=overwrite_if_exists, skip_if_file_exists=skip_if_file_exists, output_dir=output_dir, accept_hooks=accept_hooks, keep_project_on_failure=keep_project_on_failure)
+    if cleanup:
+        rmtree(repo_dir)
+    return result
+
+----------
+
+@pytest.mark.usefixtures('clean_system', 'remove_additional_dirs')
+def test_cookiecutter_local_with_input(monkeypatch):
+    """Verify simple cookiecutter run results, without extra_context provided."""
+    monkeypatch.setattr('cookiecutter.prompt.read_user_variable', lambda var, default: default)
+    main.cookiecutter('tests/fake-repo-pre/', no_input=False)
+    assert os.path.isdir('tests/fake-repo-pre/{{cookiecutter.repo_name}}')
+    assert not os.path.isdir('tests/fake-repo-pre/fake-project')
+    assert os.path.isdir('fake-project')
+    assert os.path.isfile('fake-project/README.rst')
+    assert not os.path.exists('fake-project/json/')
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,29 @@
+@classmethod
+def from_response(cls: Type[FormRequestTypeVar], response: TextResponse, formname: Optional[str]=None, formid: Optional[str]=None, formnumber: Optional[int]=0, formdata: FormdataType=None, clickdata: Optional[dict]=None, dont_click: bool=False, formxpath: Optional[str]=None, formcss: Optional[str]=None, **kwargs) -> FormRequestTypeVar:
+    kwargs.setdefault('encoding', response.encoding)
+    if formcss is not None:
+        from parsel.csstranslator import HTMLTranslator
+        formxpath = HTMLTranslator().css_to_xpath(formcss)
+    form = _get_form(response, formname, formid, formnumber, formxpath)
+    formdata = _get_inputs(form, formdata, dont_click, clickdata)
+    url = _get_form_url(form, kwargs.pop('url', None))
+    method = kwargs.pop('method', form.method)
+    if method is not None:
+        method = method.upper()
+        if method not in cls.valid_form_methods:
+            method = 'GET'
+    return cls(url=url, method=method, formdata=formdata, **kwargs)
+
+----------
+
+def test_from_response_select(self):
+    res = _buildresponse('<form>\n            <select name="i1">\n                <option value="i1v1">option 1</option>\n                <option value="i1v2" selected>option 2</option>\n            </select>\n            <select name="i2">\n                <option value="i2v1">option 1</option>\n                <option value="i2v2">option 2</option>\n            </select>\n            <select>\n                <option value="i3v1">option 1</option>\n                <option value="i3v2">option 2</option>\n            </select>\n            <select name="i4" multiple>\n                <option value="i4v1">option 1</option>\n                <option value="i4v2" selected>option 2</option>\n                <option value="i4v3" selected>option 3</option>\n            </select>\n            <select name="i5" multiple>\n                <option value="i5v1">option 1</option>\n                <option value="i5v2">option 2</option>\n            </select>\n            <select name="i6"></select>\n            <select name="i7"/>\n            </form>')
+    req = self.request_class.from_response(res)
+    fs = _qs(req, to_unicode=True)
+    self.assertEqual(fs, {'i1': ['i1v2'], 'i2': ['i2v1'], 'i4': ['i4v2', 'i4v3']})
+
+----------
+
+
+
+Test Class Name: FormRequestTest

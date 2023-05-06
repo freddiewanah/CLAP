@@ -1,0 +1,67 @@
+@contextmanager
+def patch_instances(fields):
+    """
+    A contextmanager, under which the Instances class in detectron2 is replaced
+    by a statically-typed scriptable class, defined by `fields`.
+    See more in `scripting_with_instances`.
+    """
+    with tempfile.TemporaryDirectory(prefix='detectron2') as dir, tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', suffix='.py', dir=dir, delete=False) as f:
+        try:
+            _clear_jit_cache()
+            (cls_name, s) = _gen_instance_module(fields)
+            f.write(s)
+            f.flush()
+            f.close()
+            module = _import(f.name)
+            new_instances = getattr(module, cls_name)
+            _ = torch.jit.script(new_instances)
+            Instances.__torch_script_class__ = True
+            Instances._jit_override_qualname = torch._jit_internal._qualified_name(new_instances)
+            _add_instances_conversion_methods(new_instances)
+            yield new_instances
+        finally:
+            try:
+                del Instances.__torch_script_class__
+                del Instances._jit_override_qualname
+            except AttributeError:
+                pass
+            sys.modules.pop(module.__name__)
+
+----------
+
+def test_script_len(self):
+
+    class f(torch.nn.Module):
+
+        def forward(self, x: Instances):
+            return len(x)
+
+    class g(torch.nn.Module):
+
+        def forward(self, x: Instances):
+            return len(x)
+    image_shape = (15, 15)
+    fields = {'proposal_boxes': Boxes}
+    with patch_instances(fields) as new_instance:
+        script_module = torch.jit.script(f())
+        x = new_instance(image_shape)
+        with self.assertRaises(Exception):
+            script_module(x)
+        box_tensors = torch.tensor([[5, 5, 10, 10], [1, 1, 2, 3]])
+        x.proposal_boxes = Boxes(box_tensors)
+        length = script_module(x)
+        self.assertEqual(length, 2)
+    fields = {'objectness_logits': Tensor}
+    with patch_instances(fields) as new_instance:
+        script_module = torch.jit.script(g())
+        x = new_instance(image_shape)
+        objectness_logits = torch.tensor([1.0]).reshape(1, 1)
+        x.objectness_logits = objectness_logits
+        length = script_module(x)
+        self.assertEqual(length, 1)
+
+----------
+
+
+
+Test Class Name: default

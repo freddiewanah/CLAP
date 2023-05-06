@@ -1,0 +1,16 @@
+def get_theme_names() -> Collection[str]:
+    """Return a list of all installed themes by name."""
+    return get_themes().keys()
+
+----------
+
+def test_get_themes(self):
+    themes = utils.get_theme_names()
+    self.assertIn('mkdocs', themes)
+    self.assertIn('readthedocs', themes)
+
+----------
+
+
+
+Test Class Name: UtilsTests

@@ -1,0 +1,36 @@
+def match_encrypt_secret(secrets, encrypt_vault_id=None):
+    """Find the best/first/only secret in secrets to use for encrypting"""
+    display.vvvv(u'encrypt_vault_id=%s' % to_text(encrypt_vault_id))
+    if encrypt_vault_id:
+        return match_encrypt_vault_id_secret(secrets, encrypt_vault_id=encrypt_vault_id)
+    _vault_id_matchers = [_vault_id for (_vault_id, dummy) in secrets]
+    best_secret = match_best_secret(secrets, _vault_id_matchers)
+    return best_secret
+
+----------
+
+@patch.object(vault.VaultEditor, '_editor_shell_command')
+def test_create_file(self, mock_editor_shell_command):
+
+    def sc_side_effect(filename):
+        return ['touch', filename]
+    mock_editor_shell_command.side_effect = sc_side_effect
+    tmp_file = tempfile.NamedTemporaryFile()
+    os.unlink(tmp_file.name)
+    _secrets = self._secrets('ansible')
+    ve = self._vault_editor(_secrets)
+    ve.create_file(tmp_file.name, vault.match_encrypt_secret(_secrets)[1])
+    self.assertTrue(os.path.exists(tmp_file.name))
+
+----------
+
+def _secrets(self, password):
+    vault_secret = TextVaultSecret(password)
+    vault_secrets = [('default', vault_secret)]
+    return vault_secrets
+def _vault_editor(self, vault_secrets=None):
+    if vault_secrets is None:
+        vault_secrets = self._secrets(self.vault_password)
+    return VaultEditor(VaultLib(vault_secrets))
+
+Test Class Name: TestVaultEditor

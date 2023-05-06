@@ -1,0 +1,33 @@
+def set_playbook_paths(self, playbook_paths):
+    if isinstance(playbook_paths, string_types):
+        playbook_paths = [playbook_paths]
+    added_paths = set()
+    self._n_playbook_paths = [os.path.join(to_native(p), 'collections') for p in playbook_paths if not (p in added_paths or added_paths.add(p))]
+    self._n_cached_collection_paths = None
+    for pkg in ['ansible_collections', 'ansible_collections.ansible']:
+        self._reload_hack(pkg)
+
+----------
+
+def test_finder_setup():
+    f = _AnsibleCollectionFinder(paths='/bogus/bogus')
+    assert isinstance(f._n_collection_paths, list)
+    with patch.object(sys, 'path', ['/bogus', default_test_collection_paths[1], '/morebogus', default_test_collection_paths[0]]):
+        with patch('os.path.isdir', side_effect=lambda x: b'bogus' not in x):
+            f = _AnsibleCollectionFinder(paths=['/explicit', '/other'])
+            assert f._n_collection_paths == ['/explicit', '/other', default_test_collection_paths[1], default_test_collection_paths[0]]
+    configured_paths = ['/bogus']
+    playbook_paths = ['/playbookdir']
+    with patch.object(sys, 'path', ['/bogus', '/playbookdir']) and patch('os.path.isdir', side_effect=lambda x: b'bogus' in x):
+        f = _AnsibleCollectionFinder(paths=configured_paths)
+        assert f._n_collection_paths == configured_paths
+        f.set_playbook_paths(playbook_paths)
+        assert f._n_collection_paths == extend_paths(playbook_paths, 'collections') + configured_paths
+        f.set_playbook_paths(playbook_paths[0])
+        assert f._n_collection_paths == extend_paths(playbook_paths, 'collections') + configured_paths
+
+----------
+
+
+
+Test Class Name: default

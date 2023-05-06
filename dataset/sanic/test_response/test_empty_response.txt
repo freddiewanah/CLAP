@@ -1,0 +1,25 @@
+def empty(status: int=204, headers: Optional[Dict[str, str]]=None) -> HTTPResponse:
+    """
+    Returns an empty response to the client.
+
+    :param status Response code.
+    :param headers Custom Headers.
+    """
+    return HTTPResponse(body=b'', status=status, headers=headers)
+
+----------
+
+def test_empty_response(app):
+
+    @app.get('/test')
+    def handler(request: Request):
+        return empty()
+    (request, response) = app.test_client.get('/test')
+    assert response.content_type is None
+    assert response.body == b''
+
+----------
+
+
+
+Test Class Name: default

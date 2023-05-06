@@ -1,0 +1,14 @@
+def update(self, value):
+    self._cache.update(value)
+
+----------
+
+def test_update(self):
+    self.cache.update({'cache_key': {'key2': 'updatedvalue'}})
+    assert self.cache['cache_key']['key2'] == 'updatedvalue'
+
+----------
+
+
+
+Test Class Name: TestCachePluginAdjudicator

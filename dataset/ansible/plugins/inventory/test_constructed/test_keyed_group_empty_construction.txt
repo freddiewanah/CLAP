@@ -1,0 +1,22 @@
+def get_host(self, hostname):
+    """ fetch host object using name deal with implicit localhost """
+    matching_host = self.hosts.get(hostname, None)
+    if matching_host is None and hostname in C.LOCALHOST:
+        matching_host = self._create_implicit_localhost(hostname)
+    return matching_host
+
+----------
+
+def test_keyed_group_empty_construction(inventory_module):
+    inventory_module.inventory.add_host('farm')
+    inventory_module.inventory.set_variable('farm', 'barn', {})
+    host = inventory_module.inventory.get_host('farm')
+    keyed_groups = [{'separator': 'mmmmmmmmmm', 'key': 'barn'}]
+    inventory_module._add_host_to_keyed_groups(keyed_groups, host.vars, host.name, strict=True)
+    assert host.groups == []
+
+----------
+
+
+
+Test Class Name: default

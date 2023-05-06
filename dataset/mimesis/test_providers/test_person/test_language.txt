@@ -1,0 +1,22 @@
+def language(self) -> str:
+    """Get a random language.
+
+        :return: Random language.
+
+        :Example:
+            Irish.
+        """
+    languages: t.List[str] = self.extract(['language'])
+    return self.random.choice(languages)
+
+----------
+
+def test_language(self, person):
+    result = person.language()
+    assert result in person._data['language']
+
+----------
+
+
+
+Test Class Name: TestPerson

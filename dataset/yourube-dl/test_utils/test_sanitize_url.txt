@@ -1,0 +1,23 @@
+def sanitize_url(url):
+    if url.startswith('//'):
+        return 'http:%s' % url
+    COMMON_TYPOS = (('^httpss://', 'https://'), ('^rmtp([es]?)://', 'rtmp\\1://'))
+    for (mistake, fixup) in COMMON_TYPOS:
+        if re.match(mistake, url):
+            return re.sub(mistake, fixup, url)
+    return url
+
+----------
+
+def test_sanitize_url(self):
+    self.assertEqual(sanitize_url('//foo.bar'), 'http://foo.bar')
+    self.assertEqual(sanitize_url('httpss://foo.bar'), 'https://foo.bar')
+    self.assertEqual(sanitize_url('rmtps://foo.bar'), 'rtmps://foo.bar')
+    self.assertEqual(sanitize_url('https://foo.bar'), 'https://foo.bar')
+    self.assertEqual(sanitize_url('foo bar'), 'foo bar')
+
+----------
+
+
+
+Test Class Name: TestUtil

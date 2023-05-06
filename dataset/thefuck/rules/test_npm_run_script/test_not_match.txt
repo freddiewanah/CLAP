@@ -1,0 +1,17 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.usefixtures('no_memoize')
+@pytest.mark.parametrize('command, run_script_out', [(Command('npm test', 'TEST FAIL'), run_script_stdout), (Command('npm watch-test', 'TEST FAIL'), run_script_stdout), (Command('npm test', output), run_script_stdout), (Command('vim watch-test', output), run_script_stdout)])
+def test_not_match(run_script, command, run_script_out):
+    run_script.stdout = BytesIO(run_script_out)
+    assert not match(command)
+
+----------
+
+
+
+Test Class Name: default

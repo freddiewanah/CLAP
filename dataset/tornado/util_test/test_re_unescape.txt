@@ -1,0 +1,23 @@
+def re_unescape(s: str) -> str:
+    """Unescape a string escaped by `re.escape`.
+
+    May raise ``ValueError`` for regular expressions which could not
+    have been produced by `re.escape` (for example, strings containing
+    ``\\d`` cannot be unescaped).
+
+    .. versionadded:: 4.4
+    """
+    return _re_unescape_pattern.sub(_re_unescape_replacement, s)
+
+----------
+
+def test_re_unescape(self):
+    test_strings = ('/favicon.ico', 'index.html', 'Hello, World!', '!$@#%;')
+    for string in test_strings:
+        self.assertEqual(string, re_unescape(re.escape(string)))
+
+----------
+
+
+
+Test Class Name: ReUnescapeTest

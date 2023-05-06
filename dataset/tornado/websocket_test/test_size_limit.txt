@@ -1,0 +1,20 @@
+def get_client_compression_options(self):
+    return None
+
+----------
+
+@gen_test
+def test_size_limit(self: typing.Any):
+    ws = (yield self.ws_connect('/limited', compression_options=self.get_client_compression_options()))
+    ws.write_message('a' * 128)
+    response = (yield ws.read_message())
+    self.assertEqual(response, '128')
+    ws.write_message('a' * 2048)
+    response = (yield ws.read_message())
+    self.assertIsNone(response)
+
+----------
+
+
+
+Test Class Name: LimitedHandler

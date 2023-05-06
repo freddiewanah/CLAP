@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_void(self):
+    jsi = JSInterpreter('\n        function x() { return void 42; }\n        ')
+    self.assertEqual(jsi.call_function('x'), None)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

@@ -1,0 +1,19 @@
+def serialize(self):
+    groups = []
+    for group in self.groups:
+        groups.append(group.serialize())
+    return dict(name=self.name, vars=self.vars.copy(), address=self.address, uuid=self._uuid, groups=groups, implicit=self.implicit)
+
+----------
+
+def test_serialize(self):
+    group = Group('some_group')
+    self.hostA.add_group(group)
+    data = self.hostA.serialize()
+    self.assertIsInstance(data, dict)
+
+----------
+
+
+
+Test Class Name: TestHost

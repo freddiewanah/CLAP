@@ -1,0 +1,50 @@
+def load_config(config_file: Optional[Union[str, IO]]=None, **kwargs) -> MkDocsConfig:
+    """
+    Load the configuration for a given file object or name
+
+    The config_file can either be a file object, string or None. If it is None
+    the default `mkdocs.yml` filename will loaded.
+
+    Extra kwargs are passed to the configuration to replace any default values
+    unless they themselves are None.
+    """
+    options = kwargs.copy()
+    for (key, value) in options.copy().items():
+        if value is None:
+            options.pop(key)
+    with _open_config_file(config_file) as fd:
+        from mkdocs.config.defaults import MkDocsConfig
+        cfg = MkDocsConfig(config_file_path=getattr(fd, 'name', ''))
+        cfg.load_file(fd)
+    cfg.load_dict(options)
+    (errors, warnings) = cfg.validate()
+    for (config_name, warning) in warnings:
+        log.warning(f"Config value '{config_name}': {warning}")
+    for (config_name, error) in errors:
+        log.error(f"Config value '{config_name}': {error}")
+    for (key, value) in cfg.items():
+        log.debug(f"Config value '{key}' = {value!r}")
+    if len(errors) > 0:
+        raise exceptions.Abort(f'Aborted with {len(errors)} Configuration Errors!')
+    elif cfg['strict'] and len(warnings) > 0:
+        raise exceptions.Abort(f"Aborted with {len(warnings)} Configuration Warnings in 'strict' mode!")
+    return cfg
+
+----------
+
+def test_event_on_config_theme_locale(self):
+    plugin = search.SearchPlugin()
+    plugin.load_config({})
+    result = plugin.on_config(load_config(theme={'name': 'mkdocs', 'locale': 'fr'}, extra_javascript=[]))
+    self.assertFalse(result['theme']['search_index_only'])
+    self.assertFalse(result['theme']['include_search_page'])
+    self.assertEqual(result['theme'].static_templates, {'404.html', 'sitemap.xml'})
+    self.assertEqual(len(result['theme'].dirs), 3)
+    self.assertEqual(result['extra_javascript'], ['search/main.js'])
+    self.assertEqual(plugin.config.lang, [result['theme']['locale'].language])
+
+----------
+
+
+
+Test Class Name: SearchPluginTests

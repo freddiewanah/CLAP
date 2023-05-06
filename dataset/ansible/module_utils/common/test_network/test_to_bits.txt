@@ -1,0 +1,23 @@
+def to_bits(val):
+    """ converts a netmask to bits """
+    bits = ''
+    for octet in val.split('.'):
+        bits += bin(int(octet))[2:].zfill(8)
+    return bits
+
+----------
+
+def test_to_bits():
+    assert to_bits('0') == '00000000'
+    assert to_bits('1') == '00000001'
+    assert to_bits('2') == '00000010'
+    assert to_bits('1337') == '10100111001'
+    assert to_bits('127.0.0.1') == '01111111000000000000000000000001'
+    assert to_bits('255.255.255.255') == '11111111111111111111111111111111'
+    assert to_bits('255.255.255.0') == '11111111111111111111111100000000'
+
+----------
+
+
+
+Test Class Name: default

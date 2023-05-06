@@ -1,0 +1,19 @@
+def build(self, input_shape):
+    self.layer2 = keras.layers.Dense(1, activation='relu')
+
+----------
+
+def test_training_and_mask_args_call_build(self):
+    input_dim = 2
+    model = model_util.TrainingMaskingModel()
+    self.assertFalse(model.built, 'Model should not have been built')
+    self.assertFalse(model.weights, 'Model should have no weights since it has not been built.')
+    model.build((None, input_dim))
+    self.assertTrue(model.weights, 'Model should have weights now that it has been properly built.')
+    self.assertTrue(model.built, 'Model should be built after calling `build`.')
+
+----------
+
+
+
+Test Class Name: CustomCallSignatureTests

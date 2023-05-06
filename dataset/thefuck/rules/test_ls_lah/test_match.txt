@@ -1,0 +1,19 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_match():
+    assert match(Command('ls', ''))
+    assert match(Command('ls file.py', ''))
+    assert match(Command('ls /opt', ''))
+    assert not match(Command('ls -lah /opt', ''))
+    assert not match(Command('pacman -S binutils', ''))
+    assert not match(Command('lsof', ''))
+
+----------
+
+
+
+Test Class Name: default

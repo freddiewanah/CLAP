@@ -1,0 +1,49 @@
+def get_user_config(config_file=None, default_config=False):
+    """Return the user config as a dict.
+
+    If ``default_config`` is True, ignore ``config_file`` and return default
+    values for the config parameters.
+
+    If a path to a ``config_file`` is given, that is different from the default
+    location, load the user config from that.
+
+    Otherwise look up the config file path in the ``COOKIECUTTER_CONFIG``
+    environment variable. If set, load the config from this path. This will
+    raise an error if the specified path is not valid.
+
+    If the environment variable is not set, try the default config file path
+    before falling back to the default config values.
+    """
+    if default_config:
+        logger.debug('Force ignoring user config with default_config switch.')
+        return copy.copy(DEFAULT_CONFIG)
+    if config_file and config_file is not USER_CONFIG_PATH:
+        logger.debug('Loading custom config from %s.', config_file)
+        return get_config(config_file)
+    try:
+        env_config_file = os.environ['COOKIECUTTER_CONFIG']
+    except KeyError:
+        if os.path.exists(USER_CONFIG_PATH):
+            logger.debug('Loading config from %s.', USER_CONFIG_PATH)
+            return get_config(USER_CONFIG_PATH)
+        else:
+            logger.debug('User config not found. Loading default config.')
+            return copy.copy(DEFAULT_CONFIG)
+    else:
+        logger.debug('User config not found or not specified. Loading default config.')
+        return get_config(env_config_file)
+
+----------
+
+def test_specify_config_path(mocker, custom_config_path, custom_config):
+    """Validate provided custom config path should be respected and parsed."""
+    spy_get_config = mocker.spy(config, 'get_config')
+    user_config = config.get_user_config(custom_config_path)
+    spy_get_config.assert_called_once_with(custom_config_path)
+    assert user_config == custom_config
+
+----------
+
+
+
+Test Class Name: default

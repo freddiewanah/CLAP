@@ -1,0 +1,17 @@
+def url(self, path):
+    return urljoin(self.baseurl, path)
+
+----------
+
+@defer.inlineCallbacks
+def test_redirect_disabled(self):
+    (_, out, err) = (yield self.execute(['--no-redirect', self.url('/redirect-no-meta-refresh')]))
+    err = err.strip()
+    self.assertIn(b'downloader/response_status_count/302', err, err)
+    self.assertNotIn(b'downloader/response_status_count/200', err, err)
+
+----------
+
+
+
+Test Class Name: FetchTest

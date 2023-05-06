@@ -1,0 +1,31 @@
+def fetch(self, request: Union['HTTPRequest', str], **kwargs: Any) -> 'HTTPResponse':
+    """Executes a request, returning an `HTTPResponse`.
+
+        The request may be either a string URL or an `HTTPRequest` object.
+        If it is a string, we construct an `HTTPRequest` using any additional
+        kwargs: ``HTTPRequest(request, **kwargs)``
+
+        If an error occurs during the fetch, we raise an `HTTPError` unless
+        the ``raise_error`` keyword argument is set to False.
+        """
+    response = self._io_loop.run_sync(functools.partial(self._async_client.fetch, request, **kwargs))
+    return response
+
+----------
+
+@skipOnTravis
+def test_hello_world(self):
+    response = self.fetch('/hello')
+    self.assertEqual(response.code, 200)
+    self.assertEqual(response.headers['Content-Type'], 'text/plain')
+    self.assertEqual(response.body, b'Hello world!')
+    assert response.request_time is not None
+    self.assertEqual(int(response.request_time), 0)
+    response = self.fetch('/hello?name=Ben')
+    self.assertEqual(response.body, b'Hello Ben!')
+
+----------
+
+
+
+Test Class Name: HTTPClientCommonTestCase

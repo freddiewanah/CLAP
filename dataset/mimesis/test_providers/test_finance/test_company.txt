@@ -1,0 +1,19 @@
+def company(self) -> str:
+    """Get a random company name.
+
+        :return: Company name.
+        """
+    names: t.List[str] = self.extract(['company', 'name'])
+    return self.random.choice(names)
+
+----------
+
+def test_company(self, finance):
+    result = finance.company()
+    assert result in finance._data['company']['name']
+
+----------
+
+
+
+Test Class Name: TestFinance

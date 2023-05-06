@@ -1,0 +1,21 @@
+@pass_environment
+def union(environment, a, b):
+    if isinstance(a, Hashable) and isinstance(b, Hashable):
+        c = set(a) | set(b)
+    else:
+        c = unique(environment, a + b, True)
+    return c
+
+----------
+
+def test_from_import_six(self, finder_containers):
+    name = 'ping'
+    data = b'#!/usr/bin/python\nfrom ansible.module_utils import six'
+    recursive_finder(name, os.path.join(ANSIBLE_LIB, 'modules', 'system', 'ping.py'), data, *finder_containers)
+    assert frozenset(finder_containers.zf.namelist()) == frozenset(('ansible/module_utils/six/__init__.py',)).union(MODULE_UTILS_BASIC_FILES)
+
+----------
+
+
+
+Test Class Name: TestRecursiveFinder

@@ -1,0 +1,29 @@
+def last_name(self, gender: t.Optional[Gender]=None) -> str:
+    """Generate a random last name.
+
+        ..note: An alias for self.surname().
+
+        :param gender: Gender's enum object.
+        :return: Last name.
+        """
+    return self.surname(gender)
+
+----------
+
+@pytest.mark.parametrize('gender', [Gender.FEMALE, Gender.MALE])
+def test_surname(self, person, gender):
+    surnames = person._data['surnames']
+    if isinstance(surnames, dict):
+        result = person.surname(gender=gender)
+        assert result in surnames[gender.value]
+    else:
+        result = person.surname()
+        assert result in surnames
+        result = person.last_name()
+        assert result in surnames
+
+----------
+
+
+
+Test Class Name: TestPerson

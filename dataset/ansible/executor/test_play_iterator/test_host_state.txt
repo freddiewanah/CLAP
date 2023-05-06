@@ -1,0 +1,25 @@
+def get_current_block(self):
+    return self._blocks[self.cur_block]
+
+----------
+
+def test_host_state(self):
+    hs = HostState(blocks=list(range(0, 10)))
+    hs.tasks_child_state = HostState(blocks=[0])
+    hs.rescue_child_state = HostState(blocks=[1])
+    hs.always_child_state = HostState(blocks=[2])
+    repr(hs)
+    hs.run_state = 100
+    repr(hs)
+    hs.fail_state = 15
+    repr(hs)
+    for i in range(0, 10):
+        hs.cur_block = i
+        self.assertEqual(hs.get_current_block(), i)
+    new_hs = hs.copy()
+
+----------
+
+
+
+Test Class Name: TestPlayIterator

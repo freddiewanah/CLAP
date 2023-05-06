@@ -1,0 +1,28 @@
+@defer.inlineCallbacks
+def join(self):
+    """
+        join()
+
+        Returns a deferred that is fired when all managed :attr:`crawlers` have
+        completed their executions.
+        """
+    while self._active:
+        yield defer.DeferredList(self._active)
+
+----------
+
+@defer.inlineCallbacks
+def test_crawl_multiple(self):
+    runner = CrawlerRunner({'REQUEST_FINGERPRINTER_IMPLEMENTATION': '2.7'})
+    runner.crawl(SimpleSpider, self.mockserver.url('/status?n=200'), mockserver=self.mockserver)
+    runner.crawl(SimpleSpider, self.mockserver.url('/status?n=503'), mockserver=self.mockserver)
+    with LogCapture() as log:
+        yield runner.join()
+    self._assert_retried(log)
+    self.assertIn('Got response 200', str(log))
+
+----------
+
+
+
+Test Class Name: FaultySpider

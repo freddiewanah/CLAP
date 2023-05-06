@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_empty_return(self):
+    jsi = JSInterpreter('function f(){return; y()}')
+    self.assertEqual(jsi.call_function('f'), None)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

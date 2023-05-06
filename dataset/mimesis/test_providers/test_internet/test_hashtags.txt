@@ -1,0 +1,29 @@
+def hashtags(self, quantity: int=4) -> t.List[str]:
+    """Generate a list of hashtags.
+
+        :param quantity: The quantity of hashtags.
+        :return: The list of hashtags.
+        :raises NonEnumerableError: if category is not in Hashtag.
+
+        :Example:
+            ['#love', '#sky', '#nice']
+        """
+    if quantity < 1:
+        raise ValueError('Quantity must be a positive integer.')
+    return ['#' + self._text.word() for _ in range(quantity)]
+
+----------
+
+def test_hashtags(self, net):
+    result = net.hashtags(quantity=5)
+    assert len(result) == 5
+    with pytest.raises(ValueError):
+        net.hashtags(quantity=0)
+    with pytest.raises(ValueError):
+        net.hashtags(quantity=-1)
+
+----------
+
+
+
+Test Class Name: TestInternet

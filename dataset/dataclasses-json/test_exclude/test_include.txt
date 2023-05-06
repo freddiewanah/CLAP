@@ -1,0 +1,17 @@
+def to_dict(self, encode_json=False) -> Dict[str, Json]:
+    return _asdict(self, encode_json=encode_json)
+
+----------
+
+def test_include():
+    dclass = EncodeInclude(public_field='public', private_field='private')
+    encoded = dclass.to_dict()
+    assert 'public_field' in encoded
+    assert 'private_field' in encoded
+    assert encoded['private_field'] == 'private'
+
+----------
+
+
+
+Test Class Name: EncodeCustom

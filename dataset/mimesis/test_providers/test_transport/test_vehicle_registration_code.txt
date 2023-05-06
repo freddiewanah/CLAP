@@ -1,0 +1,25 @@
+def vehicle_registration_code(self, locale: t.Optional[Locale]=None) -> str:
+    """Get vehicle registration code of country.
+
+        :param locale: Registration code for locale (country).
+        :return: Vehicle registration code.
+        """
+    if locale:
+        return VRC_BY_LOCALES[locale.value]
+    return self.random.choice(VR_CODES)
+
+----------
+
+@pytest.mark.parametrize('locale', Locale)
+def test_vehicle_registration_code(self, transport, locale):
+    result = transport.vehicle_registration_code(locale=locale)
+    if locale:
+        assert result in VRC_BY_LOCALES[locale.value]
+    else:
+        assert result in VR_CODES
+
+----------
+
+
+
+Test Class Name: TestTransport

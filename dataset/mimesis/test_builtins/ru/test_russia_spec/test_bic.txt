@@ -1,0 +1,26 @@
+def bic(self) -> str:
+    """Generate random ``BIC`` (Bank ID Code).
+
+        :return: BIC.
+
+        :Example:
+            044025575.
+        """
+    country_code = '04'
+    code = f'{self.random.randint(1, 10):02}'
+    bank_number = f'{self.random.randint(0, 99):02}'
+    bank_office = f'{self.random.randint(50, 999):03}'
+    bic = country_code + code + bank_number + bank_office
+    return bic
+
+----------
+
+def test_bic(russia):
+    result = russia.bic()
+    assert len(result) == 9
+
+----------
+
+
+
+Test Class Name: default

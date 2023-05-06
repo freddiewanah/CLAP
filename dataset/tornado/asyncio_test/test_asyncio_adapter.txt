@@ -1,0 +1,44 @@
+def to_asyncio_future(tornado_future: asyncio.Future) -> asyncio.Future:
+    """Convert a Tornado yieldable object to an `asyncio.Future`.
+
+    .. versionadded:: 4.1
+
+    .. versionchanged:: 4.3
+       Now accepts any yieldable object, not just
+       `tornado.concurrent.Future`.
+
+    .. deprecated:: 5.0
+       Tornado ``Futures`` have been merged with `asyncio.Future`,
+       so this method is now equivalent to `tornado.gen.convert_yielded`.
+    """
+    return convert_yielded(tornado_future)
+
+----------
+
+def test_asyncio_adapter(self):
+
+    @gen.coroutine
+    def tornado_coroutine():
+        yield gen.moment
+        raise gen.Return(42)
+
+    async def native_coroutine_without_adapter():
+        return await tornado_coroutine()
+
+    async def native_coroutine_with_adapter():
+        return await to_asyncio_future(tornado_coroutine())
+
+    async def native_coroutine_with_adapter2():
+        return await to_asyncio_future(native_coroutine_without_adapter())
+    self.assertEqual(self.io_loop.run_sync(native_coroutine_without_adapter), 42)
+    self.assertEqual(self.io_loop.run_sync(native_coroutine_with_adapter), 42)
+    self.assertEqual(self.io_loop.run_sync(native_coroutine_with_adapter2), 42)
+    self.assertEqual(self.asyncio_loop.run_until_complete(native_coroutine_without_adapter()), 42)
+    self.assertEqual(self.asyncio_loop.run_until_complete(native_coroutine_with_adapter()), 42)
+    self.assertEqual(self.asyncio_loop.run_until_complete(native_coroutine_with_adapter2()), 42)
+
+----------
+
+
+
+Test Class Name: AsyncIOLoopTest

@@ -1,0 +1,42 @@
+def xmliter(obj, nodename):
+    """Return a iterator of Selector's over all nodes of a XML document,
+       given the name of the node to iterate. Useful for parsing XML feeds.
+
+    obj can be:
+    - a Response object
+    - a unicode string
+    - a string encoded as utf-8
+    """
+    nodename_patt = re.escape(nodename)
+    DOCUMENT_HEADER_RE = re.compile('<\\?xml[^>]+>\\s*', re.S)
+    HEADER_END_RE = re.compile(f'<\\s*/{nodename_patt}\\s*>', re.S)
+    END_TAG_RE = re.compile('<\\s*/([^\\s>]+)\\s*>', re.S)
+    NAMESPACE_RE = re.compile('((xmlns[:A-Za-z]*)=[^>\\s]+)', re.S)
+    text = _body_or_str(obj)
+    document_header = re.search(DOCUMENT_HEADER_RE, text)
+    document_header = document_header.group().strip() if document_header else ''
+    header_end_idx = re_rsearch(HEADER_END_RE, text)
+    header_end = text[header_end_idx[1]:].strip() if header_end_idx else ''
+    namespaces = {}
+    if header_end:
+        for tagname in reversed(re.findall(END_TAG_RE, header_end)):
+            tag = re.search(f'<\\s*{tagname}.*?xmlns[:=][^>]*>', text[:header_end_idx[1]], re.S)
+            if tag:
+                namespaces.update((reversed(x) for x in re.findall(NAMESPACE_RE, tag.group())))
+    r = re.compile(f'<{nodename_patt}[\\s>].*?</{nodename_patt}>', re.DOTALL)
+    for match in r.finditer(text):
+        nodetext = document_header + match.group().replace(nodename, f"{nodename} {' '.join(namespaces.values())}", 1) + header_end
+        yield Selector(text=nodetext, type='xml')
+
+----------
+
+def test_xmliter_encoding(self):
+    body = b'<?xml version="1.0" encoding="ISO-8859-9"?>\n<xml>\n    <item>Some Turkish Characters \xd6\xc7\xde\xdd\xd0\xdc \xfc\xf0\xfd\xfe\xe7\xf6</item>\n</xml>\n\n'
+    response = XmlResponse('http://www.example.com', body=body)
+    self.assertEqual(next(self.xmliter(response, 'item')).get(), '<item>Some Turkish Characters ÖÇŞİĞÜ üğışçö</item>')
+
+----------
+
+
+
+Test Class Name: XmliterTestCase

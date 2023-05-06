@@ -1,0 +1,32 @@
+def dict_get(d, key_or_keys, default=None, skip_false_values=True):
+    if isinstance(key_or_keys, (list, tuple)):
+        for key in key_or_keys:
+            if key not in d or d[key] is None or (skip_false_values and (not d[key])):
+                continue
+            return d[key]
+        return default
+    return d.get(key_or_keys, default)
+
+----------
+
+def test_dict_get(self):
+    FALSE_VALUES = {'none': None, 'false': False, 'zero': 0, 'empty_string': '', 'empty_list': []}
+    d = FALSE_VALUES.copy()
+    d['a'] = 42
+    self.assertEqual(dict_get(d, 'a'), 42)
+    self.assertEqual(dict_get(d, 'b'), None)
+    self.assertEqual(dict_get(d, 'b', 42), 42)
+    self.assertEqual(dict_get(d, ('a',)), 42)
+    self.assertEqual(dict_get(d, ('b', 'a')), 42)
+    self.assertEqual(dict_get(d, ('b', 'c', 'a', 'd')), 42)
+    self.assertEqual(dict_get(d, ('b', 'c')), None)
+    self.assertEqual(dict_get(d, ('b', 'c'), 42), 42)
+    for (key, false_value) in FALSE_VALUES.items():
+        self.assertEqual(dict_get(d, ('b', 'c', key)), None)
+        self.assertEqual(dict_get(d, ('b', 'c', key), skip_false_values=False), false_value)
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,18 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_google_login(self):
+    response = self.fetch('/client/login')
+    self.assertDictEqual({'name': 'Foo', 'email': 'foo@example.com', 'access_token': 'fake-access-token'}, json_decode(response.body))
+
+----------
+
+
+
+Test Class Name: GoogleOAuth2Test

@@ -1,0 +1,24 @@
+def release(self) -> None:
+    """Increment the counter and wake one waiter."""
+    self._value += 1
+    while self._waiters:
+        waiter = self._waiters.popleft()
+        if not waiter.done():
+            self._value -= 1
+            waiter.set_result(_ReleasingContextManager(self))
+            break
+
+----------
+
+def test_multi_release(self):
+    lock = locks.Lock()
+    self.assertRaises(RuntimeError, lock.release)
+    lock.acquire()
+    lock.release()
+    self.assertRaises(RuntimeError, lock.release)
+
+----------
+
+
+
+Test Class Name: LockTests

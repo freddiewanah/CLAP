@@ -1,0 +1,14 @@
+def css(self, query):
+    return self.selector.css(query)
+
+----------
+
+def test_follow_selector_no_href(self):
+    resp = self.response_class(url='http://example.com', body=b'<html><body><a name=123>click me</a></body></html>')
+    self.assertRaisesRegex(ValueError, 'no href', resp.follow, resp.css('a')[0])
+
+----------
+
+
+
+Test Class Name: TextResponseTest

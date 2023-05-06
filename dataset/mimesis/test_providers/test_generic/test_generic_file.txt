@@ -1,0 +1,26 @@
+def file_name(self, file_type: t.Optional[FileType]=None) -> str:
+    """Get a random file name with some extension.
+
+        :param file_type: Enum object FileType
+        :return: File name.
+
+        :Example:
+            legislative.txt
+        """
+    word = self._text.word().strip()
+    replacer = self.random.choice(['_', '-'])
+    name = re.sub('\\s+', replacer, word)
+    ext = self.extension(file_type)
+    return f'{name}{ext}'
+
+----------
+
+def test_generic_file(self, g1, g2):
+    assert g1.file.size() == g2.file.size()
+    assert g1.file.file_name() == g2.file.file_name()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

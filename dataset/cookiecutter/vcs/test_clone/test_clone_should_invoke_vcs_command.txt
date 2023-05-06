@@ -1,0 +1,74 @@
+def clone(repo_url: str, checkout: Optional[str]=None, clone_to_dir: 'os.PathLike[str]'='.', no_input: bool=False):
+    """Clone a repo to the current directory.
+
+    :param repo_url: Repo URL of unknown type.
+    :param checkout: The branch, tag or commit ID to checkout after clone.
+    :param clone_to_dir: The directory to clone to.
+                         Defaults to the current directory.
+    :param no_input: Do not prompt for user input and eventually force a refresh of
+        cached resources.
+    :returns: str with path to the new directory of the repository.
+    """
+    clone_to_dir = Path(clone_to_dir).expanduser()
+    make_sure_path_exists(clone_to_dir)
+    (repo_type, repo_url) = identify_repo(repo_url)
+    if not is_vcs_installed(repo_type):
+        msg = f"'{repo_type}' is not installed."
+        raise VCSNotInstalled(msg)
+    repo_url = repo_url.rstrip('/')
+    repo_name = os.path.split(repo_url)[1]
+    if repo_type == 'git':
+        repo_name = repo_name.split(':')[-1].rsplit('.git')[0]
+        repo_dir = os.path.normpath(os.path.join(clone_to_dir, repo_name))
+    if repo_type == 'hg':
+        repo_dir = os.path.normpath(os.path.join(clone_to_dir, repo_name))
+    logger.debug(f'repo_dir is {repo_dir}')
+    if os.path.isdir(repo_dir):
+        clone = prompt_and_delete(repo_dir, no_input=no_input)
+    else:
+        clone = True
+    if clone:
+        try:
+            subprocess.check_output([repo_type, 'clone', repo_url], cwd=clone_to_dir, stderr=subprocess.STDOUT)
+            if checkout is not None:
+                checkout_params = [checkout]
+                if repo_type == 'hg':
+                    checkout_params.insert(0, '--')
+                subprocess.check_output([repo_type, 'checkout', *checkout_params], cwd=repo_dir, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as clone_error:
+            output = clone_error.output.decode('utf-8')
+            if 'not found' in output.lower():
+                raise RepositoryNotFound(f'The repository {repo_url} could not be found, have you made a typo?') from clone_error
+            if any((error in output for error in BRANCH_ERRORS)):
+                raise RepositoryCloneFailed(f'The {checkout} branch of repository {repo_url} could not found, have you made a typo?') from clone_error
+            logger.error('git clone failed with error: %s', output)
+            raise
+    return repo_dir
+
+----------
+
+@pytest.mark.parametrize('repo_type, repo_url, repo_name', [('git', 'https://github.com/hello/world.git', 'world'), ('hg', 'https://bitbucket.org/foo/bar', 'bar'), ('git', 'git@host:gitoliterepo', 'gitoliterepo'), ('git', 'git@gitlab.com:cookiecutter/cookiecutter.git', 'cookiecutter'), ('git', 'git@github.com:cookiecutter/cookiecutter.git', 'cookiecutter')])
+def test_clone_should_invoke_vcs_command(mocker, clone_dir, repo_type, repo_url, repo_name):
+    """When `clone()` is called with a git/hg repo, the corresponding VCS     command should be run via `subprocess.check_output()`.
+
+    This should take place:
+    * In the correct dir
+    * With the correct args.
+    """
+    mocker.patch('cookiecutter.vcs.is_vcs_installed', autospec=True, return_value=True)
+    mock_subprocess = mocker.patch('cookiecutter.vcs.subprocess.check_output', autospec=True)
+    expected_repo_dir = os.path.normpath(os.path.join(clone_dir, repo_name))
+    branch = 'foobar'
+    repo_dir = vcs.clone(repo_url, checkout=branch, clone_to_dir=clone_dir, no_input=True)
+    assert repo_dir == expected_repo_dir
+    mock_subprocess.assert_any_call([repo_type, 'clone', repo_url], cwd=clone_dir, stderr=subprocess.STDOUT)
+    branch_info = [branch]
+    if repo_type == 'hg':
+        branch_info.insert(0, '--')
+    mock_subprocess.assert_any_call([repo_type, 'checkout', *branch_info], cwd=expected_repo_dir, stderr=subprocess.STDOUT)
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,17 @@
+def get(self, key, def_val=None):
+    return dict.get(self, self.normkey(key), self.normvalue(def_val))
+
+----------
+
+def test_copy(self):
+    h1 = CaselessDict({'header1': 'value'})
+    h2 = copy.copy(h1)
+    self.assertEqual(h1, h2)
+    self.assertEqual(h1.get('header1'), h2.get('header1'))
+    assert isinstance(h2, CaselessDict)
+
+----------
+
+
+
+Test Class Name: MyDict

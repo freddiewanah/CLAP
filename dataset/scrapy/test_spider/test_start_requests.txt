@@ -1,0 +1,17 @@
+def start_requests(self):
+    for url in self.sitemap_urls:
+        yield Request(url, self._parse_sitemap)
+
+----------
+
+def test_start_requests(self):
+    spider = self.spider_class('example.com')
+    start_requests = spider.start_requests()
+    self.assertTrue(inspect.isgenerator(start_requests))
+    self.assertEqual(list(start_requests), [])
+
+----------
+
+
+
+Test Class Name: SpiderTest

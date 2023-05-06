@@ -1,0 +1,43 @@
+@tf.function
+def run():
+    return distribution.run(func)
+
+----------
+
+def testUsageGraph(self):
+    """Expected usage when graph building."""
+    with context.graph_mode():
+        num_training_steps = 10
+        checkpoint_directory = self.get_temp_dir()
+        checkpoint_prefix = os.path.join(checkpoint_directory, 'ckpt')
+        for training_continuation in range(3):
+            with tf.Graph().as_default():
+                model = MyModel()
+                optimizer = tf.compat.v1.train.AdamOptimizer(0.001)
+                root = tf.compat.v1.train.Checkpoint(optimizer=optimizer, model=model, global_step=tf.compat.v1.train.get_or_create_global_step())
+                input_value = tf.constant([[3.0]])
+                train_op = optimizer.minimize(model(input_value), global_step=root.global_step)
+                checkpoint_path = tf.train.latest_checkpoint(checkpoint_directory)
+                with self.session(graph=tf.compat.v1.get_default_graph()) as session:
+                    status = root.restore(save_path=checkpoint_path)
+                    status.initialize_or_restore(session=session)
+                    if checkpoint_path is None:
+                        self.assertEqual(0, training_continuation)
+                        with self.assertRaises(AssertionError):
+                            status.assert_consumed()
+                        with self.assertRaises(AssertionError):
+                            status.assert_existing_objects_matched()
+                    else:
+                        status.assert_consumed()
+                        status.assert_existing_objects_matched()
+                    for _ in range(num_training_steps):
+                        session.run(train_op)
+                    root.save(file_prefix=checkpoint_prefix, session=session)
+                    self.assertEqual((training_continuation + 1) * num_training_steps, session.run(root.global_step))
+                    self.assertEqual(training_continuation + 1, session.run(root.save_counter))
+
+----------
+
+
+
+Test Class Name: CheckpointingTests

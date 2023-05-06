@@ -1,0 +1,70 @@
+def get_navigation(files: Files, config: Union[MkDocsConfig, Mapping[str, Any]]) -> Navigation:
+    """Build site navigation from config and files."""
+    nav_config = config['nav'] or nest_paths((f.src_uri for f in files.documentation_pages()))
+    items = _data_to_navigation(nav_config, files, config)
+    if not isinstance(items, list):
+        items = [items]
+    pages = _get_by_type(items, Page)
+    _add_previous_and_next_links(pages)
+    _add_parent_links(items)
+    missing_from_config = [file for file in files.documentation_pages() if file.page is None]
+    if missing_from_config:
+        log.info('The following pages exist in the docs directory, but are not included in the "nav" configuration:\n  - {}'.format('\n  - '.join((file.src_path for file in missing_from_config))))
+        for file in missing_from_config:
+            Page(None, file, config)
+    links = _get_by_type(items, Link)
+    for link in links:
+        (scheme, netloc, path, query, fragment) = urlsplit(link.url)
+        if scheme or netloc:
+            log.debug(f"An external link to '{link.url}' is included in the 'nav' configuration.")
+        elif link.url.startswith('/'):
+            log.debug(f"An absolute path to '{link.url}' is included in the 'nav' configuration, which presumably points to an external resource.")
+        else:
+            msg = f"A relative path to '{link.url}' is included in the 'nav' configuration, which is not found in the documentation files"
+            log.warning(msg)
+    return Navigation(items, pages)
+
+----------
+
+def test_indented_nav(self):
+    nav_cfg = [{'Home': 'index.md'}, {'API Guide': [{'Running': 'api-guide/running.md'}, {'Testing': 'api-guide/testing.md'}, {'Debugging': 'api-guide/debugging.md'}, {'Advanced': [{'Part 1': 'api-guide/advanced/part-1.md'}]}]}, {'About': [{'Release notes': 'about/release-notes.md'}, {'License': '/license.html'}]}, {'External': 'https://example.com/'}]
+    expected = dedent("\n            Page(title='Home', url='/')\n            Section(title='API Guide')\n                Page(title='Running', url='/api-guide/running/')\n                Page(title='Testing', url='/api-guide/testing/')\n                Page(title='Debugging', url='/api-guide/debugging/')\n                Section(title='Advanced')\n                    Page(title='Part 1', url='/api-guide/advanced/part-1/')\n            Section(title='About')\n                Page(title='Release notes', url='/about/release-notes/')\n                Link(title='License', url='/license.html')\n            Link(title='External', url='https://example.com/')\n            ")
+    cfg = load_config(nav=nav_cfg, site_url='http://example.com/')
+    fs = ['index.md', 'api-guide/running.md', 'api-guide/testing.md', 'api-guide/debugging.md', 'api-guide/advanced/part-1.md', 'about/release-notes.md']
+    files = Files([File(s, cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls']) for s in fs])
+    site_navigation = get_navigation(files, cfg)
+    self.assertEqual(str(site_navigation).strip(), expected)
+    self.assertEqual(len(site_navigation.items), 4)
+    self.assertEqual(len(site_navigation.pages), 6)
+    self.assertEqual(repr(site_navigation.homepage), "Page(title='Home', url='/')")
+    self.assertIsNone(site_navigation.items[0].parent)
+    self.assertEqual(site_navigation.items[0].ancestors, [])
+    self.assertIsNone(site_navigation.items[1].parent)
+    self.assertEqual(site_navigation.items[1].ancestors, [])
+    self.assertEqual(len(site_navigation.items[1].children), 4)
+    self.assertEqual(repr(site_navigation.items[1].children[0].parent), "Section(title='API Guide')")
+    self.assertEqual(site_navigation.items[1].children[0].ancestors, [site_navigation.items[1]])
+    self.assertEqual(repr(site_navigation.items[1].children[1].parent), "Section(title='API Guide')")
+    self.assertEqual(site_navigation.items[1].children[1].ancestors, [site_navigation.items[1]])
+    self.assertEqual(repr(site_navigation.items[1].children[2].parent), "Section(title='API Guide')")
+    self.assertEqual(site_navigation.items[1].children[2].ancestors, [site_navigation.items[1]])
+    self.assertEqual(repr(site_navigation.items[1].children[3].parent), "Section(title='API Guide')")
+    self.assertEqual(site_navigation.items[1].children[3].ancestors, [site_navigation.items[1]])
+    self.assertEqual(len(site_navigation.items[1].children[3].children), 1)
+    self.assertEqual(repr(site_navigation.items[1].children[3].children[0].parent), "Section(title='Advanced')")
+    self.assertEqual(site_navigation.items[1].children[3].children[0].ancestors, [site_navigation.items[1].children[3], site_navigation.items[1]])
+    self.assertIsNone(site_navigation.items[2].parent)
+    self.assertEqual(len(site_navigation.items[2].children), 2)
+    self.assertEqual(repr(site_navigation.items[2].children[0].parent), "Section(title='About')")
+    self.assertEqual(site_navigation.items[2].children[0].ancestors, [site_navigation.items[2]])
+    self.assertEqual(repr(site_navigation.items[2].children[1].parent), "Section(title='About')")
+    self.assertEqual(site_navigation.items[2].children[1].ancestors, [site_navigation.items[2]])
+    self.assertIsNone(site_navigation.items[3].parent)
+    self.assertEqual(site_navigation.items[3].ancestors, [])
+    self.assertIsNone(site_navigation.items[3].children)
+
+----------
+
+
+
+Test Class Name: SiteNavigationTests

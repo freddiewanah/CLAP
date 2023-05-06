@@ -1,0 +1,21 @@
+def spices(self) -> str:
+    """Get a random spices or herbs.
+
+        :return: Spices or herbs.
+
+        :Example:
+            Anise.
+        """
+    return self._choice_from('spices')
+
+----------
+
+def test_spices(self, food):
+    result = food.spices()
+    assert result in food._data['spices']
+
+----------
+
+
+
+Test Class Name: TestFood

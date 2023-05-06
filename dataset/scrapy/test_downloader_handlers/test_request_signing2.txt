@@ -1,0 +1,28 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+def test_request_signing2(self):
+    date = 'Tue, 27 Mar 2007 21:15:45 +0000'
+    req = Request('s3://johnsmith/photos/puppy.jpg', method='PUT', headers={'Content-Type': 'image/jpeg', 'Date': date, 'Content-Length': '94328'})
+    with self._mocked_date(date):
+        httpreq = self.download_request(req, self.spider)
+    self.assertEqual(httpreq.headers['Authorization'], b'AWS 0PN5J17HBGZHT7JJ3X82:hcicpDDvL9SsO6AkvxqmIWkmOuQ=')
+
+----------
+
+@contextlib.contextmanager
+def _mocked_date(self, date):
+    try:
+        import botocore.auth
+    except ImportError:
+        yield
+    else:
+        with mock.patch('botocore.auth.formatdate') as mock_formatdate:
+            mock_formatdate.return_value = date
+            yield
+
+Test Class Name: S3TestCase

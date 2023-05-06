@@ -1,0 +1,30 @@
+def aes_ecb_encrypt(data, key):
+    """
+    Encrypt with aes in ECB mode. Using PKCS#7 padding
+
+    @param {int[]} data        cleartext
+    @param {int[]} key         16/24/32-Byte cipher key
+    @returns {int[]}           encrypted data
+    """
+    expanded_key = key_expansion(key)
+    block_count = int(ceil(float(len(data)) / BLOCK_SIZE_BYTES))
+    encrypted_data = []
+    for i in range(block_count):
+        block = data[i * BLOCK_SIZE_BYTES:(i + 1) * BLOCK_SIZE_BYTES]
+        block = pkcs7_padding(block)
+        encrypted_block = aes_encrypt(block, expanded_key)
+        encrypted_data += encrypted_block
+    return encrypted_data
+
+----------
+
+def test_ecb_encrypt(self):
+    data = bytes_to_intlist(self.secret_msg)
+    encrypted = intlist_to_bytes(aes_ecb_encrypt(data, self.key))
+    self.assertEqual(encrypted, b'\xaa\x86]\x81\x97>\x02\x92\x9d\x1bR[[L/u\xd3&\xd1(h\xde{\x81\x94\xba\x02\xae\xbd\xa6\xd0:')
+
+----------
+
+
+
+Test Class Name: TestAES

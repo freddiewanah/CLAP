@@ -1,0 +1,29 @@
+def to_pickle(self, file_path: str, iterations: int=100, **kwargs: t.Any) -> None:
+    """Export a schema as the pickled representation of the object to the file.
+
+        :param file_path: File path.
+        :param iterations: The required number of rows.
+        :param kwargs: Extra keyword arguments for :py:func:`pickle.dump` class.
+
+        *New in version 5.3.0*
+        """
+    data = self.create(iterations)
+    with open(file_path, 'wb') as fp:
+        pickle.dump(data, fp, **kwargs)
+
+----------
+
+@pytest.mark.parametrize('iterations', [5, 10])
+def test_schema_to_pickle(schema, iterations):
+    with tempfile.NamedTemporaryFile('rb') as temp_file:
+        schema.to_pickle(temp_file.name, iterations)
+        data = pickle.load(temp_file)
+        assert 'id' in data[0] and 'id' in data[-1]
+        assert isinstance(data, list)
+        assert len(data) == iterations
+
+----------
+
+
+
+Test Class Name: default

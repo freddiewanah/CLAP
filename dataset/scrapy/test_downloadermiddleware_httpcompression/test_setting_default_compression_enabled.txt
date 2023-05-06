@@ -1,0 +1,22 @@
+@classmethod
+def from_crawler(cls, crawler):
+    if not crawler.settings.getbool('COMPRESSION_ENABLED'):
+        raise NotConfigured
+    try:
+        return cls(stats=crawler.stats)
+    except TypeError:
+        warnings.warn("HttpCompressionMiddleware subclasses must either modify their '__init__' method to support a 'stats' parameter or reimplement the 'from_crawler' method.", ScrapyDeprecationWarning)
+        result = cls()
+        result.stats = crawler.stats
+        return result
+
+----------
+
+def test_setting_default_compression_enabled(self):
+    self.assertIsInstance(HttpCompressionMiddleware.from_crawler(get_crawler()), HttpCompressionMiddleware)
+
+----------
+
+
+
+Test Class Name: HttpCompressionTest

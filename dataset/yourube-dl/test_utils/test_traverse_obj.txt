@@ -1,0 +1,255 @@
+def traverse_obj(obj, *paths, **kwargs):
+    """
+    Safely traverse nested `dict`s and `Sequence`s
+
+    >>> obj = [{}, {"key": "value"}]
+    >>> traverse_obj(obj, (1, "key"))
+    "value"
+
+    Each of the provided `paths` is tested and the first producing a valid result will be returned.
+    The next path will also be tested if the path branched but no results could be found.
+    Supported values for traversal are `Mapping`, `Sequence` and `re.Match`.
+    A value of None is treated as the absence of a value.
+
+    The paths will be wrapped in `variadic`, so that `'key'` is conveniently the same as `('key', )`.
+
+    The keys in the path can be one of:
+        - `None`:           Return the current object.
+        - `str`/`int`:      Return `obj[key]`. For `re.Match, return `obj.group(key)`.
+        - `slice`:          Branch out and return all values in `obj[key]`.
+        - `Ellipsis`:       Branch out and return a list of all values.
+        - `tuple`/`list`:   Branch out and return a list of all matching values.
+                            Read as: `[traverse_obj(obj, branch) for branch in branches]`.
+        - `function`:       Branch out and return values filtered by the function.
+                            Read as: `[value for key, value in obj if function(key, value)]`.
+                            For `Sequence`s, `key` is the index of the value.
+        - `dict`            Transform the current object and return a matching dict.
+                            Read as: `{key: traverse_obj(obj, path) for key, path in dct.items()}`.
+
+        `tuple`, `list`, and `dict` all support nested paths and branches.
+
+    @params paths           Paths which to traverse by.
+    Keyword arguments:
+    @param default          Value to return if the paths do not match.
+    @param expected_type    If a `type`, only accept final values of this type.
+                            If any other callable, try to call the function on each result.
+    @param get_all          If `False`, return the first matching result, otherwise all matching ones.
+    @param casesense        If `False`, consider string dictionary keys as case insensitive.
+
+    The following are only meant to be used by YoutubeDL.prepare_outtmpl and are not part of the API
+
+    @param _is_user_input    Whether the keys are generated from user input.
+                            If `True` strings get converted to `int`/`slice` if needed.
+    @param _traverse_string  Whether to traverse into objects as strings.
+                            If `True`, any non-compatible object will first be
+                            converted into a string and then traversed into.
+
+
+    @returns                The result of the object traversal.
+                            If successful, `get_all=True`, and the path branches at least once,
+                            then a list of results is returned instead.
+                            A list is always returned if the last path branches and no `default` is given.
+    """
+    default = kwargs.get('default', NO_DEFAULT)
+    expected_type = kwargs.get('expected_type')
+    get_all = kwargs.get('get_all', True)
+    casesense = kwargs.get('casesense', True)
+    _is_user_input = kwargs.get('_is_user_input', False)
+    _traverse_string = kwargs.get('_traverse_string', False)
+    str = compat_str
+    is_sequence = lambda x: isinstance(x, compat_collections_abc.Sequence) and (not isinstance(x, (str, bytes)))
+    casefold = lambda k: compat_casefold(k) if isinstance(k, str) else k
+    if isinstance(expected_type, type):
+        type_test = lambda val: val if isinstance(val, expected_type) else None
+    else:
+        type_test = lambda val: try_call(expected_type or IDENTITY, args=(val,))
+
+    def from_iterable(iterables):
+        for it in iterables:
+            for item in it:
+                yield item
+
+    def apply_key(key, obj):
+        if obj is None:
+            return
+        elif key is None:
+            yield obj
+        elif isinstance(key, (list, tuple)):
+            for branch in key:
+                (_, result) = apply_path(obj, branch)
+                for item in result:
+                    yield item
+        elif key is Ellipsis:
+            result = []
+            if isinstance(obj, compat_collections_abc.Mapping):
+                result = obj.values()
+            elif is_sequence(obj):
+                result = obj
+            elif isinstance(obj, compat_re_Match):
+                result = obj.groups()
+            elif _traverse_string:
+                result = str(obj)
+            for item in result:
+                yield item
+        elif callable(key):
+            if is_sequence(obj):
+                iter_obj = enumerate(obj)
+            elif isinstance(obj, compat_collections_abc.Mapping):
+                iter_obj = obj.items()
+            elif isinstance(obj, compat_re_Match):
+                iter_obj = enumerate(itertools.chain([obj.group()], obj.groups()))
+            elif _traverse_string:
+                iter_obj = enumerate(str(obj))
+            else:
+                return
+            for item in (v for (k, v) in iter_obj if try_call(key, args=(k, v))):
+                yield item
+        elif isinstance(key, dict):
+            iter_obj = ((k, _traverse_obj(obj, v)) for (k, v) in key.items())
+            yield dict(((k, v if v is not None else default) for (k, v) in iter_obj if v is not None or default is not NO_DEFAULT))
+        elif isinstance(obj, compat_collections_abc.Mapping):
+            yield (obj.get(key) if casesense or key in obj else next((v for (k, v) in obj.items() if casefold(k) == key), None))
+        elif isinstance(obj, compat_re_Match):
+            if isinstance(key, int) or casesense:
+                try:
+                    yield obj.group(key)
+                    return
+                except IndexError:
+                    pass
+            if not isinstance(key, str):
+                return
+            yield next((v for (k, v) in obj.groupdict().items() if casefold(k) == key), None)
+        else:
+            if _is_user_input:
+                key = int_or_none(key) if ':' not in key else slice(*map(int_or_none, key.split(':')))
+            if not isinstance(key, (int, slice)):
+                return
+            if not is_sequence(obj):
+                if not _traverse_string:
+                    return
+                obj = str(obj)
+            try:
+                yield obj[key]
+            except IndexError:
+                pass
+
+    def apply_path(start_obj, path):
+        objs = (start_obj,)
+        has_branched = False
+        for key in variadic(path):
+            if _is_user_input and key == ':':
+                key = Ellipsis
+            if not casesense and isinstance(key, str):
+                key = compat_casefold(key)
+            if key is Ellipsis or isinstance(key, (list, tuple)) or callable(key):
+                has_branched = True
+            key_func = functools.partial(apply_key, key)
+            objs = from_iterable(map(key_func, objs))
+        return (has_branched, objs)
+
+    def _traverse_obj(obj, path, use_list=True):
+        (has_branched, results) = apply_path(obj, path)
+        results = LazyList((x for x in map(type_test, results) if x is not None))
+        if get_all and has_branched:
+            return results.exhaust() if results or use_list else None
+        return results[0] if results else None
+    for (index, path) in enumerate(paths, 1):
+        use_list = default is NO_DEFAULT and index == len(paths)
+        result = _traverse_obj(obj, path, use_list)
+        if result is not None:
+            return result
+    return None if default is NO_DEFAULT else default
+
+----------
+
+def test_traverse_obj(self):
+    _TEST_DATA = {100: 100, 1.2: 1.2, 'str': 'str', 'None': None, '...': Ellipsis, 'urls': [{'index': 0, 'url': 'https://www.example.com/0'}, {'index': 1, 'url': 'https://www.example.com/1'}], 'data': ({'index': 2}, {'index': 3}), 'dict': {}}
+    self.assertEqual(traverse_obj(_TEST_DATA, ('str',)), 'str', msg='allow tuple path')
+    self.assertEqual(traverse_obj(_TEST_DATA, ['str']), 'str', msg='allow list path')
+    self.assertEqual(traverse_obj(_TEST_DATA, (value for value in ('str',))), 'str', msg='allow iterable path')
+    self.assertEqual(traverse_obj(_TEST_DATA, 'str'), 'str', msg='single items should be treated as a path')
+    self.assertEqual(traverse_obj(_TEST_DATA, None), _TEST_DATA)
+    self.assertEqual(traverse_obj(_TEST_DATA, 100), 100)
+    self.assertEqual(traverse_obj(_TEST_DATA, 1.2), 1.2)
+    self.assertCountEqual(traverse_obj(_TEST_DATA, Ellipsis), (item for item in _TEST_DATA.values() if item is not None), msg='`...` should give all values except `None`')
+    self.assertCountEqual(traverse_obj(_TEST_DATA, ('urls', 0, Ellipsis)), _TEST_DATA['urls'][0].values(), msg='`...` selection for dicts should select all values')
+    self.assertEqual(traverse_obj(_TEST_DATA, (Ellipsis, Ellipsis, 'url')), ['https://www.example.com/0', 'https://www.example.com/1'], msg='nested `...` queries should work')
+    self.assertCountEqual(traverse_obj(_TEST_DATA, (Ellipsis, Ellipsis, 'index')), range(4), msg='`...` query result should be flattened')
+    self.assertEqual(traverse_obj(_TEST_DATA, lambda x, y: x == 'urls' and isinstance(y, list)), [_TEST_DATA['urls']], msg='function as query key should perform a filter based on (key, value)')
+    self.assertCountEqual(traverse_obj(_TEST_DATA, lambda _, x: isinstance(x[0], compat_str)), {'str'}, msg='exceptions in the query function should be caught')
+    self.assertEqual(traverse_obj(_TEST_DATA, 'fail', 'str'), 'str', msg='multiple `paths` should be treated as alternative paths')
+    self.assertEqual(traverse_obj(_TEST_DATA, 'str', 100), 'str', msg='alternatives should exit early')
+    self.assertEqual(traverse_obj(_TEST_DATA, 'fail', 'fail'), None, msg='alternatives should return `default` if exhausted')
+    self.assertEqual(traverse_obj(_TEST_DATA, (Ellipsis, 'fail'), 100), 100, msg='alternatives should track their own branching return')
+    self.assertEqual(traverse_obj(_TEST_DATA, ('dict', Ellipsis), ('data', Ellipsis)), list(_TEST_DATA['data']), msg='alternatives on empty objects should search further')
+    self.assertEqual(traverse_obj(_TEST_DATA, ('urls', (3, 0), 'url')), ['https://www.example.com/0'], msg='tuple as key should be treated as branches')
+    self.assertEqual(traverse_obj(_TEST_DATA, ('urls', [3, 0], 'url')), ['https://www.example.com/0'], msg='list as key should be treated as branches')
+    self.assertEqual(traverse_obj(_TEST_DATA, ('urls', ((1, 'fail'), (0, 'url')))), ['https://www.example.com/0'], msg='double nesting in path should be treated as paths')
+    self.assertEqual(traverse_obj(['0', [1, 2]], [(0, 1), 0]), [1], msg='do not fail early on branching')
+    self.assertCountEqual(traverse_obj(_TEST_DATA, ('urls', ((1, ('fail', 'url')), (0, 'url')))), ['https://www.example.com/0', 'https://www.example.com/1'], msg='triple nesting in path should be treated as branches')
+    self.assertEqual(traverse_obj(_TEST_DATA, ('urls', ('fail', (Ellipsis, 'url')))), ['https://www.example.com/0', 'https://www.example.com/1'], msg='ellipsis as branch path start gets flattened')
+    self.assertEqual(traverse_obj(_TEST_DATA, {0: 100, 1: 1.2}), {0: 100, 1: 1.2}, msg='dict key should result in a dict with the same keys')
+    self.assertEqual(traverse_obj(_TEST_DATA, {0: ('urls', 0, 'url')}), {0: 'https://www.example.com/0'}, msg='dict key should allow paths')
+    self.assertEqual(traverse_obj(_TEST_DATA, {0: ('urls', (3, 0), 'url')}), {0: ['https://www.example.com/0']}, msg='tuple in dict path should be treated as branches')
+    self.assertEqual(traverse_obj(_TEST_DATA, {0: ('urls', ((1, 'fail'), (0, 'url')))}), {0: ['https://www.example.com/0']}, msg='double nesting in dict path should be treated as paths')
+    self.assertEqual(traverse_obj(_TEST_DATA, {0: ('urls', ((1, ('fail', 'url')), (0, 'url')))}), {0: ['https://www.example.com/1', 'https://www.example.com/0']}, msg='triple nesting in dict path should be treated as branches')
+    self.assertEqual(traverse_obj(_TEST_DATA, {0: 'fail'}), {}, msg='remove `None` values when dict key')
+    self.assertEqual(traverse_obj(_TEST_DATA, {0: 'fail'}, default=Ellipsis), {0: Ellipsis}, msg='do not remove `None` values if `default`')
+    self.assertEqual(traverse_obj(_TEST_DATA, {0: 'dict'}), {0: {}}, msg='do not remove empty values when dict key')
+    self.assertEqual(traverse_obj(_TEST_DATA, {0: 'dict'}, default=Ellipsis), {0: {}}, msg='do not remove empty values when dict key and a default')
+    self.assertEqual(traverse_obj(_TEST_DATA, {0: ('dict', Ellipsis)}), {0: []}, msg='if branch in dict key not successful, return `[]`')
+    _DEFAULT_DATA = {'None': None, 'int': 0, 'list': []}
+    self.assertEqual(traverse_obj(_DEFAULT_DATA, 'fail'), None, msg='default value should be `None`')
+    self.assertEqual(traverse_obj(_DEFAULT_DATA, 'fail', 'fail', default=Ellipsis), Ellipsis, msg='chained fails should result in default')
+    self.assertEqual(traverse_obj(_DEFAULT_DATA, 'None', 'int'), 0, msg='should not short cirquit on `None`')
+    self.assertEqual(traverse_obj(_DEFAULT_DATA, 'fail', default=1), 1, msg='invalid dict key should result in `default`')
+    self.assertEqual(traverse_obj(_DEFAULT_DATA, 'None', default=1), 1, msg='`None` is a deliberate sentinel and should become `default`')
+    self.assertEqual(traverse_obj(_DEFAULT_DATA, ('list', 10)), None, msg='`IndexError` should result in `default`')
+    self.assertEqual(traverse_obj(_DEFAULT_DATA, (Ellipsis, 'fail'), default=1), 1, msg='if branched but not successful return `default` if defined, not `[]`')
+    self.assertEqual(traverse_obj(_DEFAULT_DATA, (Ellipsis, 'fail'), default=None), None, msg='if branched but not successful return `default` even if `default` is `None`')
+    self.assertEqual(traverse_obj(_DEFAULT_DATA, (Ellipsis, 'fail')), [], msg='if branched but not successful return `[]`, not `default`')
+    self.assertEqual(traverse_obj(_DEFAULT_DATA, ('list', Ellipsis)), [], msg='if branched but object is empty return `[]`, not `default`')
+    _EXPECTED_TYPE_DATA = {'str': 'str', 'int': 0}
+    self.assertEqual(traverse_obj(_EXPECTED_TYPE_DATA, 'str', expected_type=compat_str), 'str', msg='accept matching `expected_type` type')
+    self.assertEqual(traverse_obj(_EXPECTED_TYPE_DATA, 'str', expected_type=int), None, msg='reject non matching `expected_type` type')
+    self.assertEqual(traverse_obj(_EXPECTED_TYPE_DATA, 'int', expected_type=lambda x: compat_str(x)), '0', msg='transform type using type function')
+    self.assertEqual(traverse_obj(_EXPECTED_TYPE_DATA, 'str', expected_type=lambda _: 1 / 0), None, msg='wrap expected_type function in try_call')
+    self.assertEqual(traverse_obj(_EXPECTED_TYPE_DATA, Ellipsis, expected_type=compat_str), ['str'], msg='eliminate items that expected_type fails on')
+    _GET_ALL_DATA = {'key': [0, 1, 2]}
+    self.assertEqual(traverse_obj(_GET_ALL_DATA, ('key', Ellipsis), get_all=False), 0, msg='if not `get_all`, return only first matching value')
+    self.assertEqual(traverse_obj(_GET_ALL_DATA, Ellipsis, get_all=False), [0, 1, 2], msg='do not overflatten if not `get_all`')
+    _CASESENSE_DATA = {'KeY': 'value0', 0: {'KeY': 'value1', 0: {'KeY': 'value2'}}, 'Ｋey': 'value3'}
+    self.assertEqual(traverse_obj(_CASESENSE_DATA, 'key'), None, msg='dict keys should be case sensitive unless `casesense`')
+    self.assertEqual(traverse_obj(_CASESENSE_DATA, 'keY', casesense=False), 'value0', msg='allow non matching key case if `casesense`')
+    self.assertEqual(traverse_obj(_CASESENSE_DATA, 'ｋey', casesense=False), 'value3', msg='allow non matching Unicode key case if `casesense`')
+    self.assertEqual(traverse_obj(_CASESENSE_DATA, (0, ('keY',)), casesense=False), ['value1'], msg='allow non matching key case in branch if `casesense`')
+    self.assertEqual(traverse_obj(_CASESENSE_DATA, (0, ((0, 'keY'),)), casesense=False), ['value2'], msg='allow non matching key case in branch path if `casesense`')
+    _TRAVERSE_STRING_DATA = {'str': 'str', 1.2: 1.2}
+    self.assertEqual(traverse_obj(_TRAVERSE_STRING_DATA, ('str', 0)), None, msg='do not traverse into string if not `traverse_string`')
+    self.assertEqual(traverse_obj(_TRAVERSE_STRING_DATA, ('str', 0), _traverse_string=True), 's', msg='traverse into string if `traverse_string`')
+    self.assertEqual(traverse_obj(_TRAVERSE_STRING_DATA, (1.2, 1), _traverse_string=True), '.', msg='traverse into converted data if `traverse_string`')
+    self.assertEqual(traverse_obj(_TRAVERSE_STRING_DATA, ('str', Ellipsis), _traverse_string=True), list('str'), msg='`...` branching into string should result in list')
+    self.assertEqual(traverse_obj(_TRAVERSE_STRING_DATA, ('str', (0, 2)), _traverse_string=True), ['s', 'r'], msg='branching into string should result in list')
+    self.assertEqual(traverse_obj(_TRAVERSE_STRING_DATA, ('str', lambda _, x: x), _traverse_string=True), list('str'), msg='function branching into string should result in list')
+    _IS_USER_INPUT_DATA = {'range8': list(range(8))}
+    self.assertEqual(traverse_obj(_IS_USER_INPUT_DATA, ('range8', '3'), _is_user_input=True), 3, msg='allow for string indexing if `is_user_input`')
+    self.assertCountEqual(traverse_obj(_IS_USER_INPUT_DATA, ('range8', '3:'), _is_user_input=True), tuple(range(8))[3:], msg='allow for string slice if `is_user_input`')
+    self.assertCountEqual(traverse_obj(_IS_USER_INPUT_DATA, ('range8', ':4:2'), _is_user_input=True), tuple(range(8))[:4:2], msg='allow step in string slice if `is_user_input`')
+    self.assertCountEqual(traverse_obj(_IS_USER_INPUT_DATA, ('range8', ':'), _is_user_input=True), range(8), msg='`:` should be treated as `...` if `is_user_input`')
+    with self.assertRaises(TypeError, msg='too many params should result in error'):
+        traverse_obj(_IS_USER_INPUT_DATA, ('range8', ':::'), _is_user_input=True)
+    mobj = re.match('^0(12)(?P<group>3)(4)?$', '0123')
+    self.assertEqual(traverse_obj(mobj, Ellipsis), [x for x in mobj.groups() if x is not None], msg='`...` on a `re.Match` should give its `groups()`')
+    self.assertEqual(traverse_obj(mobj, lambda k, _: k in (0, 2)), ['0123', '3'], msg='function on a `re.Match` should give groupno, value starting at 0')
+    self.assertEqual(traverse_obj(mobj, 'group'), '3', msg='str key on a `re.Match` should give group with that name')
+    self.assertEqual(traverse_obj(mobj, 2), '3', msg='int key on a `re.Match` should give group with that name')
+    self.assertEqual(traverse_obj(mobj, 'gRoUp', casesense=False), '3', msg='str key on a `re.Match` should respect casesense')
+    self.assertEqual(traverse_obj(mobj, 'fail'), None, msg='failing str key on a `re.Match` should return `default`')
+    self.assertEqual(traverse_obj(mobj, 'gRoUpS', casesense=False), None, msg='failing str key on a `re.Match` should return `default`')
+    self.assertEqual(traverse_obj(mobj, 8), None, msg='failing int key on a `re.Match` should return `default`')
+
+----------
+
+
+
+Test Class Name: TestUtil

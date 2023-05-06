@@ -1,0 +1,26 @@
+def validate(self) -> Tuple[ConfigErrors, ConfigWarnings]:
+    (failed, warnings) = self._pre_validate()
+    (run_failed, run_warnings) = self._validate()
+    failed.extend(run_failed)
+    warnings.extend(run_warnings)
+    if len(failed) == 0:
+        (post_failed, post_warnings) = self._post_validate()
+        failed.extend(post_failed)
+        warnings.extend(post_warnings)
+    return (failed, warnings)
+
+----------
+
+def test_error_on_pages(self):
+    conf = defaults.MkDocsConfig()
+    conf.load_dict({'site_name': 'Example', 'pages': ['index.md', 'about.md']})
+    (errors, warnings) = conf.validate()
+    exp_error = "The configuration option 'pages' was removed from MkDocs. Use 'nav' instead."
+    self.assertEqual(errors, [('pages', ValidationError(exp_error))])
+    self.assertEqual(warnings, [])
+
+----------
+
+
+
+Test Class Name: ConfigTests

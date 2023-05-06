@@ -1,0 +1,30 @@
+@classmethod
+def from_response(cls: Type[FormRequestTypeVar], response: TextResponse, formname: Optional[str]=None, formid: Optional[str]=None, formnumber: Optional[int]=0, formdata: FormdataType=None, clickdata: Optional[dict]=None, dont_click: bool=False, formxpath: Optional[str]=None, formcss: Optional[str]=None, **kwargs) -> FormRequestTypeVar:
+    kwargs.setdefault('encoding', response.encoding)
+    if formcss is not None:
+        from parsel.csstranslator import HTMLTranslator
+        formxpath = HTMLTranslator().css_to_xpath(formcss)
+    form = _get_form(response, formname, formid, formnumber, formxpath)
+    formdata = _get_inputs(form, formdata, dont_click, clickdata)
+    url = _get_form_url(form, kwargs.pop('url', None))
+    method = kwargs.pop('method', form.method)
+    if method is not None:
+        method = method.upper()
+        if method not in cls.valid_form_methods:
+            method = 'GET'
+    return cls(url=url, method=method, formdata=formdata, **kwargs)
+
+----------
+
+def test_from_response_formname_nonexistent_fallback_formid(self):
+    response = _buildresponse('<form action="post.php" method="POST">\n            <input type="hidden" name="one" value="1">\n            <input type="hidden" name="two" value="2">\n            </form>\n            <form id="form2" name="form2" action="post.php" method="POST">\n            <input type="hidden" name="three" value="3">\n            <input type="hidden" name="four" value="4">\n            </form>')
+    r1 = self.request_class.from_response(response, formname='form3', formid='form2')
+    self.assertEqual(r1.method, 'POST')
+    fs = _qs(r1)
+    self.assertEqual(fs, {b'four': [b'4'], b'three': [b'3']})
+
+----------
+
+
+
+Test Class Name: FormRequestTest

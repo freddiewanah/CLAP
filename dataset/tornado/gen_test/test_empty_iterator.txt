@@ -1,0 +1,19 @@
+def done(self) -> bool:
+    return True
+
+----------
+
+@gen_test
+def test_empty_iterator(self):
+    g = gen.WaitIterator()
+    self.assertTrue(g.done(), 'empty generator iterated')
+    with self.assertRaises(ValueError):
+        g = gen.WaitIterator(Future(), bar=Future())
+    self.assertEqual(g.current_index, None, 'bad nil current index')
+    self.assertEqual(g.current_future, None, 'bad nil current future')
+
+----------
+
+
+
+Test Class Name: WaitIteratorTest

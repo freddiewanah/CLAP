@@ -1,0 +1,22 @@
+def get_cache_id(url):
+    """ Gets the cache ID for the URL specified. """
+    url_info = urlparse(url)
+    port = None
+    try:
+        port = url_info.port
+    except ValueError:
+        pass
+    return '%s:%s' % (url_info.hostname, port or '')
+
+----------
+
+@pytest.mark.parametrize(['url', 'expected'], [('http://hostname/path', 'hostname:'), ('http://hostname:80/path', 'hostname:80'), ('https://testing.com:invalid', 'testing.com:'), ('https://testing.com:1234', 'testing.com:1234'), ('https://username:password@testing.com/path', 'testing.com:'), ('https://username:password@testing.com:443/path', 'testing.com:443')])
+def test_cache_id(url, expected):
+    actual = galaxy_api.get_cache_id(url)
+    assert actual == expected
+
+----------
+
+
+
+Test Class Name: default

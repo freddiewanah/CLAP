@@ -1,0 +1,25 @@
+def scraped(self, item, response, spider):
+    """Logs a message when an item is scraped by a spider."""
+    if isinstance(response, Failure):
+        src = response.getErrorMessage()
+    else:
+        src = response
+    return {'level': logging.DEBUG, 'msg': SCRAPEDMSG, 'args': {'src': src, 'item': item}}
+
+----------
+
+def test_scraped(self):
+    item = CustomItem()
+    item['name'] = '£'
+    response = Response('http://www.example.com')
+    logkws = self.formatter.scraped(item, response, self.spider)
+    logline = logkws['msg'] % logkws['args']
+    lines = logline.splitlines()
+    assert all((isinstance(x, str) for x in lines))
+    self.assertEqual(lines, ['Scraped from <200 http://www.example.com>', 'name: £'])
+
+----------
+
+
+
+Test Class Name: LogFormatterTestCase

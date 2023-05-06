@@ -1,0 +1,32 @@
+def replace(self, new_value: Any, args: Sequence[Any], kwargs: Dict[str, Any]) -> Tuple[Any, Sequence[Any], Dict[str, Any]]:
+    """Replace the named argument in ``args, kwargs`` with ``new_value``.
+
+        Returns ``(old_value, args, kwargs)``.  The returned ``args`` and
+        ``kwargs`` objects may not be the same as the input objects, or
+        the input objects may be mutated.
+
+        If the named argument was not found, ``new_value`` will be added
+        to ``kwargs`` and None will be returned as ``old_value``.
+        """
+    if self.arg_pos is not None and len(args) > self.arg_pos:
+        old_value = args[self.arg_pos]
+        args = list(args)
+        args[self.arg_pos] = new_value
+    else:
+        old_value = kwargs.get(self.name)
+        kwargs[self.name] = new_value
+    return (old_value, args, kwargs)
+
+----------
+
+def test_omitted(self):
+    args = (1, 2)
+    kwargs = dict()
+    self.assertIs(self.replacer.get_old_value(args, kwargs), None)
+    self.assertEqual(self.replacer.replace('new', args, kwargs), (None, (1, 2), dict(callback='new')))
+
+----------
+
+
+
+Test Class Name: ArgReplacerTest

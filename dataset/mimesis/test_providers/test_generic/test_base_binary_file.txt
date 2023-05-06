@@ -1,0 +1,21 @@
+def video(self, *, file_type: VideoFile=VideoFile.MP4) -> bytes:
+    """Generates video file of given format and returns it as bytes.
+
+        .. note:: This method accepts keyword-only arguments.
+
+        :param file_type: File extension.
+        :return: File as a sequence of bytes.
+        """
+    return self._read_file(file_type=file_type)
+
+----------
+
+def test_base_binary_file(self, generic):
+    result = generic.binaryfile.video()
+    assert isinstance(result, bytes)
+
+----------
+
+
+
+Test Class Name: TestGeneric

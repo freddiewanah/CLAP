@@ -1,0 +1,13 @@
+def get(self, key):
+    return self._cache.get(key)
+
+----------
+
+def test_get(self):
+    assert self.cache.get('cache_key') == {'key1': 'value1', 'key2': 'value2'}
+
+----------
+
+
+
+Test Class Name: TestCachePluginAdjudicator

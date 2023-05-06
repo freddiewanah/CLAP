@@ -1,0 +1,17 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_edit_uri_github(self) -> None:
+    conf = self.get_config(self.Schema, {'repo_url': 'https://github.com/mkdocs/mkdocs'})
+    assert_type(conf.edit_uri, Optional[str])
+    assert_type(conf.repo_url, Optional[str])
+    self.assertEqual(conf.edit_uri, 'edit/master/docs/')
+    self.assertEqual(conf.repo_url, 'https://github.com/mkdocs/mkdocs')
+
+----------
+
+
+
+Test Class Name: default

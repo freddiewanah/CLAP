@@ -1,0 +1,25 @@
+def height(self, minimum: float=1.5, maximum: float=2.0) -> str:
+    """Generate a random height in meters.
+
+        :param minimum: Minimum value.
+        :param float maximum: Maximum value.
+        :return: Height.
+
+        :Example:
+            1.85.
+        """
+    h = self.random.uniform(minimum, maximum)
+    return f'{h:0.2f}'
+
+----------
+
+def test_height(self, _person):
+    result = _person.height(minimum=1.6, maximum=1.9)
+    assert result.startswith('1')
+    assert isinstance(result, str)
+
+----------
+
+
+
+Test Class Name: TestPerson

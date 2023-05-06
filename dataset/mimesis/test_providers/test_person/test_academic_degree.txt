@@ -1,0 +1,22 @@
+def academic_degree(self) -> str:
+    """Get a random academic degree.
+
+        :return: Degree.
+
+        :Example:
+            Bachelor.
+        """
+    degrees: t.List[str] = self.extract(['academic_degree'])
+    return self.random.choice(degrees)
+
+----------
+
+def test_academic_degree(self, person):
+    result = person.academic_degree()
+    assert result in person._data['academic_degree']
+
+----------
+
+
+
+Test Class Name: TestPerson

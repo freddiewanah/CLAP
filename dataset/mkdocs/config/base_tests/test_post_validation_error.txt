@@ -1,0 +1,21 @@
+def validate(self, value: object) -> T:
+    return self.run_validation(value)
+
+----------
+
+def test_post_validation_error(self):
+
+    class InvalidConfigOption(c.BaseConfigOption):
+
+        def post_validation(self, config, key_name):
+            raise ValidationError('post_validation error')
+    conf = base.Config(schema=(('invalid_option', InvalidConfigOption()),))
+    (errors, warnings) = conf.validate()
+    self.assertEqual(errors, [('invalid_option', ValidationError('post_validation error'))])
+    self.assertEqual(warnings, [])
+
+----------
+
+
+
+Test Class Name: default

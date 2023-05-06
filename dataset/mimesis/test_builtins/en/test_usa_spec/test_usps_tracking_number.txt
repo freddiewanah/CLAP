@@ -1,0 +1,30 @@
+def tracking_number(self, service: str='usps') -> str:
+    """Generate random tracking number.
+
+        Supported services: USPS, FedEx and UPS.
+
+        :param str service: Post service.
+        :return: Tracking number.
+        """
+    service = service.lower()
+    if service not in ('usps', 'fedex', 'ups'):
+        raise ValueError('Unsupported post service')
+    services = {'usps': ('#### #### #### #### ####', '@@ ### ### ### US'), 'fedex': ('#### #### ####', '#### #### #### ###'), 'ups': ('1Z@####@##########',)}
+    mask = self.random.choice(services[service])
+    return self.random.custom_code(mask=mask)
+
+----------
+
+@pytest.mark.parametrize('service, length', [('usps', 24), ('fedex', 18), ('ups', 18)])
+def test_usps_tracking_number(usa, service, length):
+    result = usa.tracking_number(service=service)
+    assert result is not None
+    assert len(result) <= length
+    with pytest.raises(ValueError):
+        usa.tracking_number(service='x')
+
+----------
+
+
+
+Test Class Name: default

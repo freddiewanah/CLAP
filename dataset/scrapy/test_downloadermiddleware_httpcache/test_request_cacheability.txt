@@ -1,0 +1,55 @@
+def retrieve_response(self, spider, request):
+    data = self._read_data(spider, request)
+    if data is None:
+        return
+    url = data['url']
+    status = data['status']
+    headers = Headers(data['headers'])
+    body = data['body']
+    respcls = responsetypes.from_args(headers=headers, url=url, body=body)
+    response = respcls(url=url, headers=headers, status=status, body=body)
+    return response
+
+----------
+
+def test_request_cacheability(self):
+    res0 = Response(self.request.url, status=200, headers={'Expires': self.tomorrow})
+    req0 = Request('http://example.com')
+    req1 = req0.replace(headers={'Cache-Control': 'no-store'})
+    req2 = req0.replace(headers={'Cache-Control': 'no-cache'})
+    with self._middleware() as mw:
+        res1 = self._process_requestresponse(mw, req1, res0)
+        self.assertEqualResponse(res1, res0)
+        assert mw.storage.retrieve_response(self.spider, req1) is None
+        res2 = self._process_requestresponse(mw, req0, res0)
+        assert 'cached' not in res2.flags
+        res3 = mw.process_request(req0, self.spider)
+        assert 'cached' in res3.flags
+        self.assertEqualResponse(res2, res3)
+        res0b = res0.replace(body=b'foo')
+        res4 = self._process_requestresponse(mw, req2, res0b)
+        self.assertEqualResponse(res4, res0b)
+        assert 'cached' not in res4.flags
+        res5 = self._process_requestresponse(mw, req0, None)
+        self.assertEqualResponse(res5, res0b)
+        assert 'cached' in res5.flags
+
+----------
+
+def _process_requestresponse(self, mw, request, response):
+    result = None
+    try:
+        result = mw.process_request(request, self.spider)
+        if result:
+            assert isinstance(result, (Request, Response))
+            return result
+        result = mw.process_response(request, response, self.spider)
+        assert isinstance(result, Response)
+        return result
+    except Exception:
+        print('Request', request)
+        print('Response', response)
+        print('Result', result)
+        raise
+
+Test Class Name: RFC2616PolicyTest

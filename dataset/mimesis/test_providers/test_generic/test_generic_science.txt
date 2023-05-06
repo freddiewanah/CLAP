@@ -1,0 +1,21 @@
+def rna_sequence(self, length: int=10) -> str:
+    """Generate a random RNA sequence.
+
+        :param length: Length of block.
+        :return: RNA sequence.
+
+        :Example:
+            AGUGACACAA
+        """
+    return self.random.generate_string('UCGA', length)
+
+----------
+
+def test_generic_science(self, g1, g2):
+    assert g1.science.rna_sequence() == g2.science.rna_sequence()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

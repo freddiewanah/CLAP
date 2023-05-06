@@ -1,0 +1,16 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_parens(self):
+    jsi = JSInterpreter('function f(){return (1) + (2) * ((( (( (((((3)))))) )) ));}')
+    self.assertEqual(jsi.call_function('f'), 7)
+    jsi = JSInterpreter('function f(){return (1 + 2) * 3;}')
+    self.assertEqual(jsi.call_function('f'), 9)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

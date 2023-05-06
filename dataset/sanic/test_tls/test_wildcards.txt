@@ -1,0 +1,41 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.xfail
+def test_wildcards(app):
+    ssl_list = [None, localhost_dir, sanic_dir]
+
+    @app.get('/sni')
+    async def handler(request):
+        return text(request.conn_info.server_name)
+    port = app.test_client.port
+    with replace_server_name('foo.sanic.test'):
+        (_, response) = app.test_client.get(f'https://127.0.0.1:{port}/sni', server_kwargs={'ssl': ssl_list})
+        assert response.status == 200
+        assert response.text == 'foo.sanic.test'
+    with replace_server_name('sanic.test'):
+        with pytest.raises(Exception) as exc:
+            (_, response) = app.test_client.get(f'https://127.0.0.1:{port}/sni', server_kwargs={'ssl': ssl_list})
+        assert 'Request and response object expected' in str(exc.value)
+    with replace_server_name('sub.foo.sanic.test'):
+        with pytest.raises(Exception) as exc:
+            (_, response) = app.test_client.get(f'https://127.0.0.1:{port}/sni', server_kwargs={'ssl': ssl_list})
+        assert 'Request and response object expected' in str(exc.value)
+
+----------
+
+
+
+Test Class Name: Creator

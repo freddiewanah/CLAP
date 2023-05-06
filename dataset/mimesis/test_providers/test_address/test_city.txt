@@ -1,0 +1,19 @@
+def city(self) -> str:
+    """Get a random city.
+
+        :return: City name.
+        """
+    cities: t.List[str] = self.extract(['city'])
+    return self.random.choice(cities)
+
+----------
+
+def test_city(self, address):
+    result = address.city()
+    assert result in address._data['city']
+
+----------
+
+
+
+Test Class Name: TestAddress

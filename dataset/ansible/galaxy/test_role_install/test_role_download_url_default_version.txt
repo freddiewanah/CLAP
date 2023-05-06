@@ -1,0 +1,122 @@
+def install(self):
+    if self.scm:
+        tmp_file = RoleRequirement.scm_archive_role(keep_scm_meta=context.CLIARGS['keep_scm_meta'], **self.spec)
+    elif self.src:
+        if os.path.isfile(self.src):
+            tmp_file = self.src
+        elif '://' in self.src:
+            role_data = self.src
+            tmp_file = self.fetch(role_data)
+        else:
+            role_data = self.api.lookup_role_by_name(self.src)
+            if not role_data:
+                raise AnsibleError('- sorry, %s was not found on %s.' % (self.src, self.api.api_server))
+            if role_data.get('role_type') == 'APP':
+                display.warning('%s is a Container App role, and should only be installed using Ansible Container' % self.name)
+            role_versions = self.api.fetch_role_related('versions', role_data['id'])
+            if not self.version:
+                if len(role_versions) > 0:
+                    loose_versions = [LooseVersion(a.get('name', None)) for a in role_versions]
+                    try:
+                        loose_versions.sort()
+                    except TypeError:
+                        raise AnsibleError('Unable to compare role versions (%s) to determine the most recent version due to incompatible version formats. Please contact the role author to resolve versioning conflicts, or specify an explicit role version to install.' % ', '.join([v.vstring for v in loose_versions]))
+                    self.version = to_text(loose_versions[-1])
+                elif role_data.get('github_branch', None):
+                    self.version = role_data['github_branch']
+                else:
+                    self.version = 'master'
+            elif self.version != 'master':
+                if role_versions and to_text(self.version) not in [a.get('name', None) for a in role_versions]:
+                    raise AnsibleError('- the specified version (%s) of %s was not found in the list of available versions (%s).' % (self.version, self.name, role_versions))
+            for role_version in role_versions:
+                if role_version['name'] == self.version and 'source' in role_version:
+                    self.src = role_version['source']
+                if role_version['name'] == self.version and 'download_url' in role_version:
+                    self.download_url = role_version['download_url']
+            tmp_file = self.fetch(role_data)
+    else:
+        raise AnsibleError('No valid role data found')
+    if tmp_file:
+        display.debug('installing from %s' % tmp_file)
+        if not tarfile.is_tarfile(tmp_file):
+            raise AnsibleError('the downloaded file does not appear to be a valid tar archive.')
+        else:
+            role_tar_file = tarfile.open(tmp_file, 'r')
+            meta_file = None
+            members = role_tar_file.getmembers()
+            for member in members:
+                for meta_main in self.META_MAIN:
+                    if meta_main in member.name:
+                        meta_parent_dir = os.path.dirname(os.path.dirname(member.name))
+                        if not meta_file:
+                            archive_parent_dir = meta_parent_dir
+                            meta_file = member
+                        elif len(meta_parent_dir) < len(archive_parent_dir):
+                            archive_parent_dir = meta_parent_dir
+                            meta_file = member
+            if not meta_file:
+                raise AnsibleError('this role does not appear to have a meta/main.yml file.')
+            else:
+                try:
+                    self._metadata = yaml_load(role_tar_file.extractfile(meta_file))
+                except Exception:
+                    raise AnsibleError('this role does not appear to have a valid meta/main.yml file.')
+            paths = self.paths
+            if self.path != paths[0]:
+                paths[:0] = self.path
+            paths_len = len(paths)
+            for (idx, path) in enumerate(paths):
+                self.path = path
+                display.display('- extracting %s to %s' % (self.name, self.path))
+                try:
+                    if os.path.exists(self.path):
+                        if not os.path.isdir(self.path):
+                            raise AnsibleError('the specified roles path exists and is not a directory.')
+                        elif not context.CLIARGS.get('force', False):
+                            raise AnsibleError('the specified role %s appears to already exist. Use --force to replace it.' % self.name)
+                        elif not self.remove():
+                            raise AnsibleError("%s doesn't appear to contain a role.\n  please remove this directory manually if you really want to put the role here." % self.path)
+                    else:
+                        os.makedirs(self.path)
+                    for member in members:
+                        if member.isreg() or member.issym():
+                            n_member_name = to_native(member.name)
+                            n_archive_parent_dir = to_native(archive_parent_dir)
+                            n_parts = n_member_name.replace(n_archive_parent_dir, '', 1).split(os.sep)
+                            n_final_parts = []
+                            for n_part in n_parts:
+                                if n_part != '..' and (not n_part.startswith('~')) and ('$' not in n_part):
+                                    n_final_parts.append(n_part)
+                            member.name = os.path.join(*n_final_parts)
+                            role_tar_file.extract(member, to_native(self.path))
+                    self._write_galaxy_install_info()
+                    break
+                except OSError as e:
+                    if e.errno == errno.EACCES and idx < paths_len - 1:
+                        continue
+                    raise AnsibleError('Could not update files in %s: %s' % (self.path, to_native(e)))
+            display.display('- %s was installed successfully' % str(self))
+            if not (self.src and os.path.isfile(self.src)):
+                try:
+                    os.unlink(tmp_file)
+                except (OSError, IOError) as e:
+                    display.warning(u'Unable to remove tmp file (%s): %s' % (tmp_file, to_text(e)))
+            return True
+    return False
+
+----------
+
+def test_role_download_url_default_version(init_mock_temp_file, mocker, galaxy_server, mock_role_download_api, monkeypatch):
+    mock_api = mocker.MagicMock()
+    mock_api.side_effect = [StringIO(u'{"available_versions":{"v1":"v1/"}}'), StringIO(u'{"results":[{"id":"123","github_user":"test_owner","github_repo": "test_role"}]}'), StringIO(u'{"results":[{"name": "0.0.1","download_url":"http://localhost:8080/test_owner/test_role/0.0.1.tar.gz"},{"name": "0.0.2","download_url":"http://localhost:8080/test_owner/test_role/0.0.2.tar.gz"}]}')]
+    monkeypatch.setattr(api, 'open_url', mock_api)
+    role.GalaxyRole(Galaxy(), galaxy_server, 'test_owner.test_role').install()
+    assert mock_role_download_api.call_count == 1
+    assert mock_role_download_api.mock_calls[0][1][0] == 'http://localhost:8080/test_owner/test_role/0.0.2.tar.gz'
+
+----------
+
+
+
+Test Class Name: default

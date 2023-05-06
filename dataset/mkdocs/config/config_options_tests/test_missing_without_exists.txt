@@ -1,0 +1,21 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_missing_without_exists(self) -> None:
+    for cls in (c.Dir, c.File, c.FilesystemObject):
+        with self.subTest(cls):
+            d = os.path.join('not', 'a', 'real', 'path', 'I', 'hope')
+
+            class Schema(Config):
+                option = cls()
+            conf = self.get_config(Schema, {'option': d})
+            assert_type(conf.option, str)
+            self.assertEqual(conf.option, os.path.abspath(d))
+
+----------
+
+
+
+Test Class Name: default

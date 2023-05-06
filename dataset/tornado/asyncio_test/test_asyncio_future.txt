@@ -1,0 +1,24 @@
+def get_event_loop(self) -> asyncio.AbstractEventLoop:
+    try:
+        return super().get_event_loop()
+    except (RuntimeError, AssertionError):
+        loop = self.new_event_loop()
+        self.set_event_loop(loop)
+        return loop
+
+----------
+
+@gen_test
+def test_asyncio_future(self):
+    if hasattr(asyncio, 'ensure_future'):
+        ensure_future = asyncio.ensure_future
+    else:
+        ensure_future = getattr(asyncio, 'async')
+    x = (yield ensure_future(asyncio.get_event_loop().run_in_executor(None, lambda : 42)))
+    self.assertEqual(x, 42)
+
+----------
+
+
+
+Test Class Name: AsyncIOLoopTest

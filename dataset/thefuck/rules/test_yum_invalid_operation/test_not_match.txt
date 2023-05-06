@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command, output', [('vim', ''), ('yum', yum_help_text), ('yum help', yum_help_text), ('yum search asdf', yum_unsuccessful_search_text.format('asdf')), ('yum search vim', yum_successful_vim_search_text)])
+def test_not_match(command, output):
+    assert not match(Command(command, output))
+
+----------
+
+
+
+Test Class Name: default

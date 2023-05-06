@@ -1,0 +1,13 @@
+def items(self) -> ItemsView[str, Any]:
+    return self._state[self._name].items()
+
+----------
+
+def test_state_items():
+    assert list(gen_state(one=1, two=2).items()) == list({'one': 1, 'two': 2}.items())
+
+----------
+
+
+
+Test Class Name: default

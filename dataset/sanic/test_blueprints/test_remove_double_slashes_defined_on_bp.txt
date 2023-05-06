@@ -1,0 +1,25 @@
+def finalize(self):
+    try:
+        self.router.finalize()
+    except FinalizationError as e:
+        if not Sanic.test_mode:
+            raise e
+    self.finalize_middleware()
+
+----------
+
+def test_remove_double_slashes_defined_on_bp(app: Sanic):
+    bp = Blueprint('bp', url_prefix='/foo/', strict_slashes=True)
+
+    @bp.get('/')
+    async def handler(_):
+        ...
+    app.blueprint(bp)
+    app.router.finalize()
+    assert app.router.routes[0].path == 'foo/'
+
+----------
+
+
+
+Test Class Name: Error

@@ -1,0 +1,22 @@
+@classmethod
+def from_dict(cls: Type[A], kvs: Json, *, infer_missing=False) -> A:
+    return _decode_dataclass(cls, kvs, infer_missing)
+
+----------
+
+def test_it_works_from_string(invalid_response):
+
+    @dataclass_json(undefined='include')
+    @dataclass()
+    class UnknownAPIDumpFromString:
+        endpoint: str
+        data: Dict[str, Any]
+        catch_all: CatchAll
+    dump = UnknownAPIDumpFromString.from_dict(invalid_response)
+    assert {'undefined_field_name': [1, 2, 3]} == dump.catch_all
+
+----------
+
+
+
+Test Class Name: Boss

@@ -1,0 +1,16 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, output', [('', ''), ('ln a b', '... hard link'), ('sudo ln a b', '... hard link'), ('a b', error)])
+def test_not_match(script, output):
+    command = Command(script, output)
+    assert not match(command)
+
+----------
+
+
+
+Test Class Name: default

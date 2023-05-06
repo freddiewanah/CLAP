@@ -1,0 +1,38 @@
+def wait(self, timeout: Optional[Union[float, datetime.timedelta]]=None) -> Awaitable[bool]:
+    """Wait for `.notify`.
+
+        Returns a `.Future` that resolves ``True`` if the condition is notified,
+        or ``False`` after a timeout.
+        """
+    waiter = Future()
+    self._waiters.append(waiter)
+    if timeout:
+
+        def on_timeout() -> None:
+            if not waiter.done():
+                future_set_result_unless_cancelled(waiter, False)
+            self._garbage_collect()
+        io_loop = ioloop.IOLoop.current()
+        timeout_handle = io_loop.add_timeout(timeout, on_timeout)
+        waiter.add_done_callback(lambda _: io_loop.remove_timeout(timeout_handle))
+    return waiter
+
+----------
+
+def test_notify_1(self):
+    c = locks.Condition()
+    self.record_done(c.wait(), 'wait1')
+    self.record_done(c.wait(), 'wait2')
+    c.notify(1)
+    self.loop_briefly()
+    self.history.append('notify1')
+    c.notify(1)
+    self.loop_briefly()
+    self.history.append('notify2')
+    self.assertEqual(['wait1', 'notify1', 'wait2', 'notify2'], self.history)
+
+----------
+
+
+
+Test Class Name: ConditionTest

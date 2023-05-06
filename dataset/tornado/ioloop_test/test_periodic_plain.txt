@@ -1,0 +1,34 @@
+def stop(self) -> None:
+    """Stop the I/O loop.
+
+        If the event loop is not currently running, the next call to `start()`
+        will return immediately.
+
+        Note that even after `stop` has been called, the `IOLoop` is not
+        completely stopped until `IOLoop.start` has also returned.
+        Some work that was scheduled before the call to `stop` may still
+        be run before the `IOLoop` shuts down.
+        """
+    raise NotImplementedError()
+
+----------
+
+def test_periodic_plain(self):
+    count = 0
+
+    def callback() -> None:
+        nonlocal count
+        count += 1
+        if count == 3:
+            self.stop()
+    pc = PeriodicCallback(callback, 10)
+    pc.start()
+    self.wait()
+    pc.stop()
+    self.assertEqual(count, 3)
+
+----------
+
+
+
+Test Class Name: TestPeriodicCallbackAsync

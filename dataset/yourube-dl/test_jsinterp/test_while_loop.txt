@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_while_loop(self):
+    jsi = JSInterpreter('\n        function x() { a=0; while (a<10) {a++} return a }\n        ')
+    self.assertEqual(jsi.call_function('x'), 10)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

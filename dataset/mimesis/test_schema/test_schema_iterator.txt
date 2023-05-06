@@ -1,0 +1,27 @@
+def iterator(self, iterations: int=1) -> t.Iterator[JSON]:
+    """Fulfills schema in a lazy way.
+
+        :param iterations: Number of iterations.
+        :return: List of fulfilled schemas.
+        """
+    if iterations < self._MIN_ITERATIONS_VALUE:
+        raise ValueError('The number of iterations must be greater than 0.')
+    for item in range(iterations):
+        yield self._schema()
+
+----------
+
+def test_schema_iterator(schema):
+    result = schema.iterator(5)
+    assert len(list(result)) == 5
+    assert isinstance(result, Iterator)
+    result = schema.iterator(1)
+    assert len(list(result)) == 1
+    with pytest.raises(ValueError):
+        next(schema.iterator(0))
+
+----------
+
+
+
+Test Class Name: default

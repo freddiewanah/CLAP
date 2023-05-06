@@ -1,0 +1,31 @@
+def unsmuggle_url(smug_url, default=None):
+    if '#__youtubedl_smuggle' not in smug_url:
+        return (smug_url, default)
+    (url, _, sdata) = smug_url.rpartition('#')
+    jsond = compat_parse_qs(sdata)['__youtubedl_smuggle'][0]
+    data = json.loads(jsond)
+    return (url, data)
+
+----------
+
+def test_smuggle_url(self):
+    data = {'ö': 'ö', 'abc': [3]}
+    url = 'https://foo.bar/baz?x=y#a'
+    smug_url = smuggle_url(url, data)
+    (unsmug_url, unsmug_data) = unsmuggle_url(smug_url)
+    self.assertEqual(url, unsmug_url)
+    self.assertEqual(data, unsmug_data)
+    (res_url, res_data) = unsmuggle_url(url)
+    self.assertEqual(res_url, url)
+    self.assertEqual(res_data, None)
+    smug_url = smuggle_url(url, {'a': 'b'})
+    smug_smug_url = smuggle_url(smug_url, {'c': 'd'})
+    (res_url, res_data) = unsmuggle_url(smug_smug_url)
+    self.assertEqual(res_url, url)
+    self.assertEqual(res_data, {'a': 'b', 'c': 'd'})
+
+----------
+
+
+
+Test Class Name: TestUtil

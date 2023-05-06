@@ -1,0 +1,37 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_crawler_runner_bootstrap_failed_for_several(self):
+    runner = self._runner()
+    try:
+        yield runner.crawl(ExceptionSpider)
+    except ValueError:
+        pass
+    else:
+        self.fail('Exception should be raised from spider')
+    yield runner.crawl(NoRequestsSpider)
+    self.assertEqual(runner.bootstrap_failed, True)
+
+----------
+
+def _runner(self):
+    return CrawlerRunner({'REQUEST_FINGERPRINTER_IMPLEMENTATION': '2.7'})
+
+Test Class Name: CrawlerRunnerHasSpider

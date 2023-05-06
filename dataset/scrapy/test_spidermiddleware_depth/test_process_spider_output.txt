@@ -1,0 +1,26 @@
+def process_spider_output(self, response, result, spider):
+    self._init_depth(response, spider)
+    return (r for r in result or () if self._filter(r, response, spider))
+
+----------
+
+def test_process_spider_output(self):
+    req = Request('http://scrapytest.org')
+    resp = Response('http://scrapytest.org')
+    resp.request = req
+    result = [Request('http://scrapytest.org')]
+    out = list(self.mw.process_spider_output(resp, result, self.spider))
+    self.assertEqual(out, result)
+    rdc = self.stats.get_value('request_depth_count/1', spider=self.spider)
+    self.assertEqual(rdc, 1)
+    req.meta['depth'] = 1
+    out2 = list(self.mw.process_spider_output(resp, result, self.spider))
+    self.assertEqual(out2, [])
+    rdm = self.stats.get_value('request_depth_max', spider=self.spider)
+    self.assertEqual(rdm, 1)
+
+----------
+
+
+
+Test Class Name: TestDepthMiddleware

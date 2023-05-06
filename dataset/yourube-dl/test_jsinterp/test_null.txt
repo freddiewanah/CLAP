@@ -1,0 +1,18 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_null(self):
+    jsi = JSInterpreter('\n        function x() { return null; }\n        ')
+    self.assertIs(jsi.call_function('x'), None)
+    jsi = JSInterpreter('\n        function x() { return [null > 0, null < 0, null == 0, null === 0]; }\n        ')
+    self.assertEqual(jsi.call_function('x'), [False, False, False, False])
+    jsi = JSInterpreter('\n        function x() { return [null >= 0, null <= 0]; }\n        ')
+    self.assertEqual(jsi.call_function('x'), [True, True])
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

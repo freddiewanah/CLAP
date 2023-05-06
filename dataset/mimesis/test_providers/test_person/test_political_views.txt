@@ -1,0 +1,22 @@
+def political_views(self) -> str:
+    """Get a random political views.
+
+        :return: Political views.
+
+        :Example:
+            Liberal.
+        """
+    views: t.List[str] = self.extract(['political_views'])
+    return self.random.choice(views)
+
+----------
+
+def test_political_views(self, person):
+    result = person.political_views()
+    assert result in person._data['political_views']
+
+----------
+
+
+
+Test Class Name: TestPerson

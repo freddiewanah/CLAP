@@ -1,0 +1,33 @@
+def do_request(server, content):
+    request = FakeRequest(content + ' HTTP/1.1')
+    server.RequestHandlerClass(request, ('127.0.0.1', 0), server)
+    response = request.out_file.getvalue()
+    (headers, _, content) = response.partition(b'\r\n\r\n')
+    (status, _, headers) = headers.partition(b'\r\n')
+    status = status.split(None, 1)[1].decode()
+    headers = email.message_from_bytes(headers)
+    headers['_status'] = status
+    return (headers, content.decode())
+
+----------
+
+@tempdir({'index.html': '<body>aaa</body>', 'foo/index.html': '<body>bbb</body>'})
+def test_serves_directory_index(self, site_dir):
+    with testing_server(site_dir) as server:
+        (headers, output) = do_request(server, 'GET /')
+        self.assertRegex(output, '^<body>aaa</body>$')
+        self.assertEqual(headers['_status'], '200 OK')
+        self.assertEqual(headers.get('content-type'), 'text/html')
+        self.assertEqual(headers.get('content-length'), str(len(output)))
+        for path in ('/foo/', '/foo/index.html'):
+            (_, output) = do_request(server, 'GET /foo/')
+            self.assertRegex(output, '^<body>bbb</body>$')
+        with self.assertLogs('mkdocs.livereload'):
+            (headers, _) = do_request(server, 'GET /foo/index.html/')
+        self.assertEqual(headers['_status'], '404 Not Found')
+
+----------
+
+
+
+Test Class Name: BuildTests

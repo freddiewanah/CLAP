@@ -1,0 +1,24 @@
+def assert_connector_streams_closed(self, conn):
+    for stream in conn.streams:
+        self.assertTrue(stream.closed)
+
+----------
+
+def test_two_family_timeout_after_connect_timeout(self):
+    (conn, future) = self.start_connect(self.addrinfo)
+    self.assert_pending((AF1, 'a'))
+    conn.on_connect_timeout()
+    self.connect_futures.pop((AF1, 'a'))
+    self.assertTrue(self.streams.pop('a').closed)
+    self.assert_pending()
+    conn.on_timeout()
+    self.assert_pending()
+    self.assertEqual(len(conn.streams), 1)
+    self.assert_connector_streams_closed(conn)
+    self.assertRaises(TimeoutError, future.result)
+
+----------
+
+
+
+Test Class Name: FakeStream

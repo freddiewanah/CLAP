@@ -1,0 +1,57 @@
+@app.after_server_stop
+def after_stop(app, loop):
+    log.info('TRIED EVERYTHING')
+
+----------
+
+def test_create_server_trigger_events(app):
+    """Test if create_server can trigger server events"""
+
+    def stop_on_alarm(signum, frame):
+        raise KeyboardInterrupt('...')
+    flag1 = False
+    flag2 = False
+    flag3 = False
+
+    async def stop(app, loop):
+        nonlocal flag1
+        flag1 = True
+
+    async def before_stop(app, loop):
+        nonlocal flag2
+        flag2 = True
+
+    async def after_stop(app, loop):
+        nonlocal flag3
+        flag3 = True
+    app.listener('after_server_start')(stop)
+    app.listener('before_server_stop')(before_stop)
+    app.listener('after_server_stop')(after_stop)
+    loop = asyncio.get_event_loop()
+    signal.signal(signal.SIGALRM, stop_on_alarm)
+    signal.alarm(1)
+    with closing(socket()) as sock:
+        sock.bind(('127.0.0.1', 0))
+        serv_coro = app.create_server(return_asyncio_server=True, sock=sock, debug=True)
+        serv_task = asyncio.ensure_future(serv_coro, loop=loop)
+        server = loop.run_until_complete(serv_task)
+        loop.run_until_complete(server.startup())
+        loop.run_until_complete(server.after_start())
+        try:
+            loop.run_forever()
+        except KeyboardInterrupt:
+            loop.stop()
+        finally:
+            loop.run_until_complete(server.before_stop())
+            close_task = server.close()
+            loop.run_until_complete(close_task)
+            for connection in server.connections:
+                connection.close_if_idle()
+            loop.run_until_complete(server.after_stop())
+        assert flag1 and flag2 and flag3
+
+----------
+
+
+
+Test Class Name: MySanicDb

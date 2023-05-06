@@ -1,0 +1,60 @@
+def process_request(self, request: Request, spider: Spider) -> Optional[Response]:
+    if request.meta.get('dont_cache', False):
+        return None
+    if not self.policy.should_cache_request(request):
+        request.meta['_dont_cache'] = True
+        return None
+    cachedresponse = self.storage.retrieve_response(spider, request)
+    if cachedresponse is None:
+        self.stats.inc_value('httpcache/miss', spider=spider)
+        if self.ignore_missing:
+            self.stats.inc_value('httpcache/ignore', spider=spider)
+            raise IgnoreRequest(f'Ignored request not in cache: {request}')
+        return None
+    cachedresponse.flags.append('cached')
+    if self.policy.is_cached_response_fresh(cachedresponse, request):
+        self.stats.inc_value('httpcache/hit', spider=spider)
+        return cachedresponse
+    request.meta['cached_response'] = cachedresponse
+    return None
+
+----------
+
+def test_cached_and_fresh(self):
+    sampledata = [(200, {'Date': self.yesterday, 'Expires': self.tomorrow}), (200, {'Date': self.yesterday, 'Cache-Control': 'max-age=86405'}), (200, {'Age': '299', 'Cache-Control': 'max-age=300'}), (200, {'Date': self.today, 'Age': '86405', 'Cache-Control': 'max-age=' + str(86400 * 3), 'Expires': self.yesterday, 'Last-Modified': self.yesterday}), (200, {'Date': self.yesterday, 'Age': '86400', 'Cache-Control': 'public', 'Expires': self.tomorrow, 'Last-Modified': self.yesterday}), (200, {'Expires': self.tomorrow}), (200, {'Date': self.today, 'Last-Modified': self.yesterday, 'Age': str(86400 / 10 - 1)}), (300, {}), (301, {}), (308, {})]
+    with self._middleware() as mw:
+        for (idx, (status, headers)) in enumerate(sampledata):
+            req0 = Request(f'http://example-{idx}.com')
+            res0 = Response(req0.url, status=status, headers=headers)
+            res1 = self._process_requestresponse(mw, req0, res0)
+            self.assertEqualResponse(res1, res0)
+            assert 'cached' not in res1.flags
+            res2 = self._process_requestresponse(mw, req0, None)
+            self.assertEqualResponse(res1, res2)
+            assert 'cached' in res2.flags
+            req1 = req0.replace(headers={'Cache-Control': 'max-age=0'})
+            res304 = res0.replace(status=304)
+            assert mw.process_request(req1, self.spider) is None
+            res3 = self._process_requestresponse(mw, req1, res304)
+            self.assertEqualResponse(res1, res3)
+            assert 'cached' in res3.flags
+
+----------
+
+def _process_requestresponse(self, mw, request, response):
+    result = None
+    try:
+        result = mw.process_request(request, self.spider)
+        if result:
+            assert isinstance(result, (Request, Response))
+            return result
+        result = mw.process_response(request, response, self.spider)
+        assert isinstance(result, Response)
+        return result
+    except Exception:
+        print('Request', request)
+        print('Response', response)
+        print('Result', result)
+        raise
+
+Test Class Name: RFC2616PolicyTest

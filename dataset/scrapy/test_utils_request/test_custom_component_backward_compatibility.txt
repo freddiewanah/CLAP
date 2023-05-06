@@ -1,0 +1,35 @@
+def fingerprint(self, request: Request):
+    return self._fingerprint(request)
+
+----------
+
+def test_custom_component_backward_compatibility(self):
+    """Tests that the backward-compatible request fingerprinting class featured
+        in the documentation is indeed backward compatible and does not cause a
+        warning to be logged."""
+
+    class RequestFingerprinter:
+        cache = WeakKeyDictionary()
+
+        def fingerprint(self, request):
+            if request not in self.cache:
+                fp = sha1()
+                fp.update(to_bytes(request.method))
+                fp.update(to_bytes(canonicalize_url(request.url)))
+                fp.update(request.body or b'')
+                self.cache[request] = fp.digest()
+            return self.cache[request]
+    for request_object in REQUEST_OBJECTS_TO_TEST:
+        with warnings.catch_warnings() as logged_warnings:
+            settings = {'REQUEST_FINGERPRINTER_CLASS': RequestFingerprinter}
+            crawler = get_crawler(settings_dict=settings)
+            fp = crawler.request_fingerprinter.fingerprint(request_object)
+        old_fp = request_fingerprint_2_6(request_object)
+        self.assertEqual(fp.hex(), old_fp)
+        self.assertFalse(logged_warnings)
+
+----------
+
+
+
+Test Class Name: BackwardCompatibilityTestCase

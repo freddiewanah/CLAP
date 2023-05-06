@@ -1,0 +1,24 @@
+def replace(self, *args, **kwargs) -> Request:
+    body_passed = kwargs.get('body', None) is not None
+    data = kwargs.pop('data', None)
+    data_passed = data is not None
+    if body_passed and data_passed:
+        warnings.warn('Both body and data passed. data will be ignored')
+    elif not body_passed and data_passed:
+        kwargs['body'] = self._dumps(data)
+    return super().replace(*args, **kwargs)
+
+----------
+
+def test_replace_data(self):
+    data1 = {'name1': 'value1'}
+    data2 = {'name2': 'value2'}
+    r1 = self.request_class(url='http://www.example.com/', data=data1)
+    r2 = r1.replace(data=data2)
+    self.assertEqual(r2.body, to_bytes(json.dumps(data2)))
+
+----------
+
+
+
+Test Class Name: JsonRequestTest

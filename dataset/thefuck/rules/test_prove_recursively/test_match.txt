@@ -1,0 +1,17 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, output', [('prove -lv t', output), ('prove app/t', output)])
+def test_match(isdir, script, output):
+    isdir.return_value = True
+    command = Command(script, output)
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

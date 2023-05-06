@@ -1,0 +1,24 @@
+def get_elements_by_attribute(attribute, value, html, escape_value=True):
+    """Return the content of the tag with the specified attribute in the passed HTML document"""
+    value = re.escape(value) if escape_value else value
+    retlist = []
+    for m in re.finditer('(?xs)\n        <([a-zA-Z0-9:._-]+)\n         (?:\\s+[a-zA-Z0-9:._-]+(?:=[a-zA-Z0-9:._-]*|="[^"]*"|=\'[^\']*\'|))*?\n         \\s+%s=[\'"]?%s[\'"]?\n         (?:\\s+[a-zA-Z0-9:._-]+(?:=[a-zA-Z0-9:._-]*|="[^"]*"|=\'[^\']*\'|))*?\n        \\s*>\n        (?P<content>.*?)\n        </\\1>\n    ' % (re.escape(attribute), value), html):
+        res = m.group('content')
+        if res.startswith('"') or res.startswith("'"):
+            res = res[1:-1]
+        retlist.append(unescapeHTML(res))
+    return retlist
+
+----------
+
+def test_get_elements_by_attribute(self):
+    html = '\n            <span class="foo bar">nice</span><span class="foo bar">also nice</span>\n        '
+    self.assertEqual(get_elements_by_attribute('class', 'foo bar', html), ['nice', 'also nice'])
+    self.assertEqual(get_elements_by_attribute('class', 'foo', html), [])
+    self.assertEqual(get_elements_by_attribute('class', 'no-such-foo', html), [])
+
+----------
+
+
+
+Test Class Name: TestUtil

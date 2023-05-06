@@ -1,0 +1,34 @@
+def do_request(server, content):
+    request = FakeRequest(content + ' HTTP/1.1')
+    server.RequestHandlerClass(request, ('127.0.0.1', 0), server)
+    response = request.out_file.getvalue()
+    (headers, _, content) = response.partition(b'\r\n\r\n')
+    (status, _, headers) = headers.partition(b'\r\n')
+    status = status.split(None, 1)[1].decode()
+    headers = email.message_from_bytes(headers)
+    headers['_status'] = status
+    return (headers, content.decode())
+
+----------
+
+@tempdir({'normal.html': '<html><body>hello</body></html>', 'no_body.html': '<p>hi', 'empty.html': '', 'multi_body.html': '<body>foo</body><body>bar</body>'})
+def test_serves_modified_html(self, site_dir):
+    with testing_server(site_dir) as server:
+        server.watch(site_dir)
+        (headers, output) = do_request(server, 'GET /normal.html')
+        self.assertRegex(output, f'^<html><body>hello{SCRIPT_REGEX}</body></html>$')
+        self.assertEqual(headers.get('content-type'), 'text/html')
+        self.assertEqual(headers.get('content-length'), str(len(output)))
+        (_, output) = do_request(server, 'GET /no_body.html')
+        self.assertRegex(output, f'^<p>hi{SCRIPT_REGEX}$')
+        (headers, output) = do_request(server, 'GET /empty.html')
+        self.assertRegex(output, f'^{SCRIPT_REGEX}$')
+        self.assertEqual(headers.get('content-length'), str(len(output)))
+        (_, output) = do_request(server, 'GET /multi_body.html')
+        self.assertRegex(output, f'^<body>foo</body><body>bar{SCRIPT_REGEX}</body>$')
+
+----------
+
+
+
+Test Class Name: BuildTests

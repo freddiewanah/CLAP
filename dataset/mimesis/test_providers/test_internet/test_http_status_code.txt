@@ -1,0 +1,21 @@
+def http_status_code(self) -> int:
+    """Get a random HTTP status code.
+
+        :return: HTTP status.
+
+        :Example:
+            200
+        """
+    return self.random.choice(HTTP_STATUS_CODES)
+
+----------
+
+def test_http_status_code(self, net):
+    result = net.http_status_code()
+    assert int(result) >= 100 and int(result) <= 511
+
+----------
+
+
+
+Test Class Name: TestInternet

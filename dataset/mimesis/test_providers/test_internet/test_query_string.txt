@@ -1,0 +1,20 @@
+def query_string(self, length: t.Optional[int]=None) -> str:
+    """Generate arbitrary query string of given length.
+
+        :param length: Length of query string.
+        :return: Query string.
+        """
+    return urllib.parse.urlencode(self.query_parameters(length))
+
+----------
+
+@pytest.mark.repeat(10)
+@pytest.mark.parametrize('length', [5, 10, 15])
+def test_query_string(self, net, length):
+    assert len(net.query_string(length).split('&')) == length
+
+----------
+
+
+
+Test Class Name: TestInternet

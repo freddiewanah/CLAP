@@ -1,0 +1,39 @@
+def to(t):
+    return {'device': t.device, 'dtype': t.dtype}
+
+----------
+
+def test_mask_for_xformers():
+    m_float_add = torch.tensor([float('-inf'), 0]).to(torch.float)
+    m_float_add_flipped = torch.tensor([0, float('-inf')]).to(torch.float)
+    m_float16_add = torch.tensor([float('-inf'), 0]).to(torch.float16)
+    m_float16_add_flipped = torch.tensor([0, float('-inf')]).to(torch.float16)
+    m_uint = torch.tensor([1, 0]).to(torch.uint8)
+    m_uint_flipped = torch.tensor([0, 1]).to(torch.uint8)
+    m_bool = torch.tensor([False, True])
+    assert torch.equal(_mask_for_xformers(m_float_add), m_float_add)
+    assert torch.equal(_mask_for_xformers(m_float16_add), m_float16_add)
+    assert torch.equal(_mask_for_xformers(m_uint), m_uint_flipped)
+    assert torch.equal(_mask_for_xformers(m_bool), ~m_bool)
+    assert torch.equal(_mask_for_xformers(m_float_add, to_dtype=torch.float16), m_float16_add)
+    assert torch.equal(_mask_for_xformers(m_float_add, to_dtype=torch.float), m_float_add)
+    assert torch.equal(_mask_for_xformers(m_float_add, to_dtype=torch.bool), m_bool)
+    assert torch.equal(_mask_for_xformers(m_float_add, to_dtype=torch.uint8), m_uint_flipped)
+    assert torch.equal(_mask_for_xformers(m_float16_add, to_dtype=torch.float16), m_float16_add)
+    assert torch.equal(_mask_for_xformers(m_float16_add, to_dtype=torch.float), m_float_add)
+    assert torch.equal(_mask_for_xformers(m_float16_add, to_dtype=torch.bool), m_bool)
+    assert torch.equal(_mask_for_xformers(m_float16_add, to_dtype=torch.uint8), m_uint_flipped)
+    assert torch.equal(_mask_for_xformers(m_bool, to_dtype=torch.float16), m_float16_add_flipped)
+    assert torch.equal(_mask_for_xformers(m_bool, to_dtype=torch.float), m_float_add_flipped)
+    assert torch.equal(_mask_for_xformers(m_bool, to_dtype=torch.bool), ~m_bool)
+    assert torch.equal(_mask_for_xformers(m_bool, to_dtype=torch.uint8), m_uint)
+    assert torch.equal(_mask_for_xformers(m_uint, to_dtype=torch.float16), m_float16_add)
+    assert torch.equal(_mask_for_xformers(m_uint, to_dtype=torch.float), m_float_add)
+    assert torch.equal(_mask_for_xformers(m_uint, to_dtype=torch.bool), m_bool)
+    assert torch.equal(_mask_for_xformers(m_uint, to_dtype=torch.uint8), m_uint_flipped)
+
+----------
+
+
+
+Test Class Name: default

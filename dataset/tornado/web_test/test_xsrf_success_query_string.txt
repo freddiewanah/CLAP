@@ -1,0 +1,16 @@
+def cookie_headers(self, token=None):
+    if token is None:
+        token = self.xsrf_token
+    return {'Cookie': '_xsrf=' + token}
+
+----------
+
+def test_xsrf_success_query_string(self):
+    response = self.fetch('/?' + urllib.parse.urlencode(dict(_xsrf=self.xsrf_token)), method='POST', body=b'', headers=self.cookie_headers())
+    self.assertEqual(response.code, 200)
+
+----------
+
+
+
+Test Class Name: Handler

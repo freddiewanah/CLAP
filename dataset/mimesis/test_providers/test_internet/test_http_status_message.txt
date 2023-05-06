@@ -1,0 +1,21 @@
+def http_status_message(self) -> str:
+    """Get a random HTTP status message.
+
+        :return: HTTP status message.
+
+        :Example:
+            200 OK
+        """
+    return self.random.choice(HTTP_STATUS_MSGS)
+
+----------
+
+def test_http_status_message(self, net):
+    result = net.http_status_message()
+    assert result in data.HTTP_STATUS_MSGS
+
+----------
+
+
+
+Test Class Name: TestInternet

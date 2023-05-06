@@ -1,0 +1,27 @@
+def run(self, terms, variables=None, **kwargs):
+    if not isinstance(terms, list):
+        terms = [terms]
+    results = []
+    for term in terms:
+        if not isinstance(term, Mapping):
+            raise AnsibleError('with_dict expects a dict')
+        results.extend(self._flatten_hash_to_list(term))
+    return results
+
+----------
+
+def test_lock_not_been_held(self):
+    password.os.path.exists = lambda x: x == to_bytes('/path/to/somewhere')
+    try:
+        with patch.object(builtins, 'open', mock_open(read_data=b'hunter42 salt=87654321\n')) as m:
+            results = self.password_lookup.run([u'/path/to/somewhere chars=anything'], None)
+    except AnsibleError:
+        self.fail('Lookup timeouts when lock is free')
+    for result in results:
+        self.assertEqual(result, u'hunter42')
+
+----------
+
+
+
+Test Class Name: TestLookupModuleWithoutPasslib

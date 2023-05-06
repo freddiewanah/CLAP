@@ -1,0 +1,32 @@
+def run(self, terms, variables=None, **kwargs):
+    if not isinstance(terms, list):
+        terms = [terms]
+    results = []
+    for term in terms:
+        if not isinstance(term, Mapping):
+            raise AnsibleError('with_dict expects a dict')
+        results.extend(self._flatten_hash_to_list(term))
+    return results
+
+----------
+
+@patch.object(PluginLoader, '_get_paths')
+@patch('ansible.plugins.lookup.password._write_password_file')
+def test_encrypt(self, mock_get_paths, mock_write_file):
+    mock_get_paths.return_value = ['/path/one', '/path/two', '/path/three']
+    results = self.password_lookup.run([u'/path/to/somewhere encrypt=pbkdf2_sha256'], None)
+    expected_password_length = 76
+    for result in results:
+        self.assertEqual(len(result), expected_password_length)
+        str_parts = result.split('$', 5)
+        crypt_parts = passlib.hash.pbkdf2_sha256.parsehash(result)
+        self.assertEqual(str_parts[1], 'pbkdf2-sha256')
+        self.assertEqual(len(str_parts), 5)
+        self.assertEqual(int(str_parts[2]), crypt_parts['rounds'])
+        self.assertIsInstance(result, text_type)
+
+----------
+
+
+
+Test Class Name: TestLookupModuleWithPasslib

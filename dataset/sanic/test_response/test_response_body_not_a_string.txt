@@ -1,0 +1,32 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.filterwarnings('ignore:Types other than str will be')
+def test_response_body_not_a_string(app):
+    """Test when a response body sent from the application is not a string"""
+    random_num = choice(range(1000))
+
+    @app.route('/hello')
+    async def hello_route(request: Request):
+        return text(random_num)
+    (request, response) = app.test_client.get('/hello')
+    assert response.status == 500
+    assert b'Internal Server Error' in response.body
+
+----------
+
+
+
+Test Class Name: default

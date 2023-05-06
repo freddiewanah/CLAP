@@ -1,0 +1,18 @@
+def dumps(self, *args, **kwargs):
+    if 'cls' not in kwargs:
+        kwargs['cls'] = _ExtendedEncoder
+    return Schema.dumps(self, *args, **kwargs)
+
+----------
+
+@pytest.mark.parametrize('obj, expected, expected_json', params)
+def test_serialize(obj, expected, expected_json):
+    s = obj.schema()
+    assert s.dump(obj) == expected
+    assert s.dumps(obj) == expected_json
+
+----------
+
+
+
+Test Class Name: C9

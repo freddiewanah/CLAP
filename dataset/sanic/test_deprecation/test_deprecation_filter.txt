@@ -1,0 +1,20 @@
+def deprecation(message: str, version: float):
+    version_info = f'[DEPRECATION v{version}] '
+    if is_atty():
+        version_info = f'{Colors.RED}{version_info}'
+        message = f'{Colors.YELLOW}{message}{Colors.END}'
+    warn(version_info + message, DeprecationWarning)
+
+----------
+
+@pytest.mark.parametrize('filter,expected', (('default', 1), ('once', 1), ('ignore', 0)))
+def test_deprecation_filter(app: Sanic, filter, expected, recwarn):
+    app.config.DEPRECATION_FILTER = filter
+    deprecation('hello', 9.9)
+    assert len(recwarn) == expected
+
+----------
+
+
+
+Test Class Name: default

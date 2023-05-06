@@ -1,0 +1,49 @@
+def add_task(self, task: Union[Future[Any], Coroutine[Any, Any, Any], Awaitable[Any]], *, name: Optional[str]=None, register: bool=True) -> Optional[Task[Any]]:
+    """
+        Schedule a task to run later, after the loop has started.
+        Different from asyncio.ensure_future in that it does not
+        also return a future, and the actual ensure_future call
+        is delayed until before server start.
+
+        `See user guide re: background tasks
+        <https://sanicframework.org/guide/basics/tasks.html#background-tasks>`__
+
+        :param task: future, coroutine or awaitable
+        """
+    try:
+        loop = self.loop
+        return self._loop_add_task(task, self, loop, name=name, register=register)
+    except SanicException:
+        task_name = f'sanic.delayed_task.{hash(task)}'
+        if not self._delayed_tasks:
+            self.after_server_start(partial(self.dispatch_delayed_tasks))
+        if name:
+            raise RuntimeError('Cannot name task outside of a running application')
+        self.signal(task_name)(partial(self.run_delayed_task, task=task))
+        self._delayed_tasks.append(task_name)
+        return None
+
+----------
+
+def test_named_task_called(app):
+    e = Event()
+
+    async def coro():
+        e.set()
+
+    @app.route('/')
+    async def isset(request):
+        await asyncio.sleep(0.05)
+        return text(str(e.is_set()))
+
+    @app.before_server_start
+    async def setup(app, _):
+        app.add_task(coro, name='dummy_task')
+    (request, response) = app.test_client.get('/')
+    assert response.body == b'True'
+
+----------
+
+
+
+Test Class Name: default

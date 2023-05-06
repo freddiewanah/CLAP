@@ -1,0 +1,56 @@
+@keras_export('keras.backend.ones')
+@tf.__internal__.dispatch.add_dispatch_support
+@doc_controls.do_not_generate_docs
+def ones(shape, dtype=None, name=None):
+    """Instantiates an all-ones variable and returns it.
+
+    Args:
+        shape: Tuple of integers, shape of returned Keras variable.
+        dtype: String, data type of returned Keras variable.
+        name: String, name of returned Keras variable.
+
+    Returns:
+        A Keras variable, filled with `1.0`.
+        Note that if `shape` was symbolic, we cannot return a variable,
+        and will return a dynamically-shaped tensor instead.
+
+    Example:
+
+
+    >>> kvar = tf.keras.backend.ones((3,4))
+    >>> tf.keras.backend.eval(kvar)
+    array([[1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.]], dtype=float32)
+
+    """
+    with tf.init_scope():
+        if dtype is None:
+            dtype = floatx()
+        tf_dtype = tf.as_dtype(dtype)
+        v = tf.ones(shape=shape, dtype=tf_dtype, name=name)
+        if py_all(v.shape.as_list()):
+            return variable(v, dtype=dtype, name=name)
+        return v
+
+----------
+
+@parameterized.named_parameters(('eager', False), ('defun', True))
+def test_training_arg_propagation(self, defun):
+    model = test_utils.get_model_from_layers([LayerWithTrainingArg()], input_shape=(1,))
+
+    def train_step(x):
+        return (model(x), model(x, training=False), model(x, training=True))
+    if defun:
+        train_step = tf.function(train_step)
+    x = tf.ones((1, 1))
+    results = train_step(x)
+    self.assertAllClose(results[0], tf.zeros((1, 1)))
+    self.assertAllClose(results[1], tf.zeros((1, 1)))
+    self.assertAllClose(results[2], tf.ones((1, 1)))
+
+----------
+
+
+
+Test Class Name: CustomTrainingLoopTest

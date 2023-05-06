@@ -1,0 +1,16 @@
+def validate(self, value: object) -> T:
+    return self.run_validation(value)
+
+----------
+
+def test_unrecognised_keys(self):
+    conf = defaults.MkDocsConfig()
+    conf.load_dict({'not_a_valid_config_option': 'test'})
+    (failed, warnings) = conf.validate()
+    self.assertEqual(warnings, [('not_a_valid_config_option', 'Unrecognised configuration name: not_a_valid_config_option')])
+
+----------
+
+
+
+Test Class Name: ConfigBaseTests

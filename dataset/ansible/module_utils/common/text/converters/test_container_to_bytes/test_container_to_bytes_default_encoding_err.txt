@@ -1,0 +1,31 @@
+def container_to_bytes(d, encoding='utf-8', errors='surrogate_or_strict'):
+    """ Recursively convert dict keys and values to byte str
+
+        Specialized for json return because this only handles, lists, tuples,
+        and dict container types (the containers that the json module returns)
+    """
+    if isinstance(d, text_type):
+        return to_bytes(d, encoding=encoding, errors=errors)
+    elif isinstance(d, dict):
+        return dict((container_to_bytes(o, encoding, errors) for o in iteritems(d)))
+    elif isinstance(d, list):
+        return [container_to_bytes(o, encoding, errors) for o in d]
+    elif isinstance(d, tuple):
+        return tuple((container_to_bytes(o, encoding, errors) for o in d))
+    else:
+        return d
+
+----------
+
+@pytest.mark.parametrize('test_input,expected', [({1: 1}, {1: 1}), ([1, 2], [1, 2]), ((1, 2), (1, 2)), (1, 1), (1.1, 1.1), (True, True), (None, None), (u'str', u'str'.encode(DEFAULT_ENCODING)), (u'くらとみ', u'くらとみ'.encode(DEFAULT_ENCODING)), (u'café', u'café'.encode(DEFAULT_ENCODING)), (b'str', u'str'.encode(DEFAULT_ENCODING)), (u'str', u'str'.encode(DEFAULT_ENCODING)), ([u'str'], [u'str'.encode(DEFAULT_ENCODING)]), (u'str', u'str'.encode(DEFAULT_ENCODING)), ({u'str': u'str'}, {u'str'.encode(DEFAULT_ENCODING): u'str'.encode(DEFAULT_ENCODING)})])
+def test_container_to_bytes_default_encoding_err(test_input, expected):
+    """
+    Test for passing objects to container_to_bytes(). Default encoding and errors
+    """
+    assert container_to_bytes(test_input, encoding=DEFAULT_ENCODING, errors=DEFAULT_ERR_HANDLER) == expected
+
+----------
+
+
+
+Test Class Name: default

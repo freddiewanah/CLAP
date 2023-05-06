@@ -1,0 +1,21 @@
+def cpu_codename(self) -> str:
+    """Get a random CPU code name.
+
+        :return: CPU code name.
+
+        :Example:
+            Cannonlake.
+        """
+    return self.random.choice(CPU_CODENAMES)
+
+----------
+
+def test_cpu_codename(self, hard):
+    result = hard.cpu_codename()
+    assert result in CPU_CODENAMES
+
+----------
+
+
+
+Test Class Name: TestHardware

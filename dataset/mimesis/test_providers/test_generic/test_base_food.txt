@@ -1,0 +1,21 @@
+def fruit(self) -> str:
+    """Get a random fruit or berry.
+
+        :return: Fruit name.
+
+        :Example:
+            Banana.
+        """
+    return self._choice_from('fruits')
+
+----------
+
+def test_base_food(self, generic):
+    result = generic.food.fruit()
+    assert result is not None
+
+----------
+
+
+
+Test Class Name: TestGeneric

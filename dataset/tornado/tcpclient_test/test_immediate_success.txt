@@ -1,0 +1,23 @@
+def resolve_connect(self, af, addr, success):
+    future = self.connect_futures.pop((af, addr))
+    if success:
+        future.set_result(self.streams[addr])
+    else:
+        self.streams.pop(addr)
+        future.set_exception(IOError())
+    self.io_loop.add_callback(self.stop)
+    self.wait()
+
+----------
+
+def test_immediate_success(self):
+    (conn, future) = self.start_connect(self.addrinfo)
+    self.assertEqual(list(self.connect_futures.keys()), [(AF1, 'a')])
+    self.resolve_connect(AF1, 'a', True)
+    self.assertEqual(future.result(), (AF1, 'a', self.streams['a']))
+
+----------
+
+
+
+Test Class Name: FakeStream

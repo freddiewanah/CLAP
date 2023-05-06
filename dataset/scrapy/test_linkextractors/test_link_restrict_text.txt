@@ -1,0 +1,40 @@
+def extract_links(self, response):
+    """Returns a list of :class:`~scrapy.link.Link` objects from the
+        specified :class:`response <scrapy.http.Response>`.
+
+        Only links that match the settings passed to the ``__init__`` method of
+        the link extractor are returned.
+
+        Duplicate links are omitted if the ``unique`` attribute is set to ``True``,
+        otherwise they are returned.
+        """
+    base_url = get_base_url(response)
+    if self.restrict_xpaths:
+        docs = [subdoc for x in self.restrict_xpaths for subdoc in response.xpath(x)]
+    else:
+        docs = [response.selector]
+    all_links = []
+    for doc in docs:
+        links = self._extract_links(doc, response.url, response.encoding, base_url)
+        all_links.extend(self._process_links(links))
+    if self.link_extractor.unique:
+        return unique_list(all_links)
+    return all_links
+
+----------
+
+def test_link_restrict_text(self):
+    html = b'\n        <a href="http://example.org/item1.html">Pic of a cat</a>\n        <a href="http://example.org/item2.html">Pic of a dog</a>\n        <a href="http://example.org/item3.html">Pic of a cow</a>\n        '
+    response = HtmlResponse('http://example.org/index.html', body=html)
+    lx = self.extractor_cls(restrict_text='dog')
+    self.assertEqual([link for link in lx.extract_links(response)], [Link(url='http://example.org/item2.html', text='Pic of a dog', nofollow=False)])
+    lx = self.extractor_cls(restrict_text='of.*dog')
+    self.assertEqual([link for link in lx.extract_links(response)], [Link(url='http://example.org/item2.html', text='Pic of a dog', nofollow=False)])
+    lx = self.extractor_cls(restrict_text=['of.*dog', 'of.*cat'])
+    self.assertEqual([link for link in lx.extract_links(response)], [Link(url='http://example.org/item1.html', text='Pic of a cat', nofollow=False), Link(url='http://example.org/item2.html', text='Pic of a dog', nofollow=False)])
+
+----------
+
+
+
+Test Class Name: LxmlLinkExtractorTestCase

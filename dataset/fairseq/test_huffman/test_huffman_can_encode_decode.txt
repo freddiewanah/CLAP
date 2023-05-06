@@ -1,0 +1,26 @@
+def get_symbols(self, i):
+    nodes = self._decode(i)
+    for n in nodes:
+        yield n.symbol
+
+----------
+
+def test_huffman_can_encode_decode(self):
+    data = make_data()
+    builder = make_code_builder(data)
+    coder = builder.build_code()
+    with TemporaryDirectory() as dirname:
+        prefix = os.path.join(dirname, 'test1')
+        build_dataset(prefix, data, coder)
+        dataset = HuffmanMMapIndexedDataset(prefix)
+        self.assertEqual(len(dataset), len(data))
+        decoded = [list(dataset.get_symbols(i)) for i in range(0, len(dataset))]
+        self.assertEqual(decoded, data)
+        data_sizes = [i.item() for i in dataset.sizes]
+        self.assertEqual(data_sizes, sizes(data))
+
+----------
+
+
+
+Test Class Name: TestHuffmanDataset

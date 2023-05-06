@@ -1,0 +1,15 @@
+def compat_struct_unpack(spec, *args):
+    if isinstance(spec, compat_str):
+        spec = spec.encode('ascii')
+    return struct.unpack(spec, *args)
+
+----------
+
+def test_compat_struct_unpack(self):
+    self.assertEqual(compat_struct_unpack('!B', b'\x00'), (0,))
+
+----------
+
+
+
+Test Class Name: TestCompat

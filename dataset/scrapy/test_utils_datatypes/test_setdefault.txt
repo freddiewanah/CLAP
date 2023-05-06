@@ -1,0 +1,19 @@
+def setdefault(self, key, def_val=None):
+    return dict.setdefault(self, self.normkey(key), self.normvalue(def_val))
+
+----------
+
+def test_setdefault(self):
+    d = CaselessDict({'a': 1, 'b': 2})
+    r = d.setdefault('A', 5)
+    self.assertEqual(r, 1)
+    self.assertEqual(d['A'], 1)
+    r = d.setdefault('c', 5)
+    self.assertEqual(r, 5)
+    self.assertEqual(d['C'], 5)
+
+----------
+
+
+
+Test Class Name: MyMutableMapping

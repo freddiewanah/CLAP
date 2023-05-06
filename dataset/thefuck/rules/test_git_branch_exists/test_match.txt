@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, src_branch_name, branch_name', [('git branch foo', 'foo', 'foo'), ('git checkout bar', 'bar', 'bar'), ('git checkout -b "let\'s-push-this"', '"let\'s-push-this"', '"let\'s-push-this"')])
+def test_match(output, script, branch_name):
+    assert match(Command(script, output))
+
+----------
+
+
+
+Test Class Name: default

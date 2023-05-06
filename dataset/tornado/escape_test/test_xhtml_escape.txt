@@ -1,0 +1,17 @@
+def xhtml_unescape(value: Union[str, bytes]) -> str:
+    """Un-escapes an XML-escaped string."""
+    return re.sub('&(#?)(\\w+?);', _convert_entity, _unicode(value))
+
+----------
+
+def test_xhtml_escape(self):
+    tests = [('<foo>', '&lt;foo&gt;'), ('<foo>', '&lt;foo&gt;'), (b'<foo>', b'&lt;foo&gt;'), ('<>&"\'', '&lt;&gt;&amp;&quot;&#39;'), ('&amp;', '&amp;amp;'), ('<é>', '&lt;é&gt;'), (b'<\xc3\xa9>', b'&lt;\xc3\xa9&gt;')]
+    for (unescaped, escaped) in tests:
+        self.assertEqual(utf8(xhtml_escape(unescaped)), utf8(escaped))
+        self.assertEqual(utf8(unescaped), utf8(xhtml_unescape(escaped)))
+
+----------
+
+
+
+Test Class Name: EscapeTestCase

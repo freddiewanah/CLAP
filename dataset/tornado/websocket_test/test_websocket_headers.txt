@@ -1,0 +1,20 @@
+def get_http_port(self) -> int:
+    """Returns the port used by the server.
+
+        A new port is chosen for each test.
+        """
+    return self.__port
+
+----------
+
+@gen_test
+def test_websocket_headers(self):
+    ws = (yield websocket_connect(HTTPRequest('ws://127.0.0.1:%d/header' % self.get_http_port(), headers={'X-Test': 'hello'})))
+    response = (yield ws.read_message())
+    self.assertEqual(response, 'hello')
+
+----------
+
+
+
+Test Class Name: WebSocketTest

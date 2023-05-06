@@ -1,0 +1,20 @@
+def hash(self, secret, salt=None, salt_size=None, rounds=None, ident=None):
+    salt = self._salt(salt, salt_size)
+    rounds = self._rounds(rounds)
+    ident = self._ident(ident)
+    return self._hash(secret, salt, rounds, ident)
+
+----------
+
+@pytest.mark.skipif(not encrypt.PASSLIB_AVAILABLE, reason='passlib must be installed to run this test')
+def test_encrypt_default_rounds():
+    assert_hash('$1$12345678$tRy4cXc3kmcfRZVj4iFXr/', secret='123', algorithm='md5_crypt', salt='12345678')
+    assert_hash('$5$rounds=535000$12345678$uy3TurUPaY71aioJi58HvUY8jkbhSQU8HepbyaNngv.', secret='123', algorithm='sha256_crypt', salt='12345678')
+    assert_hash('$6$rounds=656000$12345678$InMy49UwxyCh2pGJU1NpOhVSElDDzKeyuC6n6E9O34BCUGVNYADnI.rcA3m.Vro9BiZpYmjEoNhpREqQcbvQ80', secret='123', algorithm='sha512_crypt', salt='12345678')
+    assert encrypt.PasslibHash('md5_crypt').hash('123')
+
+----------
+
+
+
+Test Class Name: passlib_off

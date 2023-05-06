@@ -1,0 +1,15 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+@patch('ansible.parsing.vault.display.prompt', side_effect=EOFError)
+def test_prompt_eoferror(self, mock_display_prompt):
+    secret = vault.PromptVaultSecret(vault_id='test_id')
+    self.assertRaisesRegex(vault.AnsibleVaultError, 'EOFError.*test_id', secret.load)
+
+----------
+
+
+
+Test Class Name: TestPromptVaultSecret

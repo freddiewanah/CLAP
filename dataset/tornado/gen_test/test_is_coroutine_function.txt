@@ -1,0 +1,25 @@
+def is_coroutine_function(func: Any) -> bool:
+    """Return whether *func* is a coroutine function, i.e. a function
+    wrapped with `~.gen.coroutine`.
+
+    .. versionadded:: 4.5
+    """
+    return getattr(func, '__tornado_coroutine__', False)
+
+----------
+
+def test_is_coroutine_function(self):
+    self.finished = True
+
+    def f():
+        yield gen.moment
+    coro = gen.coroutine(f)
+    self.assertFalse(gen.is_coroutine_function(f))
+    self.assertTrue(gen.is_coroutine_function(coro))
+    self.assertFalse(gen.is_coroutine_function(coro()))
+
+----------
+
+
+
+Test Class Name: GenCoroutineTest

@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_match():
+    assert match(Command('cs', 'cs: command not found'))
+    assert match(Command('cs /etc/', 'cs: command not found'))
+
+----------
+
+
+
+Test Class Name: default

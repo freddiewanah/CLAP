@@ -1,0 +1,23 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_default(self) -> None:
+
+    class Sub(Config):
+        opt = c.Type(int)
+
+    class Schema(Config):
+        sub = c.ListOfItems(c.SubConfig(Sub), default=[])
+    conf = self.get_config(Schema, {})
+    assert_type(conf.sub, List[Sub])
+    self.assertEqual(conf.sub, [])
+    with self.expect_error(sub='Required configuration not provided.'):
+        conf = self.get_config(Schema, {'sub': None})
+
+----------
+
+
+
+Test Class Name: default

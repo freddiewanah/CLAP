@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_return_function(self):
+    jsi = JSInterpreter('\n        function x() { return [1, function(){return 1}][1] }\n        ')
+    self.assertEqual(jsi.call_function('x')([]), 1)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

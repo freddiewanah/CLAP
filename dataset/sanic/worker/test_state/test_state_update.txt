@@ -1,0 +1,19 @@
+def update(self, mapping: MappingType[str, Any]) -> None:
+    if any((k in self.RESTRICTED for k in mapping.keys())):
+        self._write_error([k for k in mapping.keys() if k in self.RESTRICTED])
+    self._state[self._name] = {**self._state[self._name], **mapping}
+
+----------
+
+def test_state_update():
+    state = gen_state()
+    assert len(state) == 0
+    state.update({'nine': 9})
+    assert len(state) == 1
+    assert state['nine'] == 9
+
+----------
+
+
+
+Test Class Name: default

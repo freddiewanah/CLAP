@@ -1,0 +1,22 @@
+def strip_or_none(v, default=None):
+    return v.strip() if isinstance(v, compat_str) else default
+
+----------
+
+def test_strip_or_none(self):
+    self.assertEqual(strip_or_none(' abc'), 'abc')
+    self.assertEqual(strip_or_none('abc '), 'abc')
+    self.assertEqual(strip_or_none(' abc '), 'abc')
+    self.assertEqual(strip_or_none('\tabc\t'), 'abc')
+    self.assertEqual(strip_or_none('\n\tabc\n\t'), 'abc')
+    self.assertEqual(strip_or_none('abc'), 'abc')
+    self.assertEqual(strip_or_none(''), '')
+    self.assertEqual(strip_or_none(None), None)
+    self.assertEqual(strip_or_none(42), None)
+    self.assertEqual(strip_or_none([]), None)
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,75 @@
+def define(self, name: str, default: Any=None, type: Optional[type]=None, help: Optional[str]=None, metavar: Optional[str]=None, multiple: bool=False, group: Optional[str]=None, callback: Optional[Callable[[Any], None]]=None) -> None:
+    """Defines a new command line option.
+
+        ``type`` can be any of `str`, `int`, `float`, `bool`,
+        `~datetime.datetime`, or `~datetime.timedelta`. If no ``type``
+        is given but a ``default`` is, ``type`` is the type of
+        ``default``. Otherwise, ``type`` defaults to `str`.
+
+        If ``multiple`` is True, the option value is a list of ``type``
+        instead of an instance of ``type``.
+
+        ``help`` and ``metavar`` are used to construct the
+        automatically generated command line help string. The help
+        message is formatted like::
+
+           --name=METAVAR      help string
+
+        ``group`` is used to group the defined options in logical
+        groups. By default, command line options are grouped by the
+        file in which they are defined.
+
+        Command line option names must be unique globally.
+
+        If a ``callback`` is given, it will be run with the new value whenever
+        the option is changed.  This can be used to combine command-line
+        and file-based options::
+
+            define("config", type=str, help="path to config file",
+                   callback=lambda path: parse_config_file(path, final=False))
+
+        With this definition, options in the file specified by ``--config`` will
+        override options set earlier on the command line, but can be overridden
+        by later flags.
+
+        """
+    normalized = self._normalize_name(name)
+    if normalized in self._options:
+        raise Error('Option %r already defined in %s' % (normalized, self._options[normalized].file_name))
+    frame = sys._getframe(0)
+    if frame is not None:
+        options_file = frame.f_code.co_filename
+        if frame.f_back is not None and frame.f_back.f_code.co_filename == options_file and (frame.f_back.f_code.co_name == 'define'):
+            frame = frame.f_back
+        assert frame.f_back is not None
+        file_name = frame.f_back.f_code.co_filename
+    else:
+        file_name = '<unknown>'
+    if file_name == options_file:
+        file_name = ''
+    if type is None:
+        if not multiple and default is not None:
+            type = default.__class__
+        else:
+            type = str
+    if group:
+        group_name = group
+    else:
+        group_name = file_name
+    option = _Option(name, file_name=file_name, default=default, type=type, help=help, metavar=metavar, multiple=multiple, group_name=group_name, callback=callback)
+    self._options[normalized] = option
+
+----------
+
+def test_error_redefine(self):
+    options = OptionParser()
+    options.define('foo')
+    with self.assertRaises(Error) as cm:
+        options.define('foo')
+    self.assertRegex(str(cm.exception), 'Option.*foo.*already defined')
+
+----------
+
+
+
+Test Class Name: OptionsTest

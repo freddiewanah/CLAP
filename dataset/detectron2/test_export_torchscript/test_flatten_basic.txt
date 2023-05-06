@@ -1,0 +1,36 @@
+def flatten_to_tuple(obj):
+    """
+    Flatten an object so it can be used for PyTorch tracing.
+    Also returns how to rebuild the original object from the flattened outputs.
+
+    Returns:
+        res (tuple): the flattened results that can be used as tracing outputs
+        schema: an object with a ``__call__`` method such that ``schema(res) == obj``.
+             It is a pure dataclass that can be serialized.
+    """
+    schemas = [((str, bytes), IdentitySchema), (list, ListSchema), (tuple, TupleSchema), (collections.abc.Mapping, DictSchema), (Instances, InstancesSchema), ((Boxes, ROIMasks), TensorWrapSchema)]
+    for (klass, schema) in schemas:
+        if isinstance(obj, klass):
+            F = schema
+            break
+    else:
+        F = IdentitySchema
+    return F.flatten(obj)
+
+----------
+
+def test_flatten_basic(self):
+    obj = [3, ([5, 6], {'name': [7, 9], 'name2': 3})]
+    (res, schema) = flatten_to_tuple(obj)
+    self.assertEqual(res, (3, 5, 6, 7, 9, 3))
+    new_obj = schema(res)
+    self.assertEqual(new_obj, obj)
+    (_, new_schema) = flatten_to_tuple(new_obj)
+    self.assertEqual(schema, new_schema)
+    self._check_schema(schema)
+
+----------
+
+
+
+Test Class Name: default

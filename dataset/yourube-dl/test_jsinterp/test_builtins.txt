@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_builtins(self):
+    jsi = JSInterpreter('\n        function x() { return NaN }\n        ')
+    self.assertTrue(math.isnan(jsi.call_function('x')))
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

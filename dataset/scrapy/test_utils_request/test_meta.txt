@@ -1,0 +1,33 @@
+def fingerprint(self, request: Request):
+    return self._fingerprint(request)
+
+----------
+
+def test_meta(self):
+
+    class RequestFingerprinter:
+
+        def fingerprint(self, request):
+            if 'fingerprint' in request.meta:
+                return request.meta['fingerprint']
+            return fingerprint(request)
+    settings = {'REQUEST_FINGERPRINTER_CLASS': RequestFingerprinter}
+    crawler = get_crawler(settings_dict=settings)
+    r1 = Request('http://www.example.com')
+    fp1 = crawler.request_fingerprinter.fingerprint(r1)
+    r2 = Request('http://www.example.com', meta={'fingerprint': 'a'})
+    fp2 = crawler.request_fingerprinter.fingerprint(r2)
+    r3 = Request('http://www.example.com', meta={'fingerprint': 'a'})
+    fp3 = crawler.request_fingerprinter.fingerprint(r3)
+    r4 = Request('http://www.example.com', meta={'fingerprint': 'b'})
+    fp4 = crawler.request_fingerprinter.fingerprint(r4)
+    self.assertNotEqual(fp1, fp2)
+    self.assertNotEqual(fp1, fp4)
+    self.assertNotEqual(fp2, fp4)
+    self.assertEqual(fp2, fp3)
+
+----------
+
+
+
+Test Class Name: RequestFingerprinter

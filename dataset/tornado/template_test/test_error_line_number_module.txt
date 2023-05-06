@@ -1,0 +1,32 @@
+def generate(self, **kwargs: Any) -> bytes:
+    """Generate this template with the given arguments."""
+    namespace = {'escape': escape.xhtml_escape, 'xhtml_escape': escape.xhtml_escape, 'url_escape': escape.url_escape, 'json_encode': escape.json_encode, 'squeeze': escape.squeeze, 'linkify': escape.linkify, 'datetime': datetime, '_tt_utf8': escape.utf8, '_tt_string_types': (unicode_type, bytes), '__name__': self.name.replace('.', '_'), '__loader__': ObjectDict(get_source=lambda name: self.code)}
+    namespace.update(self.namespace)
+    namespace.update(kwargs)
+    exec_in(self.compiled, namespace)
+    execute = typing.cast(Callable[[], bytes], namespace['_tt_execute'])
+    linecache.clearcache()
+    return execute()
+
+----------
+
+def test_error_line_number_module(self):
+    loader = None
+
+    def load_generate(path, **kwargs):
+        assert loader is not None
+        return loader.load(path).generate(**kwargs)
+    loader = DictLoader({'base.html': "{% module Template('sub.html') %}", 'sub.html': '{{1/0}}'}, namespace={'_tt_modules': ObjectDict(Template=load_generate)})
+    try:
+        loader.load('base.html').generate()
+        self.fail('did not get expected exception')
+    except ZeroDivisionError:
+        exc_stack = traceback.format_exc()
+        self.assertTrue('# base.html:1' in exc_stack)
+        self.assertTrue('# sub.html:1' in exc_stack)
+
+----------
+
+
+
+Test Class Name: StackTraceTest

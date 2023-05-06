@@ -1,0 +1,27 @@
+@git_support
+def get_new_command(command):
+    command_parts = command.script_parts[:]
+    upstream_option_index = _get_upstream_option_index(command_parts)
+    if upstream_option_index is not None:
+        command_parts.pop(upstream_option_index)
+        if len(command_parts) > upstream_option_index:
+            command_parts.pop(upstream_option_index)
+    else:
+        push_idx = command_parts.index('push') + 1
+        while len(command_parts) > push_idx and command_parts[len(command_parts) - 1][0] != '-':
+            command_parts.pop(len(command_parts) - 1)
+    arguments = re.findall('git push (.*)', command.output)[-1].replace("'", "\\'").strip()
+    return replace_argument(' '.join(command_parts), 'push', 'push {}'.format(arguments))
+
+----------
+
+def test_get_new_command(composer_not_command, composer_not_command_one_of_this, composer_require_instead_of_install):
+    assert get_new_command(Command('composer udpate', composer_not_command)) == 'composer update'
+    assert get_new_command(Command('composer pdate', composer_not_command_one_of_this)) == 'composer selfupdate'
+    assert get_new_command(Command('composer install package', composer_require_instead_of_install)) == 'composer require package'
+
+----------
+
+
+
+Test Class Name: default

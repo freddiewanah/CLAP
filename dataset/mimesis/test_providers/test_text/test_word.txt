@@ -1,0 +1,21 @@
+def word(self) -> str:
+    """Get a random word.
+
+        :return: Single word.
+
+        :Example:
+            Science.
+        """
+    return self.words(quantity=1)[0]
+
+----------
+
+def test_word(self, text):
+    result = text.word()
+    assert result in text._data['words']['normal']
+
+----------
+
+
+
+Test Class Name: TestText

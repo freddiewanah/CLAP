@@ -1,0 +1,28 @@
+def find_unresolved_requires(collector_names, all_fact_subsets):
+    """Find any collector names that have unresolved requires
+
+    Returns a list of collector names that correspond to collector
+    classes whose .requires_facts() are not in collector_names.
+    """
+    unresolved = set()
+    for collector_name in collector_names:
+        required_facts = _get_requires_by_collector_name(collector_name, all_fact_subsets)
+        for required_fact in required_facts:
+            if required_fact not in collector_names:
+                unresolved.add(required_fact)
+    return unresolved
+
+----------
+
+def test_resolved(self):
+    names = ['network', 'virtual', 'env', 'platform', 'distribution']
+    all_fact_subsets = {'env': [default_collectors.EnvFactCollector], 'network': [default_collectors.LinuxNetworkCollector], 'distribution': [default_collectors.DistributionFactCollector], 'platform': [default_collectors.PlatformFactCollector], 'virtual': [default_collectors.LinuxVirtualCollector]}
+    res = collector.find_unresolved_requires(names, all_fact_subsets)
+    self.assertIsInstance(res, set)
+    self.assertEqual(res, set())
+
+----------
+
+
+
+Test Class Name: TestFindUnresolvedRequires

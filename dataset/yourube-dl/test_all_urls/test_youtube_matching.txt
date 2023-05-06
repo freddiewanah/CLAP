@@ -1,0 +1,21 @@
+@classmethod
+def suitable(cls, url):
+    if parse_qs(url).get('list', [None])[0]:
+        return False
+    return super(YoutubeIE, cls).suitable(url)
+
+----------
+
+def test_youtube_matching(self):
+    self.assertTrue(YoutubeIE.suitable('PLtS2H6bU1M'))
+    self.assertFalse(YoutubeIE.suitable('https://www.youtube.com/watch?v=AV6J6_AeFEQ&playnext=1&list=PL4023E734DA416012'))
+    self.assertMatch('http://youtu.be/BaW_jenozKc', ['youtube'])
+    self.assertMatch('http://www.youtube.com/v/BaW_jenozKc', ['youtube'])
+    self.assertMatch('https://youtube.googleapis.com/v/BaW_jenozKc', ['youtube'])
+    self.assertMatch('http://www.cleanvideosearch.com/media/action/yt/watch?videoId=8v_4O44sfjM', ['youtube'])
+
+----------
+
+
+
+Test Class Name: TestAllURLsMatching

@@ -1,0 +1,30 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_shorthand_routes_put(app):
+
+    @app.put('/put')
+    def handler(request):
+        return text('OK')
+    (request, response) = app.test_client.put('/put')
+    assert response.text == 'OK'
+    (request, response) = app.test_client.get('/put')
+    assert response.status == 405
+
+----------
+
+
+
+Test Class Name: default

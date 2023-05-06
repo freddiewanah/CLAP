@@ -1,0 +1,26 @@
+def get_http_port(self) -> int:
+    """Returns the port used by the server.
+
+        A new port is chosen for each test.
+        """
+    return self.__port
+
+----------
+
+@gen_test
+def test_timeout(self):
+    stream = IOStream(socket.socket())
+    try:
+        yield stream.connect(('127.0.0.1', self.get_http_port()))
+        stream.write(b'PUT /streaming?body_timeout=0.1 HTTP/1.0\r\nContent-Length: 42\r\n\r\n')
+        with ExpectLog(gen_log, 'Timeout reading body', level=logging.INFO):
+            response = (yield stream.read_until_close())
+        self.assertEqual(response, b'')
+    finally:
+        stream.close()
+
+----------
+
+
+
+Test Class Name: StreamingHandler

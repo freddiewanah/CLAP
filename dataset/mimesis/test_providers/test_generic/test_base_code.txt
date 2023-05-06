@@ -1,0 +1,26 @@
+def isbn(self, fmt: t.Optional[ISBNFormat]=None, locale: Locale=Locale.DEFAULT) -> str:
+    """Generate ISBN for current locale.
+
+        To change ISBN format, pass parameter ``code`` with needed value of
+        the enum object :class:`~mimesis.enums.ISBNFormat`
+
+        :param fmt: ISBN format.
+        :param locale: Locale code.
+        :return: ISBN.
+        :raises NonEnumerableError: if code is not enum ISBNFormat.
+        """
+    fmt_value = self.validate_enum(item=fmt, enum=ISBNFormat)
+    mask = ISBN_MASKS[fmt_value].format(ISBN_GROUPS[locale.value])
+    return self.random.custom_code(mask)
+
+----------
+
+def test_base_code(self, generic):
+    result = generic.code.isbn()
+    assert result is not None
+
+----------
+
+
+
+Test Class Name: TestGeneric

@@ -1,0 +1,23 @@
+def alphabet(self, lower_case: bool=False) -> t.List[str]:
+    """Get an alphabet for current locale.
+
+        :param lower_case: Return alphabet in lower case.
+        :return: Alphabet.
+        """
+    case = 'uppercase' if not lower_case else 'lowercase'
+    alpha: t.List[str] = self.extract(['alphabet', case])
+    return alpha
+
+----------
+
+@pytest.mark.parametrize('case', [True, False])
+def test_alphabet(self, text, case):
+    result = text.alphabet(lower_case=case)
+    assert result is not None
+    assert isinstance(result, list)
+
+----------
+
+
+
+Test Class Name: TestText

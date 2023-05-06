@@ -1,0 +1,29 @@
+@abstractmethod
+def next_request(self) -> Optional[Request]:
+    """
+        Return the next :class:`~scrapy.http.Request` to be processed, or ``None``
+        to indicate that there are no requests to be considered ready at the moment.
+
+        Returning ``None`` implies that no request from the scheduler will be sent
+        to the downloader in the current reactor cycle. The engine will continue
+        calling ``next_request`` until ``has_pending_requests`` is ``False``.
+        """
+    raise NotImplementedError()
+
+----------
+
+def test_dequeue_priorities(self):
+    for (url, priority) in _PRIORITIES:
+        self.scheduler.enqueue_request(Request(url, priority=priority))
+    self.close_scheduler()
+    self.create_scheduler()
+    priorities = []
+    while self.scheduler.has_pending_requests():
+        priorities.append(self.scheduler.next_request().priority)
+    self.assertEqual(priorities, sorted([x[1] for x in _PRIORITIES], key=lambda x: -x))
+
+----------
+
+
+
+Test Class Name: BaseSchedulerOnDiskTester

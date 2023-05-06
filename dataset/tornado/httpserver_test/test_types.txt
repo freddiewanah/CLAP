@@ -1,0 +1,23 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_types(self):
+    headers = {'Cookie': 'foo=bar'}
+    response = self.fetch('/typecheck?foo=bar', headers=headers)
+    data = json_decode(response.body)
+    self.assertEqual(data, {})
+    response = self.fetch('/typecheck', method='POST', body='foo=bar', headers=headers)
+    data = json_decode(response.body)
+    self.assertEqual(data, {})
+
+----------
+
+
+
+Test Class Name: HTTPServerTest

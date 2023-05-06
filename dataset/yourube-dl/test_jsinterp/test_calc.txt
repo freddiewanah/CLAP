@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_calc(self):
+    jsi = JSInterpreter('function x4(a){return 2*a+1;}')
+    self.assertEqual(jsi.call_function('x4', 3), 7)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

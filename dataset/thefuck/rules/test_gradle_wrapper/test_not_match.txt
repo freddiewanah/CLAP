@@ -1,0 +1,17 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command, gradlew, which', [(Command('gradle tasks', 'gradle: not found'), False, None), (Command('gradle tasks', 'command not found'), True, '/usr/bin/gradle'), (Command('npm tasks', 'npm: not found'), True, None)])
+def test_not_match(mocker, exists, command, gradlew, which):
+    mocker.patch('thefuck.rules.gradle_wrapper.which', return_value=which)
+    exists.return_value = gradlew
+    assert not match(command)
+
+----------
+
+
+
+Test Class Name: default

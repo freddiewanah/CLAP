@@ -1,0 +1,22 @@
+def get_theme_dir(name: str) -> str:
+    """Return the directory of an installed theme by name."""
+    theme = get_themes()[name]
+    return os.path.dirname(os.path.abspath(theme.load().__file__))
+
+----------
+
+@mock.patch('mkdocs.utils.entry_points', autospec=True)
+def test_get_theme_dir(self, mock_iter):
+    path = 'some/path'
+    theme = mock.Mock()
+    theme.name = 'mkdocs2'
+    theme.dist.name = 'mkdocs2'
+    theme.load().__file__ = os.path.join(path, '__init__.py')
+    mock_iter.return_value = [theme]
+    self.assertEqual(utils.get_theme_dir(theme.name), os.path.abspath(path))
+
+----------
+
+
+
+Test Class Name: UtilsTests

@@ -1,0 +1,28 @@
+def get_cfg() -> CfgNode:
+    """
+    Get a copy of the default config.
+
+    Returns:
+        a detectron2 CfgNode instance.
+    """
+    from .defaults import _C
+    return _C.clone()
+
+----------
+
+def test_default_anchor_generator(self):
+    cfg = get_cfg()
+    cfg.MODEL.ANCHOR_GENERATOR.SIZES = [[32, 64]]
+    cfg.MODEL.ANCHOR_GENERATOR.ASPECT_RATIOS = [[0.25, 1, 4]]
+    anchor_generator = DefaultAnchorGenerator(cfg, [ShapeSpec(stride=4)])
+    num_images = 2
+    features = {'stage3': torch.rand(num_images, 96, 1, 2)}
+    anchors = anchor_generator([features['stage3']])
+    expected_anchor_tensor = torch.tensor([[-32.0, -8.0, 32.0, 8.0], [-16.0, -16.0, 16.0, 16.0], [-8.0, -32.0, 8.0, 32.0], [-64.0, -16.0, 64.0, 16.0], [-32.0, -32.0, 32.0, 32.0], [-16.0, -64.0, 16.0, 64.0], [-28.0, -8.0, 36.0, 8.0], [-12.0, -16.0, 20.0, 16.0], [-4.0, -32.0, 12.0, 32.0], [-60.0, -16.0, 68.0, 16.0], [-28.0, -32.0, 36.0, 32.0], [-12.0, -64.0, 20.0, 64.0]])
+    self.assertTrue(torch.allclose(anchors[0].tensor, expected_anchor_tensor))
+
+----------
+
+
+
+Test Class Name: TestAnchorGenerator

@@ -1,0 +1,21 @@
+def timezone(self, region: t.Optional[TimezoneRegion]=None) -> str:
+    """Get a random timezone.
+
+        :param region: Timezone region.
+        :return: Timezone.
+        """
+    region_name = self.validate_enum(region, TimezoneRegion)
+    return self.random.choice([tz for tz in TIMEZONES if tz.startswith(region_name)])
+
+----------
+
+def test_timezone_without_region(self, _datetime):
+    result = _datetime.timezone()
+    region = result.split('/')[0]
+    assert region in set([tz.split('/')[0] for tz in TIMEZONES])
+
+----------
+
+
+
+Test Class Name: TestDatetime

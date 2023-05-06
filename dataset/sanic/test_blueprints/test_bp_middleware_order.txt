@@ -1,0 +1,57 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_bp_middleware_order(app: Sanic):
+    blueprint = Blueprint('test_bp_middleware_order')
+    order = []
+
+    @blueprint.middleware('request')
+    def mw_1(request):
+        order.append(1)
+
+    @blueprint.middleware('request')
+    def mw_2(request):
+        order.append(2)
+
+    @blueprint.middleware('request')
+    def mw_3(request):
+        order.append(3)
+
+    @blueprint.middleware('response')
+    def mw_4(request, response):
+        order.append(6)
+
+    @blueprint.middleware('response')
+    def mw_5(request, response):
+        order.append(5)
+
+    @blueprint.middleware('response')
+    def mw_6(request, response):
+        order.append(4)
+
+    @blueprint.route('/')
+    def process_response(request):
+        return text('OK')
+    app.blueprint(blueprint)
+    order.clear()
+    (request, response) = app.test_client.get('/')
+    assert response.status == 200
+    assert order == [1, 2, 3, 4, 5, 6]
+
+----------
+
+
+
+Test Class Name: default

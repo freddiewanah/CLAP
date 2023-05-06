@@ -1,0 +1,44 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_bp_group_properties():
+    blueprint_1 = Blueprint('blueprint_1', url_prefix='/bp1')
+    blueprint_2 = Blueprint('blueprint_2', url_prefix='/bp2')
+    group = Blueprint.group(blueprint_1, blueprint_2, version=1, version_prefix='/api/v', url_prefix='/grouped', strict_slashes=True)
+    primary = Blueprint.group(group, url_prefix='/primary')
+
+    @blueprint_1.route('/')
+    def blueprint_1_default_route(request):
+        return text('BP1_OK')
+
+    @blueprint_2.route('/')
+    def blueprint_2_default_route(request):
+        return text('BP2_OK')
+    app = Sanic('PropTest')
+    app.blueprint(group)
+    app.blueprint(primary)
+    app.router.finalize()
+    routes = [route.path for route in app.router.routes]
+    assert len(routes) == 4
+    assert 'api/v1/grouped/bp1/' in routes
+    assert 'api/v1/grouped/bp2/' in routes
+    assert 'api/v1/primary/grouped/bp1' in routes
+    assert 'api/v1/primary/grouped/bp2' in routes
+
+----------
+
+
+
+Test Class Name: default

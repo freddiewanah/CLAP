@@ -1,0 +1,20 @@
+def get_method(self):
+    if self._method:
+        return self._method
+    else:
+        return urllib_request.Request.get_method(self)
+
+----------
+
+def test_Request_open_invalid_method(urlopen_mock, install_opener_mock):
+    r = Request().open('UNKNOWN', 'https://ansible.com/')
+    args = urlopen_mock.call_args[0]
+    req = args[0]
+    assert req.data is None
+    assert req.get_method() == 'UNKNOWN'
+
+----------
+
+
+
+Test Class Name: default

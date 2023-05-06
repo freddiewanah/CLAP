@@ -1,0 +1,35 @@
+def safe_eval(value, locals=None, include_exceptions=False):
+    if not isinstance(value, string_types):
+        if include_exceptions:
+            return (value, None)
+        return value
+    if re.search('\\w\\.\\w+\\(', value):
+        if include_exceptions:
+            return (value, None)
+        return value
+    if re.search('import \\w+', value):
+        if include_exceptions:
+            return (value, None)
+        return value
+    try:
+        result = literal_eval(value)
+        if include_exceptions:
+            return (result, None)
+        else:
+            return result
+    except Exception as e:
+        if include_exceptions:
+            return (value, e)
+        return value
+
+----------
+
+@pytest.mark.parametrize('code, expected, stdin', ((c, e, {}) for (c, e, dummy) in INVALID_STRINGS), indirect=['stdin'])
+def test_invalid_strings(am, code, expected):
+    assert am.safe_eval(code) == expected
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,17 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.usefixtures('no_memoize')
+@pytest.mark.parametrize('script, output, which', [('qweqwe', 'qweqwe: not found', None), ('vom file.py', 'some text', None), ('vim file.py', 'vim: not found', 'vim')])
+def test_not_match(mocker, script, output, which):
+    mocker.patch('thefuck.rules.no_command.which', return_value=which)
+    assert not match(Command(script, output))
+
+----------
+
+
+
+Test Class Name: default

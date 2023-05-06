@@ -1,0 +1,35 @@
+def get_data(self, path):
+    if not path:
+        raise ValueError('a path must be specified')
+    if not path[0] == '/':
+        raise ValueError('relative resource paths not supported')
+    else:
+        candidate_paths = [path]
+    for p in candidate_paths:
+        b_path = to_bytes(p)
+        if os.path.isfile(b_path):
+            with open(b_path, 'rb') as fd:
+                return fd.read()
+        elif b_path.endswith(b'__init__.py') and os.path.isdir(os.path.dirname(b_path)):
+            return ''
+    return None
+
+----------
+
+def test_collection_get_data():
+    finder = get_default_finder()
+    reset_collections_loader_state(finder)
+    d = pkgutil.get_data('ansible_collections.testns.testcoll', 'plugins/action/my_action.py')
+    assert b'hello from my_action.py' in d
+    d = pkgutil.get_data('ansible_collections.testns.testcoll', 'bogus/bogus')
+    assert d is None
+    with pytest.raises(ValueError):
+        plugins_pkg = import_module('ansible_collections.ansible.builtin')
+        assert not os.path.exists(os.path.dirname(plugins_pkg.__file__))
+        d = pkgutil.get_data('ansible_collections.ansible.builtin', 'plugins/connection/local.py')
+
+----------
+
+
+
+Test Class Name: default

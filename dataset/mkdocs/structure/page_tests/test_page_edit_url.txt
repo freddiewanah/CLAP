@@ -1,0 +1,50 @@
+def load_config(config_file: Optional[Union[str, IO]]=None, **kwargs) -> MkDocsConfig:
+    """
+    Load the configuration for a given file object or name
+
+    The config_file can either be a file object, string or None. If it is None
+    the default `mkdocs.yml` filename will loaded.
+
+    Extra kwargs are passed to the configuration to replace any default values
+    unless they themselves are None.
+    """
+    options = kwargs.copy()
+    for (key, value) in options.copy().items():
+        if value is None:
+            options.pop(key)
+    with _open_config_file(config_file) as fd:
+        from mkdocs.config.defaults import MkDocsConfig
+        cfg = MkDocsConfig(config_file_path=getattr(fd, 'name', ''))
+        cfg.load_file(fd)
+    cfg.load_dict(options)
+    (errors, warnings) = cfg.validate()
+    for (config_name, warning) in warnings:
+        log.warning(f"Config value '{config_name}': {warning}")
+    for (config_name, error) in errors:
+        log.error(f"Config value '{config_name}': {error}")
+    for (key, value) in cfg.items():
+        log.debug(f"Config value '{key}' = {value!r}")
+    if len(errors) > 0:
+        raise exceptions.Abort(f'Aborted with {len(errors)} Configuration Errors!')
+    elif cfg['strict'] and len(warnings) > 0:
+        raise exceptions.Abort(f"Aborted with {len(warnings)} Configuration Warnings in 'strict' mode!")
+    return cfg
+
+----------
+
+def test_page_edit_url(self, paths={'testing.md': 'testing/', 'sub1/non-index.md': 'sub1/non-index/'}):
+    for case in [dict(config={'repo_url': 'http://github.com/mkdocs/mkdocs'}, edit_url='http://github.com/mkdocs/mkdocs/edit/master/docs/testing.md', edit_url2='http://github.com/mkdocs/mkdocs/edit/master/docs/sub1/non-index.md'), dict(config={'repo_url': 'https://github.com/mkdocs/mkdocs/'}, edit_url='https://github.com/mkdocs/mkdocs/edit/master/docs/testing.md', edit_url2='https://github.com/mkdocs/mkdocs/edit/master/docs/sub1/non-index.md'), dict(config={'repo_url': 'http://example.com'}, edit_url=None, edit_url2=None), dict(config={'repo_url': 'http://example.com', 'edit_uri': 'edit/master'}, edit_url='http://example.com/edit/master/testing.md', edit_url2='http://example.com/edit/master/sub1/non-index.md'), dict(config={'repo_url': 'http://example.com', 'edit_uri': '/edit/master'}, edit_url='http://example.com/edit/master/testing.md', edit_url2='http://example.com/edit/master/sub1/non-index.md'), dict(config={'repo_url': 'http://example.com/foo/', 'edit_uri': '/edit/master/'}, edit_url='http://example.com/edit/master/testing.md', edit_url2='http://example.com/edit/master/sub1/non-index.md'), dict(config={'repo_url': 'http://example.com/foo', 'edit_uri': '/edit/master/'}, edit_url='http://example.com/edit/master/testing.md', edit_url2='http://example.com/edit/master/sub1/non-index.md'), dict(config={'repo_url': 'http://example.com/foo/', 'edit_uri': '/edit/master'}, edit_url='http://example.com/edit/master/testing.md', edit_url2='http://example.com/edit/master/sub1/non-index.md'), dict(config={'repo_url': 'http://example.com/foo/', 'edit_uri': 'edit/master/'}, edit_url='http://example.com/foo/edit/master/testing.md', edit_url2='http://example.com/foo/edit/master/sub1/non-index.md'), dict(config={'repo_url': 'http://example.com/foo', 'edit_uri': 'edit/master/'}, edit_url='http://example.com/foo/edit/master/testing.md', edit_url2='http://example.com/foo/edit/master/sub1/non-index.md'), dict(config={'repo_url': 'http://example.com', 'edit_uri': '?query=edit/master'}, edit_url='http://example.com?query=edit/master/testing.md', edit_url2='http://example.com?query=edit/master/sub1/non-index.md'), dict(config={'repo_url': 'http://example.com/', 'edit_uri': '?query=edit/master/'}, edit_url='http://example.com/?query=edit/master/testing.md', edit_url2='http://example.com/?query=edit/master/sub1/non-index.md'), dict(config={'repo_url': 'http://example.com', 'edit_uri': '#edit/master'}, edit_url='http://example.com#edit/master/testing.md', edit_url2='http://example.com#edit/master/sub1/non-index.md'), dict(config={'repo_url': 'http://example.com/', 'edit_uri': '#edit/master/'}, edit_url='http://example.com/#edit/master/testing.md', edit_url2='http://example.com/#edit/master/sub1/non-index.md'), dict(config={'edit_uri': 'http://example.com/edit/master'}, edit_url='http://example.com/edit/master/testing.md', edit_url2='http://example.com/edit/master/sub1/non-index.md'), dict(config={'edit_uri_template': 'https://github.com/project/repo/wiki/{path_noext}'}, edit_url='https://github.com/project/repo/wiki/testing', edit_url2='https://github.com/project/repo/wiki/sub1/non-index'), dict(config={'repo_url': 'https://github.com/project/repo/wiki', 'edit_uri_template': '{path_noext}/_edit'}, edit_url='https://github.com/project/repo/wiki/testing/_edit', edit_url2='https://github.com/project/repo/wiki/sub1/non-index/_edit'), dict(config={'repo_url': 'https://gitlab.com/project/repo', 'edit_uri_template': '-/sse/master/docs%2F{path!q}'}, edit_url='https://gitlab.com/project/repo/-/sse/master/docs%2Ftesting.md', edit_url2='https://gitlab.com/project/repo/-/sse/master/docs%2Fsub1%2Fnon-index.md'), dict(config={'repo_url': 'https://bitbucket.org/project/repo/', 'edit_uri_template': 'src/master/docs/{path}?mode=edit'}, edit_url='https://bitbucket.org/project/repo/src/master/docs/testing.md?mode=edit', edit_url2='https://bitbucket.org/project/repo/src/master/docs/sub1/non-index.md?mode=edit'), dict(config={'repo_url': 'http://example.com', 'edit_uri': '', 'edit_uri_template': ''}, edit_url=None, edit_url2=None), dict(config={}, edit_url=None, edit_url2=None)]:
+        for (i, path) in enumerate(paths, 1):
+            edit_url_key = f'edit_url{i}' if i > 1 else 'edit_url'
+            with self.subTest(case['config'], path=path):
+                cfg = load_config(**case['config'])
+                fl = File(path, cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls'])
+                pg = Page('Foo', fl, cfg)
+                self.assertEqual(pg.url, paths[path])
+                self.assertEqual(pg.edit_url, case[edit_url_key])
+
+----------
+
+
+
+Test Class Name: PageTests

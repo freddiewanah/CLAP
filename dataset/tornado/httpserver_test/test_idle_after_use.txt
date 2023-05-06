@@ -1,0 +1,38 @@
+def wait(self, timeout: Optional[Union[float, datetime.timedelta]]=None) -> Awaitable[None]:
+    """Block until the internal flag is true.
+
+        Returns an awaitable, which raises `tornado.util.TimeoutError` after a
+        timeout.
+        """
+    fut = Future()
+    if self._value:
+        fut.set_result(None)
+        return fut
+    self._waiters.add(fut)
+    fut.add_done_callback(lambda fut: self._waiters.remove(fut))
+    if timeout is None:
+        return fut
+    else:
+        timeout_fut = gen.with_timeout(timeout, fut)
+        timeout_fut.add_done_callback(lambda tf: fut.cancel() if not fut.done() else None)
+        return timeout_fut
+
+----------
+
+@gen_test
+def test_idle_after_use(self):
+    stream = (yield self.connect())
+    event = Event()
+    stream.set_close_callback(event.set)
+    for i in range(2):
+        stream.write(b'GET / HTTP/1.1\r\n\r\n')
+        yield stream.read_until(b'\r\n\r\n')
+        data = (yield stream.read_bytes(11))
+        self.assertEqual(data, b'Hello world')
+    yield event.wait()
+
+----------
+
+
+
+Test Class Name: IdleTimeoutTest

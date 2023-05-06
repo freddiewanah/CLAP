@@ -1,0 +1,20 @@
+@gen.coroutine
+def add_one_async(self, x):
+    yield gen.moment
+    raise gen.Return(x + 1)
+
+----------
+
+def test_multi(self):
+
+    @gen.coroutine
+    def f():
+        results = (yield [self.add_one_async(1), self.add_one_async(2)])
+        self.assertEqual(results, [2, 3])
+    self.io_loop.run_sync(f)
+
+----------
+
+
+
+Test Class Name: GenBasicTest

@@ -1,0 +1,35 @@
+@staticmethod
+def backward(ctx, grad):
+    shape = ctx.shape
+    return (_NewEmptyTensorOp.apply(grad, shape), None)
+
+----------
+
+@unittest.skipIf(not torch.cuda.is_available(), 'CUDA not available')
+def test_roi_align_rotated_gradient_cuda(self):
+    """
+        Compute gradients for ROIAlignRotated with multiple bounding boxes on the GPU,
+        and compare the result with ROIAlign
+        """
+    dtype = torch.float64
+    device = torch.device('cuda')
+    (pool_h, pool_w) = (5, 5)
+    roi_align = ROIAlign(output_size=(pool_h, pool_w), spatial_scale=1, sampling_ratio=2).to(device=device)
+    roi_align_rotated = ROIAlignRotated(output_size=(pool_h, pool_w), spatial_scale=1, sampling_ratio=2).to(device=device)
+    x = torch.rand(1, 1, 10, 10, dtype=dtype, device=device, requires_grad=True)
+    x_rotated = Variable(x.data.clone(), requires_grad=True)
+    rois_rotated = torch.tensor([[0, 4.5, 4.5, 9, 9, 0], [0, 2, 7, 4, 4, 0], [0, 7, 7, 4, 4, 0]], dtype=dtype, device=device)
+    y_rotated = roi_align_rotated(x_rotated, rois_rotated)
+    s_rotated = y_rotated.sum()
+    s_rotated.backward()
+    rois = torch.tensor([[0, 0, 0, 9, 9], [0, 0, 5, 4, 9], [0, 5, 5, 9, 9]], dtype=dtype, device=device)
+    y = roi_align(x, rois)
+    s = y.sum()
+    s.backward()
+    assert torch.allclose(x.grad, x_rotated.grad), 'gradients for ROIAlign and ROIAlignRotated mismatch on CUDA'
+
+----------
+
+
+
+Test Class Name: ROIAlignRotatedTest

@@ -1,0 +1,38 @@
+def stat_file(self, path: str, info):
+    absolute_path = self._get_filesystem_path(path)
+    try:
+        last_modified = absolute_path.stat().st_mtime
+    except os.error:
+        return {}
+    with absolute_path.open('rb') as f:
+        checksum = md5sum(f)
+    return {'last_modified': last_modified, 'checksum': checksum}
+
+----------
+
+@defer.inlineCallbacks
+def test_persist(self):
+    uri = os.environ.get('FTP_TEST_FILE_URI')
+    if not uri:
+        raise unittest.SkipTest('No FTP URI available for testing')
+    data = b'TestFTPFilesStore: \xe2\x98\x83'
+    buf = BytesIO(data)
+    meta = {'foo': 'bar'}
+    path = 'full/filename'
+    store = FTPFilesStore(uri)
+    empty_dict = (yield store.stat_file(path, info=None))
+    self.assertEqual(empty_dict, {})
+    yield store.persist_file(path, buf, info=None, meta=meta, headers=None)
+    stat = (yield store.stat_file(path, info=None))
+    self.assertIn('last_modified', stat)
+    self.assertIn('checksum', stat)
+    self.assertEqual(stat['checksum'], 'd113d66b2ec7258724a268bd88eef6b6')
+    path = f'{store.basedir}/{path}'
+    content = get_ftp_content_and_delete(path, store.host, store.port, store.username, store.password, store.USE_ACTIVE_MODE)
+    self.assertEqual(data.decode(), content)
+
+----------
+
+
+
+Test Class Name: TestFTPFileStore

@@ -1,0 +1,32 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_timeout_success(self):
+    crawler = get_crawler(DelaySpider)
+    yield crawler.crawl(n=0.5, mockserver=self.mockserver)
+    self.assertTrue(crawler.spider.t1 > 0)
+    self.assertTrue(crawler.spider.t2 > 0)
+    self.assertTrue(crawler.spider.t2 > crawler.spider.t1)
+
+----------
+
+
+
+Test Class Name: CrawlTestCase

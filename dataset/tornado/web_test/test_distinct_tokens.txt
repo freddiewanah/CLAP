@@ -1,0 +1,23 @@
+def get_token(self, old_token=None, version=None):
+    if old_token is not None:
+        headers = self.cookie_headers(old_token)
+    else:
+        headers = None
+    response = self.fetch('/' if version is None else '/?version=%d' % version, headers=headers)
+    response.rethrow()
+    return native_str(response.body)
+
+----------
+
+def test_distinct_tokens(self):
+    NUM_TOKENS = 10
+    tokens = set()
+    for i in range(NUM_TOKENS):
+        tokens.add(self.get_token())
+    self.assertEqual(len(tokens), NUM_TOKENS)
+
+----------
+
+
+
+Test Class Name: Handler

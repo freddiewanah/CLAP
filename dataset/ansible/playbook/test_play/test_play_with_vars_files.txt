@@ -1,0 +1,20 @@
+def get_vars_files(self):
+    if self.vars_files is None:
+        return []
+    elif not isinstance(self.vars_files, list):
+        return [self.vars_files]
+    return self.vars_files
+
+----------
+
+@pytest.mark.parametrize('value, expected', (('my_vars.yml', ['my_vars.yml']), (['my_vars.yml'], ['my_vars.yml']), (['my_vars1.yml', 'my_vars2.yml'], ['my_vars1.yml', 'my_vars2.yml']), (None, [])))
+def test_play_with_vars_files(value, expected):
+    play = Play.load({'name': 'Play with vars_files', 'hosts': ['testhost1'], 'vars_files': value})
+    assert play.vars_files == value
+    assert play.get_vars_files() == expected
+
+----------
+
+
+
+Test Class Name: default

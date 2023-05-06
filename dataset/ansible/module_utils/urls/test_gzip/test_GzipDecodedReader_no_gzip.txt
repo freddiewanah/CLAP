@@ -1,0 +1,34 @@
+def patch(self, url, data=None, **kwargs):
+    """Sends a PATCH request. Returns :class:`HTTPResponse` object.
+
+        :arg url: URL to request.
+        :kwarg data: (optional) bytes, or file-like object to send in the body of the request.
+        :kwarg \\*\\*kwargs: Optional arguments that ``open`` takes.
+        :returns: HTTPResponse
+        """
+    return self.open('PATCH', url, data=data, **kwargs)
+
+----------
+
+def test_GzipDecodedReader_no_gzip(monkeypatch, mocker):
+    monkeypatch.delitem(sys.modules, 'gzip')
+    monkeypatch.delitem(sys.modules, 'ansible.module_utils.urls')
+    orig_import = __import__
+
+    def _import(*args):
+        if args[0] == 'gzip':
+            raise ImportError
+        return orig_import(*args)
+    if PY3:
+        mocker.patch('builtins.__import__', _import)
+    else:
+        mocker.patch('__builtin__.__import__', _import)
+    mod = __import__('ansible.module_utils.urls').module_utils.urls
+    assert mod.HAS_GZIP is False
+    pytest.raises(mod.MissingModuleError, mod.GzipDecodedReader, None)
+
+----------
+
+
+
+Test Class Name: Sock

@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('whois https://en.wikipedia.org/wiki/Main_Page', ''), Command('whois https://en.wikipedia.org/', ''), Command('whois meta.unix.stackexchange.com', '')])
+def test_match(command):
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

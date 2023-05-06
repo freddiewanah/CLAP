@@ -1,0 +1,38 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_dynamic_route_uuid(app):
+    import uuid
+    results = []
+
+    @app.route('/quirky/<unique_id:uuid>')
+    async def handler(request, unique_id):
+        results.append(unique_id)
+        return text('OK')
+    url = '/quirky/123e4567-e89b-12d3-a456-426655440000'
+    (request, response) = app.test_client.get(url)
+    assert response.text == 'OK'
+    assert type(results[0]) is uuid.UUID
+    generated_uuid = uuid.uuid4()
+    (request, response) = app.test_client.get(f'/quirky/{generated_uuid}')
+    assert response.status == 200
+    (request, response) = app.test_client.get('/quirky/non-existing')
+    assert response.status == 404
+
+----------
+
+
+
+Test Class Name: default

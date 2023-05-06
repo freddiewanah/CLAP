@@ -1,0 +1,34 @@
+def read_response(self, delegate: httputil.HTTPMessageDelegate) -> Awaitable[bool]:
+    """Read a single HTTP response.
+
+        Typical client-mode usage is to write a request using `write_headers`,
+        `write`, and `finish`, and then call ``read_response``.
+
+        :arg delegate: a `.HTTPMessageDelegate`
+
+        Returns a `.Future` that resolves to a bool after the full response has
+        been read. The result is true if the stream is still open.
+        """
+    if self.params.decompress:
+        delegate = _GzipMessageDelegate(delegate, self.params.chunk_size)
+    return self._read_message(delegate)
+
+----------
+
+@gen_test
+def test_http10_keepalive_extra_crlf(self):
+    self.http_version = b'HTTP/1.0'
+    yield self.connect()
+    self.stream.write(b'GET / HTTP/1.0\r\nConnection: keep-alive\r\n\r\n\r\n')
+    yield self.read_response()
+    self.assertEqual(self.headers['Connection'], 'Keep-Alive')
+    self.stream.write(b'GET / HTTP/1.0\r\nConnection: keep-alive\r\n\r\n')
+    yield self.read_response()
+    self.assertEqual(self.headers['Connection'], 'Keep-Alive')
+    self.close()
+
+----------
+
+
+
+Test Class Name: FinishOnCloseHandler

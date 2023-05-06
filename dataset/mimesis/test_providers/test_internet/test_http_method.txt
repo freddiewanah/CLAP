@@ -1,0 +1,21 @@
+def http_method(self) -> str:
+    """Get a random HTTP method.
+
+        :return: HTTP method.
+
+        :Example:
+            POST
+        """
+    return self.random.choice(HTTP_METHODS)
+
+----------
+
+def test_http_method(self, net):
+    result = net.http_method()
+    assert result in data.HTTP_METHODS
+
+----------
+
+
+
+Test Class Name: TestInternet

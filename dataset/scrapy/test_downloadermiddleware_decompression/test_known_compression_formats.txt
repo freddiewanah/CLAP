@@ -1,0 +1,25 @@
+def process_response(self, request, response, spider):
+    if not response.body:
+        return response
+    for (fmt, func) in self._formats.items():
+        new_response = func(response)
+        if new_response:
+            logger.debug('Decompressed response with format: %(responsefmt)s', {'responsefmt': fmt}, extra={'spider': spider})
+            return new_response
+    return response
+
+----------
+
+def test_known_compression_formats(self):
+    for fmt in self.test_formats:
+        rsp = self.test_responses[fmt]
+        new = self.mw.process_response(None, rsp, self.spider)
+        error_msg = f'Failed {fmt}, response type {type(new).__name__}'
+        assert isinstance(new, XmlResponse), error_msg
+        assert_samelines(self, new.body, self.uncompressed_body, fmt)
+
+----------
+
+
+
+Test Class Name: DecompressionMiddlewareTest

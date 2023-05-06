@@ -1,0 +1,28 @@
+@abstractmethod
+def allowed(self, url, user_agent):
+    """Return ``True`` if  ``user_agent`` is allowed to crawl ``url``, otherwise return ``False``.
+
+        :param url: Absolute URL
+        :type url: str
+
+        :param user_agent: User agent
+        :type user_agent: str
+        """
+    pass
+
+----------
+
+def test_garbage_response(self):
+    """garbage response should be discarded, equal 'allow all'"""
+    robotstxt_robotstxt_body = b'GIF89a\xd3\x00\xfe\x00\xa2'
+    rp = self.parser_cls.from_crawler(crawler=None, robotstxt_body=robotstxt_robotstxt_body)
+    self.assertTrue(rp.allowed('https://site.local/', '*'))
+    self.assertTrue(rp.allowed('https://site.local/', 'chrome'))
+    self.assertTrue(rp.allowed('https://site.local/index.html', '*'))
+    self.assertTrue(rp.allowed('https://site.local/disallowed', '*'))
+
+----------
+
+
+
+Test Class Name: BaseRobotParserTest

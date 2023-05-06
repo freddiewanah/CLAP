@@ -1,0 +1,17 @@
+def cookie_headers(self, token=None):
+    if token is None:
+        token = self.xsrf_token
+    return {'Cookie': '_xsrf=' + token}
+
+----------
+
+def test_xsrf_fail_argument_invalid_format(self):
+    with ExpectLog(gen_log, ".*'_xsrf' argument has invalid format"):
+        response = self.fetch('/', method='POST', headers=self.cookie_headers(), body=urllib.parse.urlencode(dict(_xsrf='3|')))
+    self.assertEqual(response.code, 403)
+
+----------
+
+
+
+Test Class Name: Handler

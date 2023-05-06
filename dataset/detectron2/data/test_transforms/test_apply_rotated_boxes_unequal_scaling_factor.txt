@@ -1,0 +1,35 @@
+def apply_augmentations(augmentations: List[Union[Transform, Augmentation]], inputs):
+    """
+    Use ``T.AugmentationList(augmentations)(inputs)`` instead.
+    """
+    if isinstance(inputs, np.ndarray):
+        image_only = True
+        inputs = AugInput(inputs)
+    else:
+        image_only = False
+    tfms = inputs.apply_augmentations(augmentations)
+    return (inputs.image if image_only else inputs, tfms)
+
+----------
+
+def test_apply_rotated_boxes_unequal_scaling_factor(self):
+    np.random.seed(125)
+    (h, w) = (400, 200)
+    (newh, neww) = (800, 800)
+    image = np.random.rand(h, w)
+    augs = []
+    augs.append(T.Resize(shape=(newh, neww)))
+    (image, transforms) = T.apply_augmentations(augs, image)
+    image_shape = image.shape[:2]
+    assert image_shape == (newh, neww)
+    boxes = np.array([[150, 100, 40, 20, 0], [150, 100, 40, 20, 30], [150, 100, 40, 20, 90], [150, 100, 40, 20, -90]], dtype=np.float64)
+    transformed_boxes = transforms.apply_rotated_box(boxes)
+    expected_bboxes = np.array([[600, 200, 160, 40, 0], [600, 200, 144.22205102, 52.91502622, 49.10660535], [600, 200, 80, 80, 90], [600, 200, 80, 80, -90]], dtype=np.float64)
+    err_msg = 'transformed_boxes = {}, expected {}'.format(transformed_boxes, expected_bboxes)
+    assert np.allclose(transformed_boxes, expected_bboxes), err_msg
+
+----------
+
+
+
+Test Class Name: TestTransforms

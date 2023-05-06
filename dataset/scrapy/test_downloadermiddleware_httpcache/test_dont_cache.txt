@@ -1,0 +1,38 @@
+def retrieve_response(self, spider, request):
+    data = self._read_data(spider, request)
+    if data is None:
+        return
+    url = data['url']
+    status = data['status']
+    headers = Headers(data['headers'])
+    body = data['body']
+    respcls = responsetypes.from_args(headers=headers, url=url, body=body)
+    response = respcls(url=url, headers=headers, status=status, body=body)
+    return response
+
+----------
+
+def test_dont_cache(self):
+    with self._middleware() as mw:
+        self.request.meta['dont_cache'] = True
+        mw.process_response(self.request, self.response, self.spider)
+        self.assertEqual(mw.storage.retrieve_response(self.spider, self.request), None)
+    with self._middleware() as mw:
+        self.request.meta['dont_cache'] = False
+        mw.process_response(self.request, self.response, self.spider)
+        if mw.policy.should_cache_response(self.response, self.request):
+            self.assertIsInstance(mw.storage.retrieve_response(self.spider, self.request), self.response.__class__)
+
+----------
+
+@contextmanager
+def _middleware(self, **new_settings):
+    settings = self._get_settings(**new_settings)
+    mw = HttpCacheMiddleware(settings, self.crawler.stats)
+    mw.spider_opened(self.spider)
+    try:
+        yield mw
+    finally:
+        mw.spider_closed(self.spider)
+
+Test Class Name: _BaseTest

@@ -1,0 +1,24 @@
+def examples(*args):
+    """A variadic `examples` decorator to both supplant stacking of @example
+    and support iterables being passed in directly
+    """
+
+    def examples_decorator(f):
+        g = f
+        for arg in args:
+            g = example(arg)(g)
+        return g
+    return examples_decorator
+
+----------
+
+@given(one_of(*[strategy_fn(integers()).map(dccons) for (dccons, strategy_fn, _) in dcconss_strategies_conss]))
+@examples(*[dccons(cons(example_input)) for (dccons, _, cons) in dcconss_strategies_conss])
+def test_generic_encode_and_decode_are_inverses(dc):
+    assert dc.from_json(dc.to_json()) == dc
+
+----------
+
+
+
+Test Class Name: default

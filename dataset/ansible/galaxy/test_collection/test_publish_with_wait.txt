@@ -1,0 +1,49 @@
+@g_connect(['v2', 'v3'])
+def publish_collection(self, collection_path):
+    """
+        Publishes a collection to a Galaxy server and returns the import task URI.
+
+        :param collection_path: The path to the collection tarball to publish.
+        :return: The import task URI that contains the import results.
+        """
+    display.display("Publishing collection artifact '%s' to %s %s" % (collection_path, self.name, self.api_server))
+    b_collection_path = to_bytes(collection_path, errors='surrogate_or_strict')
+    if not os.path.exists(b_collection_path):
+        raise AnsibleError("The collection path specified '%s' does not exist." % to_native(collection_path))
+    elif not tarfile.is_tarfile(b_collection_path):
+        raise AnsibleError("The collection path specified '%s' is not a tarball, use 'ansible-galaxy collection build' to create a proper release artifact." % to_native(collection_path))
+    with open(b_collection_path, 'rb') as collection_tar:
+        sha256 = secure_hash_s(collection_tar.read(), hash_func=hashlib.sha256)
+    (content_type, b_form_data) = prepare_multipart({'sha256': sha256, 'file': {'filename': b_collection_path, 'mime_type': 'application/octet-stream'}})
+    headers = {'Content-type': content_type, 'Content-length': len(b_form_data)}
+    if 'v3' in self.available_api_versions:
+        n_url = _urljoin(self.api_server, self.available_api_versions['v3'], 'artifacts', 'collections') + '/'
+    else:
+        n_url = _urljoin(self.api_server, self.available_api_versions['v2'], 'collections') + '/'
+    resp = self._call_galaxy(n_url, args=b_form_data, headers=headers, method='POST', auth_required=True, error_context_msg='Error when publishing collection to %s (%s)' % (self.name, self.api_server))
+    return resp['task']
+
+----------
+
+def test_publish_with_wait(galaxy_server, collection_artifact, monkeypatch):
+    mock_display = MagicMock()
+    monkeypatch.setattr(Display, 'display', mock_display)
+    (artifact_path, mock_open) = collection_artifact
+    fake_import_uri = 'https://galaxy.server.com/api/v2/import/1234'
+    mock_publish = MagicMock()
+    mock_publish.return_value = fake_import_uri
+    monkeypatch.setattr(galaxy_server, 'publish_collection', mock_publish)
+    mock_wait = MagicMock()
+    monkeypatch.setattr(galaxy_server, 'wait_import_task', mock_wait)
+    collection.publish_collection(artifact_path, galaxy_server, True, 0)
+    assert mock_publish.call_count == 1
+    assert mock_publish.mock_calls[0][1][0] == artifact_path
+    assert mock_wait.call_count == 1
+    assert mock_wait.mock_calls[0][1][0] == '1234'
+    assert mock_display.mock_calls[0][1][0] == 'Collection has been published to the Galaxy server test_server %s' % galaxy_server.api_server
+
+----------
+
+
+
+Test Class Name: default

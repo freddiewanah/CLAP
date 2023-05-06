@@ -1,0 +1,30 @@
+def retrieve_response(self, spider, request):
+    data = self._read_data(spider, request)
+    if data is None:
+        return
+    url = data['url']
+    status = data['status']
+    headers = Headers(data['headers'])
+    body = data['body']
+    respcls = responsetypes.from_args(headers=headers, url=url, body=body)
+    response = respcls(url=url, headers=headers, status=status, body=body)
+    return response
+
+----------
+
+def test_storage_no_content_type_header(self):
+    """Test that the response body is used to get the right response class
+        even if there is no Content-Type header"""
+    with self._storage() as storage:
+        assert storage.retrieve_response(self.spider, self.request) is None
+        response = Response('http://www.example.com', body=b'<!DOCTYPE html>\n<title>.</title>', status=202)
+        storage.store_response(self.spider, self.request, response)
+        cached_response = storage.retrieve_response(self.spider, self.request)
+        self.assertIsInstance(cached_response, HtmlResponse)
+        self.assertEqualResponse(response, cached_response)
+
+----------
+
+
+
+Test Class Name: DefaultStorageTest

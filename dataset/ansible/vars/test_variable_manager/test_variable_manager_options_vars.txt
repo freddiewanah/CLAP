@@ -1,0 +1,20 @@
+def iteritems(d, **kw):
+    return d.iteritems(**kw)
+
+----------
+
+def test_variable_manager_options_vars(self):
+    fake_loader = DictDataLoader({})
+    options_vars = dict(a=1, b=2, c=3)
+    mock_inventory = MagicMock()
+    v = VariableManager(loader=fake_loader, inventory=mock_inventory)
+    v._extra_vars = options_vars
+    myvars = v.get_vars(use_cache=False)
+    for (key, val) in iteritems(options_vars):
+        self.assertEqual(myvars.get(key), val)
+
+----------
+
+
+
+Test Class Name: TestVariableManager

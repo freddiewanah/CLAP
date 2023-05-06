@@ -1,0 +1,16 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.usefixtures('no_memoize')
+@pytest.mark.parametrize('script, output', [('docker swarn', output('swarn')), ('docker imge', output('imge'))])
+def test_match_management_cmd(script, output):
+    assert match(Command(script, output))
+
+----------
+
+
+
+Test Class Name: default

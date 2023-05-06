@@ -1,0 +1,15 @@
+@memoize
+def get_aliases(self):
+    raw_aliases = os.environ.get('TF_SHELL_ALIASES', '').split('\n')
+    return dict((self._parse_alias(alias) for alias in raw_aliases if alias and '=' in alias))
+
+----------
+
+def test_get_aliases(self, shell):
+    assert shell.get_aliases() == {'fuck': 'eval $(thefuck $(fc -ln -1 | tail -n 1))', 'l': 'ls -CF', 'la': 'ls -A', 'll': 'ls -alF'}
+
+----------
+
+
+
+Test Class Name: TestZsh

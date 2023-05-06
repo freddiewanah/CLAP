@@ -1,0 +1,25 @@
+def run(self, terms, variables=None, **kwargs):
+    if not isinstance(terms, list):
+        terms = [terms]
+    results = []
+    for term in terms:
+        if not isinstance(term, Mapping):
+            raise AnsibleError('with_dict expects a dict')
+        results.extend(self._flatten_hash_to_list(term))
+    return results
+
+----------
+
+@patch.object(PluginLoader, '_get_paths')
+@patch('ansible.plugins.lookup.password._write_password_file')
+def test_only_a(self, mock_get_paths, mock_write_file):
+    mock_get_paths.return_value = ['/path/one', '/path/two', '/path/three']
+    results = self.password_lookup.run([u'/path/to/somewhere chars=a'], None)
+    for result in results:
+        self.assertEqual(result, u'a' * DEFAULT_LENGTH)
+
+----------
+
+
+
+Test Class Name: TestLookupModuleWithoutPasslib

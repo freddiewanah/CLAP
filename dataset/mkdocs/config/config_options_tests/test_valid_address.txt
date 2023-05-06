@@ -1,0 +1,20 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_valid_address(self) -> None:
+    addr = '127.0.0.1:8000'
+    conf = self.get_config(self.Schema, {'option': addr})
+    assert_type(conf.option, c._IpAddressValue)
+    assert_type(conf.option.host, str)
+    assert_type(conf.option.port, int)
+    self.assertEqual(str(conf.option), addr)
+    self.assertEqual(conf.option.host, '127.0.0.1')
+    self.assertEqual(conf.option.port, 8000)
+
+----------
+
+
+
+Test Class Name: default

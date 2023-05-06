@@ -1,0 +1,69 @@
+def extract_attributes(html_element):
+    """Given a string for an HTML element such as
+    <el
+         a="foo" B="bar" c="&98;az" d=boz
+         empty= noval entity="&amp;"
+         sq='"' dq="'"
+    >
+    Decode and return a dictionary of attributes.
+    {
+        'a': 'foo', 'b': 'bar', c: 'baz', d: 'boz',
+        'empty': '', 'noval': None, 'entity': '&',
+        'sq': '"', 'dq': '''
+    }.
+    NB HTMLParser is stricter in Python 2.6 & 3.2 than in later versions,
+    but the cases in the unit test will work for all of 2.6, 2.7, 3.2-3.5.
+    """
+    parser = HTMLAttributeParser()
+    try:
+        parser.feed(html_element)
+        parser.close()
+    except compat_HTMLParseError:
+        pass
+    return parser.attrs
+
+----------
+
+def test_extract_attributes(self):
+    self.assertEqual(extract_attributes('<e x="y">'), {'x': 'y'})
+    self.assertEqual(extract_attributes("<e x='y'>"), {'x': 'y'})
+    self.assertEqual(extract_attributes('<e x=y>'), {'x': 'y'})
+    self.assertEqual(extract_attributes('<e x="a \'b\' c">'), {'x': "a 'b' c"})
+    self.assertEqual(extract_attributes('<e x=\'a "b" c\'>'), {'x': 'a "b" c'})
+    self.assertEqual(extract_attributes('<e x="&#121;">'), {'x': 'y'})
+    self.assertEqual(extract_attributes('<e x="&#x79;">'), {'x': 'y'})
+    self.assertEqual(extract_attributes('<e x="&amp;">'), {'x': '&'})
+    self.assertEqual(extract_attributes('<e x="&quot;">'), {'x': '"'})
+    self.assertEqual(extract_attributes('<e x="&pound;">'), {'x': '£'})
+    self.assertEqual(extract_attributes('<e x="&lambda;">'), {'x': 'λ'})
+    self.assertEqual(extract_attributes('<e x="&foo">'), {'x': '&foo'})
+    self.assertEqual(extract_attributes('<e x="\'">'), {'x': "'"})
+    self.assertEqual(extract_attributes('<e x=\'"\'>'), {'x': '"'})
+    self.assertEqual(extract_attributes('<e x >'), {'x': None})
+    self.assertEqual(extract_attributes('<e x=y a>'), {'x': 'y', 'a': None})
+    self.assertEqual(extract_attributes('<e x= y>'), {'x': 'y'})
+    self.assertEqual(extract_attributes('<e x=1 y=2 x=3>'), {'y': '2', 'x': '3'})
+    self.assertEqual(extract_attributes('<e \nx=\ny\n>'), {'x': 'y'})
+    self.assertEqual(extract_attributes('<e \nx=\n"y"\n>'), {'x': 'y'})
+    self.assertEqual(extract_attributes("<e \nx=\n'y'\n>"), {'x': 'y'})
+    self.assertEqual(extract_attributes('<e \nx="\ny\n">'), {'x': '\ny\n'})
+    self.assertEqual(extract_attributes('<e CAPS=x>'), {'caps': 'x'})
+    self.assertEqual(extract_attributes('<e x=1 X=2>'), {'x': '2'})
+    self.assertEqual(extract_attributes('<e X=1 x=2>'), {'x': '2'})
+    self.assertEqual(extract_attributes('<e _:funny-name1=1>'), {'_:funny-name1': '1'})
+    self.assertEqual(extract_attributes('<e x="Fáilte 世界 😀">'), {'x': 'Fáilte 世界 😀'})
+    self.assertEqual(extract_attributes('<e x="décompose&#769;">'), {'x': 'décomposé'})
+    try:
+        compat_chr(65536)
+        supports_outside_bmp = True
+    except ValueError:
+        supports_outside_bmp = False
+    if supports_outside_bmp:
+        self.assertEqual(extract_attributes('<e x="Smile &#128512;!">'), {'x': 'Smile 😀!'})
+    self.assertEqual(extract_attributes('<mal"formed/>'), {})
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,37 @@
+@classmethod
+def parse(cls, headers: str) -> 'HTTPHeaders':
+    """Returns a dictionary from HTTP header text.
+
+        >>> h = HTTPHeaders.parse("Content-Type: text/html\\r\\nContent-Length: 42\\r\\n")
+        >>> sorted(h.items())
+        [('Content-Length', '42'), ('Content-Type', 'text/html')]
+
+        .. versionchanged:: 5.1
+
+           Raises `HTTPInputError` on malformed headers instead of a
+           mix of `KeyError`, and `ValueError`.
+
+        """
+    h = cls()
+    for line in headers.split('\n'):
+        if line.endswith('\r'):
+            line = line[:-1]
+        if line:
+            h.parse_line(line)
+    return h
+
+----------
+
+def test_string(self):
+    headers = HTTPHeaders()
+    headers.add('Foo', '1')
+    headers.add('Foo', '2')
+    headers.add('Foo', '3')
+    headers2 = HTTPHeaders.parse(str(headers))
+    self.assertEqual(headers, headers2)
+
+----------
+
+
+
+Test Class Name: HTTPHeadersTest

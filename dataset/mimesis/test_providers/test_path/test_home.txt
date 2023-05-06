@@ -1,0 +1,21 @@
+def home(self) -> str:
+    """Generate a home path.
+
+        :return: Home path.
+
+        :Example:
+            /home
+        """
+    return str(self._pathlib_home)
+
+----------
+
+def test_home(self, path):
+    result = path.home()
+    assert result == 'C:\\Users' or result == '/home'
+
+----------
+
+
+
+Test Class Name: TestPath

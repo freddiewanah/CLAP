@@ -1,0 +1,20 @@
+def get(self, *args: Any, **kwargs: Any) -> None:
+    to_url = self._url.format(*args, **kwargs)
+    if self.request.query_arguments:
+        to_url = httputil.url_concat(to_url, list(httputil.qs_to_qsl(self.request.query_arguments)))
+    self.redirect(to_url, permanent=self._permanent)
+
+----------
+
+def test_static_files(self):
+    response = self.fetch('/robots.txt')
+    self.assertTrue(b'Disallow: /' in response.body)
+    response = self.fetch('/static/robots.txt')
+    self.assertTrue(b'Disallow: /' in response.body)
+    self.assertEqual(response.headers.get('Content-Type'), 'text/plain')
+
+----------
+
+
+
+Test Class Name: OverrideStaticUrlHandler

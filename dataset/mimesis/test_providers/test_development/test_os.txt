@@ -1,0 +1,21 @@
+def os(self) -> str:
+    """Get a random operating system or distributive name.
+
+        :return: The name of OS.
+
+        :Example:
+            Gentoo
+        """
+    return self.random.choice(OS)
+
+----------
+
+def test_os(self, dev):
+    result = dev.os()
+    assert result in data.OS
+
+----------
+
+
+
+Test Class Name: TestDevelopment

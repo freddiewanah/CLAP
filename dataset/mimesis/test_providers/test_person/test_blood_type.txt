@@ -1,0 +1,21 @@
+def blood_type(self) -> str:
+    """Get a random blood type.
+
+        :return: Blood type (blood group).
+
+        :Example:
+            A+
+        """
+    return self.random.choice(BLOOD_GROUPS)
+
+----------
+
+def test_blood_type(self, _person):
+    result = _person.blood_type()
+    assert result in BLOOD_GROUPS
+
+----------
+
+
+
+Test Class Name: TestPerson

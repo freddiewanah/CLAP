@@ -1,0 +1,27 @@
+def urljoin(self, url):
+    """Join this Response's url with a possible relative url to form an
+        absolute interpretation of the latter."""
+    return urljoin(get_base_url(self), url)
+
+----------
+
+def test_urljoin_with_base_url(self):
+    """Test urljoin shortcut which also evaluates base-url through get_base_url()."""
+    body = b'<html><body><base href="https://example.net"></body></html>'
+    joined = self.response_class('http://www.example.com', body=body).urljoin('/test')
+    absolute = 'https://example.net/test'
+    self.assertEqual(joined, absolute)
+    body = b'<html><body><base href="/elsewhere"></body></html>'
+    joined = self.response_class('http://www.example.com', body=body).urljoin('test')
+    absolute = 'http://www.example.com/test'
+    self.assertEqual(joined, absolute)
+    body = b'<html><body><base href="/elsewhere/"></body></html>'
+    joined = self.response_class('http://www.example.com', body=body).urljoin('test')
+    absolute = 'http://www.example.com/elsewhere/test'
+    self.assertEqual(joined, absolute)
+
+----------
+
+
+
+Test Class Name: TextResponseTest

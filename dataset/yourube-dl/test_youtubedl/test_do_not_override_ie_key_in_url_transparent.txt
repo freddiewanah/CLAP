@@ -1,0 +1,69 @@
+def extract_info(self, url, download=True, ie_key=None, extra_info={}, process=True, force_generic_extractor=False):
+    """
+        Return a list with a dictionary for each video extracted.
+
+        Arguments:
+        url -- URL to extract
+
+        Keyword arguments:
+        download -- whether to download videos during extraction
+        ie_key -- extractor key hint
+        extra_info -- dictionary containing the extra values to add to each result
+        process -- whether to resolve all unresolved references (URLs, playlist items),
+            must be True for download to work.
+        force_generic_extractor -- force using the generic extractor
+        """
+    if not ie_key and force_generic_extractor:
+        ie_key = 'Generic'
+    if ie_key:
+        ies = [self.get_info_extractor(ie_key)]
+    else:
+        ies = self._ies
+    for ie in ies:
+        if not ie.suitable(url):
+            continue
+        ie = self.get_info_extractor(ie.ie_key())
+        if not ie.working():
+            self.report_warning('The program functionality for this site has been marked as broken, and will probably not work.')
+        return self.__extract_info(url, ie, download, extra_info, process)
+    else:
+        self.report_error('no suitable InfoExtractor for URL %s' % url)
+
+----------
+
+def test_do_not_override_ie_key_in_url_transparent(self):
+    ydl = YDL()
+
+    class Foo1IE(InfoExtractor):
+        _VALID_URL = 'foo1:'
+
+        def _real_extract(self, url):
+            return {'_type': 'url_transparent', 'url': 'foo2:', 'ie_key': 'Foo2', 'title': 'foo1 title', 'id': 'foo1_id'}
+
+    class Foo2IE(InfoExtractor):
+        _VALID_URL = 'foo2:'
+
+        def _real_extract(self, url):
+            return {'_type': 'url', 'url': 'foo3:', 'ie_key': 'Foo3'}
+
+    class Foo3IE(InfoExtractor):
+        _VALID_URL = 'foo3:'
+
+        def _real_extract(self, url):
+            return _make_result([{'url': TEST_URL}], title='foo3 title')
+    ydl.add_info_extractor(Foo1IE(ydl))
+    ydl.add_info_extractor(Foo2IE(ydl))
+    ydl.add_info_extractor(Foo3IE(ydl))
+    ydl.extract_info('foo1:')
+    downloaded = ydl.downloaded_info_dicts[0]
+    self.assertEqual(downloaded['url'], TEST_URL)
+    self.assertEqual(downloaded['title'], 'foo1 title')
+    self.assertEqual(downloaded['id'], 'testid')
+    self.assertEqual(downloaded['extractor'], 'testex')
+    self.assertEqual(downloaded['extractor_key'], 'TestEx')
+
+----------
+
+
+
+Test Class Name: FilterYDL

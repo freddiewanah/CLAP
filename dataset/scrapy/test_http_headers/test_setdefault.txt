@@ -1,0 +1,26 @@
+def getlist(self, key, def_val=None):
+    try:
+        return super().__getitem__(key)
+    except KeyError:
+        if def_val is not None:
+            return self.normvalue(def_val)
+        return []
+
+----------
+
+def test_setdefault(self):
+    h = Headers()
+    hlist = ['ip1', 'ip2']
+    olist = h.setdefault('X-Forwarded-For', hlist)
+    assert h.getlist('X-Forwarded-For') is not hlist
+    assert h.getlist('X-Forwarded-For') is olist
+    h = Headers()
+    olist = h.setdefault('X-Forwarded-For', 'ip1')
+    self.assertEqual(h.getlist('X-Forwarded-For'), [b'ip1'])
+    assert h.getlist('X-Forwarded-For') is olist
+
+----------
+
+
+
+Test Class Name: HeadersTest

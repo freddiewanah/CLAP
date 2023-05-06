@@ -1,0 +1,40 @@
+@classmethod
+def get_current(cls) -> Request:
+    """
+        Retrieve the current request object
+
+        This implements `Context Variables
+        <https://docs.python.org/3/library/contextvars.html>`_
+        to allow for accessing the current request from anywhere.
+
+        Raises :exc:`sanic.exceptions.ServerError` if it is outside of
+        a request lifecycle.
+
+        .. code-block:: python
+
+            from sanic import Request
+
+            current_request = Request.get_current()
+
+        :return: the current :class:`sanic.request.Request`
+        """
+    request = cls._current.get(None)
+    if not request:
+        raise ServerError('No current request')
+    return request
+
+----------
+
+def test_get_current_request(app):
+
+    @app.get('/')
+    async def get(request):
+        return response.json({'same': request is Request.get_current()})
+    (_, resp) = app.test_client.get('/')
+    assert resp.json['same']
+
+----------
+
+
+
+Test Class Name: FooRequest

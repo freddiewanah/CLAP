@@ -1,0 +1,33 @@
+def make_sure_path_exists(path: 'os.PathLike[str]') -> None:
+    """Ensure that a directory exists.
+
+    :param path: A directory tree path for creation.
+    """
+    logger.debug('Making sure path exists (creates tree if not exist): %s', path)
+    try:
+        Path(path).mkdir(parents=True, exist_ok=True)
+    except OSError as error:
+        raise OSError(f'Unable to create directory at {path}') from error
+
+----------
+
+def test_make_sure_path_exists(tmp_path):
+    """Verify correct True/False response from `utils.make_sure_path_exists`.
+
+    Should return True if directory exist or created.
+    Should return False if impossible to create directory (for example protected)
+    """
+    existing_directory = tmp_path
+    directory_to_create = Path(tmp_path, 'not_yet_created')
+    utils.make_sure_path_exists(existing_directory)
+    utils.make_sure_path_exists(directory_to_create)
+    assert existing_directory.is_dir()
+    assert existing_directory.exists()
+    assert directory_to_create.is_dir()
+    assert directory_to_create.exists()
+
+----------
+
+
+
+Test Class Name: default

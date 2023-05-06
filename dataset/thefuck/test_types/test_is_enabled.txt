@@ -1,0 +1,22 @@
+def update(self, **kwargs):
+    """Returns new command with replaced fields.
+
+        :rtype: Command
+
+        """
+    kwargs.setdefault('script', self.script)
+    kwargs.setdefault('output', self.output)
+    return Command(**kwargs)
+
+----------
+
+@pytest.mark.parametrize('rules, rule, is_enabled', [(const.DEFAULT_RULES, Rule('git', enabled_by_default=True), True), (const.DEFAULT_RULES, Rule('git', enabled_by_default=False), False), ([], Rule('git', enabled_by_default=False), False), ([], Rule('git', enabled_by_default=True), False), (const.DEFAULT_RULES + ['git'], Rule('git', enabled_by_default=False), True), (['git'], Rule('git', enabled_by_default=False), True)])
+def test_is_enabled(self, settings, rules, rule, is_enabled):
+    settings.update(rules=rules)
+    assert rule.is_enabled == is_enabled
+
+----------
+
+
+
+Test Class Name: TestRule

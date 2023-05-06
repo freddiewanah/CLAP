@@ -1,0 +1,21 @@
+def compat_getenv(key, default=None):
+    from .utils import get_filesystem_encoding
+    env = os.getenv(key, default)
+    if env:
+        env = env.decode(get_filesystem_encoding())
+    return env
+
+----------
+
+def test_compat_setenv(self):
+    test_var = 'YOUTUBE_DL_COMPAT_SETENV'
+    test_str = 'тест'
+    compat_setenv(test_var, test_str)
+    compat_getenv(test_var)
+    self.assertEqual(compat_getenv(test_var), test_str)
+
+----------
+
+
+
+Test Class Name: TestCompat

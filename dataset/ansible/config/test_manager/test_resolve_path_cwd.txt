@@ -1,0 +1,17 @@
+def resolve_path(path, basedir=None):
+    """ resolve relative or 'variable' paths """
+    if '{{CWD}}' in path:
+        path = path.replace('{{CWD}}', os.getcwd())
+    return unfrackpath(path, follow=False, basedir=basedir)
+
+----------
+
+def test_resolve_path_cwd(self):
+    assert os.path.join(os.getcwd(), 'test.yml') == resolve_path('{{CWD}}/test.yml')
+    assert os.path.join(os.getcwd(), 'test.yml') == resolve_path('./test.yml')
+
+----------
+
+
+
+Test Class Name: TestConfigManager

@@ -1,0 +1,33 @@
+def run(app, level=logging.DEBUG):
+
+    @app.after_server_start
+    async def stop(app, _):
+        app.stop()
+    with caplog.at_level(level):
+        Sanic.serve()
+    return caplog.record_tuples
+
+----------
+
+@pytest.mark.skipif(sys.platform not in ('linux', 'darwin'), reason='This test requires fork context')
+def test_has_multiplexer_default(app: Sanic):
+    event = Event()
+
+    @app.main_process_start
+    async def setup(app, _):
+        app.shared_ctx.event = event
+
+    @app.after_server_start
+    def stop(app):
+        if hasattr(app, 'm') and isinstance(app.m, WorkerMultiplexer):
+            app.shared_ctx.event.set()
+        app.stop()
+    with use_context('fork'):
+        app.run()
+    assert event.is_set()
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,55 @@
+@keras_export('keras.backend.ones')
+@tf.__internal__.dispatch.add_dispatch_support
+@doc_controls.do_not_generate_docs
+def ones(shape, dtype=None, name=None):
+    """Instantiates an all-ones variable and returns it.
+
+    Args:
+        shape: Tuple of integers, shape of returned Keras variable.
+        dtype: String, data type of returned Keras variable.
+        name: String, name of returned Keras variable.
+
+    Returns:
+        A Keras variable, filled with `1.0`.
+        Note that if `shape` was symbolic, we cannot return a variable,
+        and will return a dynamically-shaped tensor instead.
+
+    Example:
+
+
+    >>> kvar = tf.keras.backend.ones((3,4))
+    >>> tf.keras.backend.eval(kvar)
+    array([[1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.]], dtype=float32)
+
+    """
+    with tf.init_scope():
+        if dtype is None:
+            dtype = floatx()
+        tf_dtype = tf.as_dtype(dtype)
+        v = tf.ones(shape=shape, dtype=tf_dtype, name=name)
+        if py_all(v.shape.as_list()):
+            return variable(v, dtype=dtype, name=name)
+        return v
+
+----------
+
+def test_no_inputs_in_signature(self):
+    model = model_util.CustomCallModel()
+    first = tf.ones([2, 3])
+    second = tf.ones([2, 5])
+    output = model(first, second)
+    self.evaluate([v.initializer for v in model.variables])
+    expected_output = self.evaluate(model.dense1(first) + model.dense2(second))
+    self.assertAllClose(expected_output, self.evaluate(output))
+    output = model(first, second, fiddle_with_output='yes')
+    self.assertAllClose(10.0 * expected_output, self.evaluate(output))
+    output = model(first, second=second, training=False)
+    self.assertAllClose(expected_output, self.evaluate(output))
+
+----------
+
+
+
+Test Class Name: CustomCallSignatureTests

@@ -1,0 +1,24 @@
+def parse_distribution_file_Slackware(self, name, data, path, collected_facts):
+    slackware_facts = {}
+    if 'Slackware' not in data:
+        return (False, slackware_facts)
+    slackware_facts['distribution'] = name
+    version = re.findall('\\w+[.]\\w+\\+?', data)
+    if version:
+        slackware_facts['distribution_version'] = version[0]
+    return (True, slackware_facts)
+
+----------
+
+@pytest.mark.parametrize(('distro_file', 'expected_version'), (('Slackware', '14.1'), ('SlackwareCurrent', '14.2+')))
+def test_parse_distribution_file_slackware(mock_module, distro_file, expected_version):
+    test_input = {'name': 'Slackware', 'data': open(os.path.join(os.path.dirname(__file__), '../../fixtures/distribution_files', distro_file)).read(), 'path': '/etc/os-release', 'collected_facts': None}
+    result = (True, {'distribution': 'Slackware', 'distribution_version': expected_version})
+    distribution = DistributionFiles(module=mock_module())
+    assert result == distribution.parse_distribution_file_Slackware(**test_input)
+
+----------
+
+
+
+Test Class Name: default

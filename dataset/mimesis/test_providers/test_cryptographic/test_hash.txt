@@ -1,0 +1,30 @@
+def hash(self, algorithm: t.Optional[Algorithm]=None) -> str:
+    """Generate random hash.
+
+        To change hashing algorithm, pass parameter ``algorithm``
+        with needed value of the enum object :class:`~mimesis.enums.Algorithm`
+
+        .. warning:: Seed is not applicable to this method,
+            because of its cryptographic-safe nature.
+
+        :param algorithm: Enum object :class:`~mimesis.enums.Algorithm`.
+        :return: Hash.
+        :raises NonEnumerableError: When algorithm is unsupported.
+        """
+    key = self.validate_enum(algorithm, Algorithm)
+    func = getattr(hashlib, key)
+    value = func(self.uuid().encode())
+    return str(value.hexdigest())
+
+----------
+
+@pytest.mark.parametrize('algorithm, length', [(Algorithm.MD5, 32), (Algorithm.SHA1, 40), (Algorithm.SHA224, 56), (Algorithm.SHA256, 64), (Algorithm.SHA384, 96), (Algorithm.SHA512, 128), (Algorithm.BLAKE2S, 64), (Algorithm.BLAKE2B, 128)])
+def test_hash(self, crypto, algorithm, length):
+    result = crypto.hash(algorithm=algorithm)
+    assert len(result) == length
+
+----------
+
+
+
+Test Class Name: TestCryptographic

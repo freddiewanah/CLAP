@@ -1,0 +1,25 @@
+def write(self):
+    raise NotImplementedError
+
+----------
+
+def testPrintETA(self):
+    with EventStorage() as s:
+        p1 = CommonMetricPrinter(10)
+        p2 = CommonMetricPrinter()
+        s.put_scalar('time', 1.0)
+        s.step()
+        s.put_scalar('time', 1.0)
+        s.step()
+        with self.assertLogs('detectron2.utils.events') as logs:
+            p1.write()
+        self.assertIn('eta', logs.output[0])
+        with self.assertLogs('detectron2.utils.events') as logs:
+            p2.write()
+        self.assertNotIn('eta', logs.output[0])
+
+----------
+
+
+
+Test Class Name: TestEventWriter

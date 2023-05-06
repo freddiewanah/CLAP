@@ -1,0 +1,19 @@
+def replace_extension(filename, ext, expected_real_ext=None):
+    (name, real_ext) = os.path.splitext(filename)
+    return '{0}.{1}'.format(name if not expected_real_ext or real_ext[1:] == expected_real_ext else filename, ext)
+
+----------
+
+def test_replace_extension(self):
+    self.assertEqual(replace_extension('abc.ext', 'temp'), 'abc.temp')
+    self.assertEqual(replace_extension('abc.ext', 'temp', 'ext'), 'abc.temp')
+    self.assertEqual(replace_extension('abc.unexpected_ext', 'temp', 'ext'), 'abc.unexpected_ext.temp')
+    self.assertEqual(replace_extension('abc', 'temp'), 'abc.temp')
+    self.assertEqual(replace_extension('.abc', 'temp'), '.abc.temp')
+    self.assertEqual(replace_extension('.abc.ext', 'temp'), '.abc.temp')
+
+----------
+
+
+
+Test Class Name: TestUtil

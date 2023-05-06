@@ -1,0 +1,20 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_valid_url(self) -> None:
+
+    class Schema(Config):
+        option = c.URL()
+    conf = self.get_config(Schema, {'option': 'https://mkdocs.org'})
+    assert_type(conf.option, str)
+    self.assertEqual(conf.option, 'https://mkdocs.org')
+    conf = self.get_config(Schema, {'option': ''})
+    self.assertEqual(conf.option, '')
+
+----------
+
+
+
+Test Class Name: URLTest

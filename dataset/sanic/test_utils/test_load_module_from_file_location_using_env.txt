@@ -1,0 +1,75 @@
+def load_module_from_file_location(location: Union[bytes, str, Path], encoding: str='utf8', *args, **kwargs):
+    """Returns loaded module provided as a file path.
+
+    :param args:
+        Corresponds to importlib.util.spec_from_file_location location
+        parameters,but with this differences:
+        - It has to be of a string or bytes type.
+        - You can also use here environment variables
+          in format ${some_env_var}.
+          Mark that $some_env_var will not be resolved as environment variable.
+    :encoding:
+        If location parameter is of a bytes type, then use this encoding
+        to decode it into string.
+    :param args:
+        Corresponds to the rest of importlib.util.spec_from_file_location
+        parameters.
+    :param kwargs:
+        Corresponds to the rest of importlib.util.spec_from_file_location
+        parameters.
+
+    For example You can:
+
+        some_module = load_module_from_file_location(
+            "some_module_name",
+            "/some/path/${some_env_var}"
+        )
+    """
+    if isinstance(location, bytes):
+        location = location.decode(encoding)
+    if isinstance(location, Path) or '/' in location or '$' in location:
+        if not isinstance(location, Path):
+            env_vars_in_location = set(re_findall('\\${(.+?)}', location))
+            not_defined_env_vars = env_vars_in_location.difference(os_environ.keys())
+            if not_defined_env_vars:
+                raise LoadFileException(f"The following environment variables are not set: {', '.join(not_defined_env_vars)}")
+            for env_var in env_vars_in_location:
+                location = location.replace('${' + env_var + '}', os_environ[env_var])
+        location = str(location)
+        if '.py' in location:
+            name = location.split('/')[-1].split('.')[0]
+            _mod_spec = spec_from_file_location(name, location, *args, **kwargs)
+            assert _mod_spec is not None
+            module = module_from_spec(_mod_spec)
+            _mod_spec.loader.exec_module(module)
+        else:
+            module = types.ModuleType('config')
+            module.__file__ = str(location)
+            try:
+                with open(location) as config_file:
+                    exec(compile(config_file.read(), location, 'exec'), module.__dict__)
+            except IOError as e:
+                e.strerror = 'Unable to load configuration file (e.strerror)'
+                raise
+            except Exception as e:
+                raise PyFileError(location) from e
+        return module
+    else:
+        try:
+            return import_string(location)
+        except ValueError:
+            raise IOError('Unable to load configuration %s' % str(location))
+
+----------
+
+def test_load_module_from_file_location_using_env():
+    environ['APP_TEST_CONFIG'] = 'static/app_test_config.py'
+    location = str(Path(__file__).parent / '${APP_TEST_CONFIG}')
+    module = load_module_from_file_location(location)
+    assert isinstance(module, ModuleType)
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,21 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_xmliter_iterate_namespace(self):
+    body = b'\n            <?xml version="1.0" encoding="UTF-8"?>\n            <rss version="2.0" xmlns="http://base.google.com/ns/1.0">\n                <channel>\n                <title>My Dummy Company</title>\n                <link>http://www.mydummycompany.com</link>\n                <description>This is a dummy company. We do nothing.</description>\n                <item>\n                    <title>Item 1</title>\n                    <description>This is item 1</description>\n                    <link>http://www.mydummycompany.com/items/1</link>\n                    <image_link>http://www.mydummycompany.com/images/item1.jpg</image_link>\n                    <image_link>http://www.mydummycompany.com/images/item2.jpg</image_link>\n                </item>\n                </channel>\n            </rss>\n        '
+    response = XmlResponse(url='http://mydummycompany.com', body=body)
+    no_namespace_iter = self.xmliter(response, 'image_link')
+    self.assertEqual(len(list(no_namespace_iter)), 0)
+    namespace_iter = self.xmliter(response, 'image_link', 'http://base.google.com/ns/1.0')
+    node = next(namespace_iter)
+    self.assertEqual(node.xpath('text()').getall(), ['http://www.mydummycompany.com/images/item1.jpg'])
+    node = next(namespace_iter)
+    self.assertEqual(node.xpath('text()').getall(), ['http://www.mydummycompany.com/images/item2.jpg'])
+
+----------
+
+
+
+Test Class Name: LxmlXmliterTestCase

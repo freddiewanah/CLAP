@@ -1,0 +1,58 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.parametrize('path,headers,expected', ((b'/', {}, 200), (b'/', {'host': 'maybe.com'}, 200), (b'/host', {'host': 'matching.com'}, 200), (b'/host', {'host': 'wrong.com'}, 404), (b'/without', {}, 200), (b'/without/', {}, 200), (b'/with', {}, 200), (b'/with/', {}, 200), (b'/expwithout', {}, 200), (b'/expwithout/', {}, 200), (b'/expwith', {}, 200), (b'/expwith/', {}, 200), (b'/without/strict', {}, 200), (b'/without/strict/', {}, 404), (b'/with/strict', {}, 404), (b'/with/strict/', {}, 200), (b'/bp1', {}, 200), (b'/bp1', {'host': 'maybe.com'}, 200), (b'/bp1/host', {'host': 'matching.com'}, 200), (b'/bp1/host', {'host': 'wrong.com'}, 404), (b'/bp1/without', {}, 200), (b'/bp1/without/', {}, 200), (b'/bp1/with', {}, 200), (b'/bp1/with/', {}, 200), (b'/bp1/expwithout', {}, 200), (b'/bp1/expwithout/', {}, 200), (b'/bp1/expwith', {}, 200), (b'/bp1/expwith/', {}, 200), (b'/bp1/without/strict', {}, 200), (b'/bp1/without/strict/', {}, 404), (b'/bp1/with/strict', {}, 404), (b'/bp1/with/strict/', {}, 200), (b'/bp2/', {}, 200), (b'/bp2/', {'host': 'maybe.com'}, 200), (b'/bp2/host', {'host': 'matching.com'}, 200), (b'/bp2/host', {'host': 'wrong.com'}, 404), (b'/bp2/without', {}, 200), (b'/bp2/without/', {}, 404), (b'/bp2/with', {}, 404), (b'/bp2/with/', {}, 200), (b'/bp2/expwithout', {}, 200), (b'/bp2/expwithout/', {}, 200), (b'/bp2/expwith', {}, 200), (b'/bp2/expwith/', {}, 200), (b'/bp2/without/strict', {}, 200), (b'/bp2/without/strict/', {}, 404), (b'/bp2/with/strict', {}, 404), (b'/bp2/with/strict/', {}, 200), (b'/bp3', {}, 200), (b'/bp3', {'host': 'maybe.com'}, 200), (b'/bp3/host', {'host': 'matching.com'}, 200), (b'/bp3/host', {'host': 'wrong.com'}, 404), (b'/bp3/without', {}, 200), (b'/bp3/without/', {}, 200), (b'/bp3/with', {}, 200), (b'/bp3/with/', {}, 200), (b'/bp3/expwithout', {}, 200), (b'/bp3/expwithout/', {}, 200), (b'/bp3/expwith', {}, 200), (b'/bp3/expwith/', {}, 200), (b'/bp3/without/strict', {}, 200), (b'/bp3/without/strict/', {}, 404), (b'/bp3/with/strict', {}, 404), (b'/bp3/with/strict/', {}, 200), (b'/bp4', {}, 404), (b'/bp4', {'host': 'maybe.com'}, 200), (b'/bp4/host', {'host': 'matching.com'}, 200), (b'/bp4/host', {'host': 'wrong.com'}, 404), (b'/bp4/without', {}, 404), (b'/bp4/without/', {}, 404), (b'/bp4/with', {}, 404), (b'/bp4/with/', {}, 404), (b'/bp4/expwithout', {}, 404), (b'/bp4/expwithout/', {}, 404), (b'/bp4/expwith', {}, 404), (b'/bp4/expwith/', {}, 404), (b'/bp4/without/strict', {}, 404), (b'/bp4/without/strict/', {}, 404), (b'/bp4/with/strict', {}, 404), (b'/bp4/with/strict/', {}, 404)))
+def test_matching(path, headers, expected):
+    app = Sanic('dev')
+    bp1 = Blueprint('bp1', url_prefix='/bp1')
+    bp2 = Blueprint('bp2', url_prefix='/bp2', strict_slashes=True)
+    bp3 = Blueprint('bp3', url_prefix='/bp3', strict_slashes=False)
+    bp4 = Blueprint('bp4', url_prefix='/bp4', host='maybe.com')
+
+    def handler(request):
+        return text('Hello!')
+    defs = (('/', None, None), ('/host', None, 'matching.com'), ('/without', None, None), ('/with/', None, None), ('/expwithout', False, None), ('/expwith/', False, None), ('/without/strict', True, None), ('/with/strict/', True, None))
+    for (uri, strict_slashes, host) in defs:
+        params = {'uri': uri}
+        if strict_slashes is not None:
+            params['strict_slashes'] = strict_slashes
+        if host is not None:
+            params['host'] = host
+        app.route(**params)(handler)
+        bp1.route(**params)(handler)
+        bp2.route(**params)(handler)
+        bp3.route(**params)(handler)
+        bp4.route(**params)(handler)
+    app.blueprint(bp1)
+    app.blueprint(bp2)
+    app.blueprint(bp3)
+    app.blueprint(bp4)
+    app.router.finalize()
+    request = Request(path, headers, None, 'GET', None, app)
+    try:
+        app.router.get(request.path, request.method, request.headers.get('host'))
+    except NotFound:
+        response = 404
+    except Exception:
+        response = 500
+    else:
+        response = 200
+    assert response == expected
+
+----------
+
+
+
+Test Class Name: default

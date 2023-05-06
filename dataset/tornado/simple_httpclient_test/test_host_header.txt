@@ -1,0 +1,19 @@
+def get_url(self, path: str) -> str:
+    """Returns an absolute url for the given path on the test server."""
+    return '%s://127.0.0.1:%s%s' % (self.get_protocol(), self.get_http_port(), path)
+
+----------
+
+def test_host_header(self: typing.Any):
+    host_re = re.compile(b'^127.0.0.1:[0-9]+$')
+    response = self.fetch('/host_echo')
+    self.assertTrue(host_re.match(response.body))
+    url = self.get_url('/host_echo').replace('http://', 'http://me:secret@')
+    response = self.fetch(url)
+    self.assertTrue(host_re.match(response.body), response.body)
+
+----------
+
+
+
+Test Class Name: TimeoutResolver

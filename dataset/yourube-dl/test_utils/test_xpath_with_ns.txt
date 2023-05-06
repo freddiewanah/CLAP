@@ -1,0 +1,26 @@
+def xpath_with_ns(path, ns_map):
+    components = [c.split(':') for c in path.split('/')]
+    replaced = []
+    for c in components:
+        if len(c) == 1:
+            replaced.append(c[0])
+        else:
+            (ns, tag) = c
+            replaced.append('{%s}%s' % (ns_map[ns], tag))
+    return '/'.join(replaced)
+
+----------
+
+def test_xpath_with_ns(self):
+    testxml = '<root xmlns:media="http://example.com/">\n            <media:song>\n                <media:author>The Author</media:author>\n                <url>http://server.com/download.mp3</url>\n            </media:song>\n        </root>'
+    doc = compat_etree_fromstring(testxml)
+    find = lambda p: doc.find(xpath_with_ns(p, {'media': 'http://example.com/'}))
+    self.assertTrue(find('media:song') is not None)
+    self.assertEqual(find('media:song/media:author').text, 'The Author')
+    self.assertEqual(find('media:song/url').text, 'http://server.com/download.mp3')
+
+----------
+
+
+
+Test Class Name: TestUtil

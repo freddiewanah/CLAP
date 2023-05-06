@@ -1,0 +1,54 @@
+def json(body: Any, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='application/json', dumps: Optional[Callable[..., str]]=None, **kwargs: Any) -> JSONResponse:
+    """
+    Returns response object with body in json format.
+
+    :param body: Response data to be serialized.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param kwargs: Remaining arguments that are passed to the json encoder.
+    """
+    return JSONResponse(body, status=status, headers=headers, content_type=content_type, dumps=dumps, **kwargs)
+
+----------
+
+def test_streaming_new_api(app):
+
+    @app.post('/non-stream')
+    async def handler1(request):
+        assert request.body == b'x'
+        await request.receive_body()
+        assert request.body == b'x'
+        return text('OK')
+
+    @app.post('/1', stream=True)
+    async def handler2(request):
+        assert request.stream
+        assert not request.body
+        await request.receive_body()
+        return text(request.body.decode().upper())
+
+    @app.post('/2', stream=True)
+    async def handler(request):
+        ret = []
+        async for data in request.stream:
+            assert data
+            assert isinstance(data, bytes)
+            ret.append(data.decode('ASCII'))
+        return json(ret)
+    (request, response) = app.test_client.post('/non-stream', data='x')
+    assert response.status == 200
+    (request, response) = app.test_client.post('/1', data='TEST data')
+    assert request.body == b'TEST data'
+    assert response.status == 200
+    assert response.text == 'TEST DATA'
+    (request, response) = app.test_client.post('/2', data=data)
+    assert response.status == 200
+    res = response.json
+    assert isinstance(res, list)
+    assert ''.join(res) == data
+
+----------
+
+
+
+Test Class Name: SimpleView

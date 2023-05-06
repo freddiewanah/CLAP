@@ -1,0 +1,29 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_request_server_name_forwarded(app):
+
+    @app.get('/')
+    def handler(request):
+        return text('OK')
+    app.config.PROXIES_COUNT = 1
+    (request, response) = app.test_client.get('/', headers={'Host': 'my-server:5555', 'X-Forwarded-For': '127.1.2.3', 'X-Forwarded-Host': 'your-server'})
+    assert request.server_name == 'your-server'
+
+----------
+
+
+
+Test Class Name: Bar

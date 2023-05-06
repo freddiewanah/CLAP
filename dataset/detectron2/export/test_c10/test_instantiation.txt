@@ -1,0 +1,27 @@
+def get_cfg() -> CfgNode:
+    """
+    Get a copy of the default config.
+
+    Returns:
+        a detectron2 CfgNode instance.
+    """
+    from .defaults import _C
+    return _C.clone()
+
+----------
+
+def test_instantiation(self):
+    cfg = get_cfg()
+    cfg.MODEL.RPN.BBOX_REG_WEIGHTS = (1, 1, 1, 1, 1)
+    input_shapes = {'res4': ShapeSpec(channels=256, stride=4)}
+    rpn = Caffe2RPN(cfg, input_shapes)
+    assert rpn is not None
+    cfg.MODEL.RPN.BBOX_REG_WEIGHTS = (10, 10, 5, 5, 1)
+    with self.assertRaises(AssertionError):
+        rpn = Caffe2RPN(cfg, input_shapes)
+
+----------
+
+
+
+Test Class Name: TestCaffe2RPN

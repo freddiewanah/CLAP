@@ -1,0 +1,13 @@
+def get(self):
+    return self.config.get('token', None)
+
+----------
+
+def test_token_explicit(b_token_file):
+    assert GalaxyToken(token='explicit').get() == 'explicit'
+
+----------
+
+
+
+Test Class Name: default

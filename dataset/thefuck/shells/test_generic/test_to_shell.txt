@@ -1,0 +1,14 @@
+def to_shell(self, command_script):
+    """Prepares command for running in shell."""
+    return command_script
+
+----------
+
+def test_to_shell(self, shell):
+    assert shell.to_shell('pwd') == 'pwd'
+
+----------
+
+
+
+Test Class Name: TestGeneric

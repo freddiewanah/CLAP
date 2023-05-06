@@ -1,0 +1,19 @@
+def serialize_field(self, field, name, value):
+    serializer = field.get('serializer', lambda x: x)
+    return serializer(value)
+
+----------
+
+def test_field_custom_serializer(self):
+    i = self.custom_field_item_class(name='John£', age='22')
+    a = ItemAdapter(i)
+    ie = self._get_exporter()
+    self.assertEqual(ie.serialize_field(a.get_field_meta('name'), 'name', a['name']), 'John£')
+    self.assertEqual(ie.serialize_field(a.get_field_meta('age'), 'age', a['age']), '24')
+
+----------
+
+def _get_exporter(self, **kwargs):
+    return BaseItemExporter(**kwargs)
+
+Test Class Name: BaseItemExporterTest

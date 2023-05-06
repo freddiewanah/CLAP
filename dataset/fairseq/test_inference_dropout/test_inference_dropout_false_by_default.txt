@@ -1,0 +1,62 @@
+def convert_namespace_to_omegaconf(args: Namespace) -> DictConfig:
+    """Convert a flat argparse.Namespace to a structured DictConfig."""
+    (overrides, deletes) = override_module_args(args)
+    config_path = os.path.join('..', 'config')
+    GlobalHydra.instance().clear()
+    with initialize(config_path=config_path):
+        try:
+            composed_cfg = compose('config', overrides=overrides, strict=False)
+        except:
+            logger.error('Error when composing. Overrides: ' + str(overrides))
+            raise
+        for k in deletes:
+            composed_cfg[k] = None
+    cfg = OmegaConf.create(OmegaConf.to_container(composed_cfg, resolve=True, enum_to_str=True))
+    from omegaconf import _utils
+    with omegaconf_no_object_check():
+        if cfg.task is None and getattr(args, 'task', None):
+            cfg.task = Namespace(**vars(args))
+            from fairseq.tasks import TASK_REGISTRY
+            _set_legacy_defaults(cfg.task, TASK_REGISTRY[args.task])
+            cfg.task._name = args.task
+        if cfg.model is None and getattr(args, 'arch', None):
+            cfg.model = Namespace(**vars(args))
+            from fairseq.models import ARCH_MODEL_REGISTRY
+            _set_legacy_defaults(cfg.model, ARCH_MODEL_REGISTRY[args.arch])
+            cfg.model._name = args.arch
+        if cfg.optimizer is None and getattr(args, 'optimizer', None):
+            cfg.optimizer = Namespace(**vars(args))
+            from fairseq.optim import OPTIMIZER_REGISTRY
+            _set_legacy_defaults(cfg.optimizer, OPTIMIZER_REGISTRY[args.optimizer])
+            cfg.optimizer._name = args.optimizer
+        if cfg.lr_scheduler is None and getattr(args, 'lr_scheduler', None):
+            cfg.lr_scheduler = Namespace(**vars(args))
+            from fairseq.optim.lr_scheduler import LR_SCHEDULER_REGISTRY
+            _set_legacy_defaults(cfg.lr_scheduler, LR_SCHEDULER_REGISTRY[args.lr_scheduler])
+            cfg.lr_scheduler._name = args.lr_scheduler
+        if cfg.criterion is None and getattr(args, 'criterion', None):
+            cfg.criterion = Namespace(**vars(args))
+            from fairseq.criterions import CRITERION_REGISTRY
+            _set_legacy_defaults(cfg.criterion, CRITERION_REGISTRY[args.criterion])
+            cfg.criterion._name = args.criterion
+    OmegaConf.set_struct(cfg, True)
+    return cfg
+
+----------
+
+def test_inference_dropout_false_by_default(self):
+    self.transformer_model = TransformerModel.build_model(self.args, self.task)
+    cfg = convert_namespace_to_omegaconf(self.args)
+    self.transformer_model.prepare_for_inference_(cfg)
+    assert not self.transformer_model.encoder.dropout_module.apply_during_inference
+    assert not self.transformer_model.decoder.dropout_module.apply_during_inference
+    for layer in self.transformer_model.encoder.layers:
+        assert not layer.dropout_module.apply_during_inference
+    for layer in self.transformer_model.decoder.layers:
+        assert not layer.dropout_module.apply_during_inference
+
+----------
+
+
+
+Test Class Name: TestInferenceDropout

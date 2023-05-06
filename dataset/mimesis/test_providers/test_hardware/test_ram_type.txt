@@ -1,0 +1,21 @@
+def ram_type(self) -> str:
+    """Get a random RAM type.
+
+        :return: Type of RAM.
+
+        :Example:
+            DDR3.
+        """
+    return self.random.choice(RAM_TYPES)
+
+----------
+
+def test_ram_type(self, hard):
+    result = hard.ram_type()
+    assert result in RAM_TYPES
+
+----------
+
+
+
+Test Class Name: TestHardware

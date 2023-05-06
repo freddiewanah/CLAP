@@ -1,0 +1,24 @@
+def rgb_color(self, safe: bool=False) -> t.Tuple[int, ...]:
+    """Generate a random rgb color tuple.
+
+        :param safe: Get safe RGB tuple.
+        :return: RGB tuple.
+
+        :Example:
+            (252, 85, 32)
+        """
+    color = self.hex_color(safe)
+    return self._hex_to_rgb(color)
+
+----------
+
+@pytest.mark.parametrize('safe', [True, False])
+def test_rgb_color(self, _text, safe):
+    result = _text.rgb_color(safe=safe)
+    assert isinstance(result, tuple)
+
+----------
+
+
+
+Test Class Name: TestText

@@ -1,0 +1,26 @@
+@git_support
+def get_new_command(command):
+    command_parts = command.script_parts[:]
+    upstream_option_index = _get_upstream_option_index(command_parts)
+    if upstream_option_index is not None:
+        command_parts.pop(upstream_option_index)
+        if len(command_parts) > upstream_option_index:
+            command_parts.pop(upstream_option_index)
+    else:
+        push_idx = command_parts.index('push') + 1
+        while len(command_parts) > push_idx and command_parts[len(command_parts) - 1][0] != '-':
+            command_parts.pop(len(command_parts) - 1)
+    arguments = re.findall('git push (.*)', command.output)[-1].replace("'", "\\'").strip()
+    return replace_argument(' '.join(command_parts), 'push', 'push {}'.format(arguments))
+
+----------
+
+@pytest.mark.parametrize('command, new_command', [(Command('hg base', "hg: unknown command 'base'\n(did you mean one of blame, phase, rebase?)"), 'hg rebase'), (Command('hg branchch', "hg: unknown command 'branchch'\n(did you mean one of branch, branches?)"), 'hg branch'), (Command('hg vert', "hg: unknown command 'vert'\n(did you mean one of revert?)"), 'hg revert'), (Command('hg lgo -r tip', "hg: command 're' is ambiguous:\n(did you mean one of log?)"), 'hg log -r tip'), (Command('hg rerere', "hg: unknown command 'rerere'\n(did you mean one of revert?)"), 'hg revert'), (Command('hg re', "hg: command 're' is ambiguous:\n    rebase recover remove rename resolve revert"), 'hg rebase'), (Command('hg re re', "hg: command 're' is ambiguous:\n    rebase recover remove rename resolve revert"), 'hg rebase re')])
+def test_get_new_command(command, new_command):
+    assert get_new_command(command) == new_command
+
+----------
+
+
+
+Test Class Name: default

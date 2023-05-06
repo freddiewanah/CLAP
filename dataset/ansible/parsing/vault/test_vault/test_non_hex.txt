@@ -1,0 +1,16 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_non_hex(self):
+    vaulttext_envelope = u'$ANSIBLE_VAULT;1.1;AES256\n3336396J326261303234626463623963633531343539616138316433353830356566396130353436\n3562643163366231316662386565383735653432386435610a306664636137376132643732393835\n63383038383730306639353234326630666539346233376330303938323639306661313032396437\n6233623062366136310a633866373936313238333730653739323461656662303864663666653563\n3138'
+    b_vaulttext_envelope = to_bytes(vaulttext_envelope, errors='strict', encoding='utf-8')
+    (b_vaulttext, b_version, cipher_name, vault_id) = vault.parse_vaulttext_envelope(b_vaulttext_envelope)
+    self.assertRaisesRegex(vault.AnsibleVaultFormatError, '.*Vault format unhexlify error.*Non-hexadecimal digit found', vault.parse_vaulttext, b_vaulttext_envelope)
+
+----------
+
+
+
+Test Class Name: TestParseVaulttext

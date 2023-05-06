@@ -1,0 +1,16 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, is_bsd', [('touch /a/b/c', False), ('touch /a/b/c', True)])
+def test_match(script, is_bsd):
+    command = Command(script, output(is_bsd))
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

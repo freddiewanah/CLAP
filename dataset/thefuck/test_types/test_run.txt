@@ -1,0 +1,27 @@
+def run(self, old_cmd):
+    """Runs command from rule for passed command.
+
+        :type old_cmd: Command
+
+        """
+    if self.side_effect:
+        self.side_effect(old_cmd, self.script)
+    if settings.alter_history:
+        shell.put_to_history(self.script)
+    logs.debug(u'PYTHONIOENCODING: {}'.format(os.environ.get('PYTHONIOENCODING', '!!not-set!!')))
+    sys.stdout.write(self._get_script())
+
+----------
+
+@pytest.mark.parametrize('script, printed, override_settings', [('git branch', 'git branch', {'repeat': False, 'debug': False}), ('git brunch', "git brunch || fuck --repeat --force-command 'git brunch'", {'repeat': True, 'debug': False}), ('git brunch', "git brunch || fuck --repeat --debug --force-command 'git brunch'", {'repeat': True, 'debug': True})])
+def test_run(self, capsys, settings, script, printed, override_settings):
+    settings.update(override_settings)
+    CorrectedCommand(script, None, 1000).run(Command(script, ''))
+    (out, _) = capsys.readouterr()
+    assert out == printed
+
+----------
+
+
+
+Test Class Name: TestCorrectedCommand

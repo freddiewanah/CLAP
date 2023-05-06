@@ -1,0 +1,32 @@
+def empty(status: int=204, headers: Optional[Dict[str, str]]=None) -> HTTPResponse:
+    """
+    Returns an empty response to the client.
+
+    :param status Response code.
+    :param headers Custom Headers.
+    """
+    return HTTPResponse(body=b'', status=status, headers=headers)
+
+----------
+
+def test_custom_generator():
+    REQUEST_ID = 99
+
+    class FooRequest(Request):
+
+        @classmethod
+        def generate_id(cls, request):
+            return int(request.headers['some-other-request-id']) * 2
+    app = Sanic('req-generator', request_class=FooRequest)
+
+    @app.get('/')
+    async def get(request):
+        return response.empty()
+    (request, _) = app.test_client.get('/', headers={'SOME-OTHER-REQUEST-ID': f'{REQUEST_ID}'})
+    assert request.id == REQUEST_ID * 2
+
+----------
+
+
+
+Test Class Name: default

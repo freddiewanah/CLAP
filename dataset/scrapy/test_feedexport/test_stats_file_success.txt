@@ -1,0 +1,33 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_stats_file_success(self):
+    settings = {'FEEDS': {printf_escape(path_to_url(str(self._random_temp_filename()))): {'format': 'json'}}}
+    crawler = get_crawler(ItemSpider, settings)
+    with MockServer() as mockserver:
+        yield crawler.crawl(mockserver=mockserver)
+    self.assertIn('feedexport/success_count/FileFeedStorage', crawler.stats.get_stats())
+    self.assertEqual(crawler.stats.get_value('feedexport/success_count/FileFeedStorage'), 1)
+
+----------
+
+
+
+Test Class Name: FeedExportTest

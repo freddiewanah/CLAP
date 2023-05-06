@@ -1,0 +1,32 @@
+def aes_decrypt(data, expanded_key):
+    """
+    Decrypt one block with aes
+
+    @param {int[]} data          16-Byte cipher
+    @param {int[]} expanded_key  176/208/240-Byte expanded key
+    @returns {int[]}             16-Byte state
+    """
+    rounds = len(expanded_key) // BLOCK_SIZE_BYTES - 1
+    for i in range(rounds, 0, -1):
+        data = xor(data, expanded_key[i * BLOCK_SIZE_BYTES:(i + 1) * BLOCK_SIZE_BYTES])
+        if i != rounds:
+            data = mix_columns_inv(data)
+        data = shift_rows_inv(data)
+        data = sub_bytes_inv(data)
+    data = xor(data, expanded_key[:BLOCK_SIZE_BYTES])
+    return data
+
+----------
+
+def test_encrypt(self):
+    msg = b'message'
+    key = list(range(16))
+    encrypted = aes_encrypt(bytes_to_intlist(msg), key)
+    decrypted = intlist_to_bytes(aes_decrypt(encrypted, key))
+    self.assertEqual(decrypted, msg)
+
+----------
+
+
+
+Test Class Name: TestAES

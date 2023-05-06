@@ -1,0 +1,39 @@
+def pop(self, key: Any, default: Any=_default) -> Any:
+    """Pops a key from the response's raw_body, ensuring that body is
+        kept up to date. This can only be used if raw_body is a dict or a
+        list.
+        """
+    self._check_body_not_manually_set()
+    if not isinstance(self._raw_body, (list, dict)):
+        raise SanicException('Cannot pop from a non-list and non-dict object.')
+    if isinstance(default, Default):
+        value = self._raw_body.pop(key)
+    elif isinstance(self._raw_body, list):
+        raise TypeError("pop doesn't accept a default argument for lists")
+    else:
+        value = self._raw_body.pop(key, default)
+    self.raw_body = self._raw_body
+    return value
+
+----------
+
+def test_pop_dict(json_app: Sanic):
+
+    @json_app.get('/json-pop')
+    async def handler_pop(request: Request):
+        return json_response({'a': 'b', 'c': 'd'}, status=200)
+
+    @json_app.on_response
+    def do_pop(request: Request, response: JSONResponse):
+        val = response.pop('c')
+        assert val == 'd'
+        val_default = response.pop('e', 'f')
+        assert val_default == 'f'
+    (_, resp) = json_app.test_client.get('/json-pop')
+    assert resp.body == json_dumps({'a': 'b'}).encode()
+
+----------
+
+
+
+Test Class Name: default

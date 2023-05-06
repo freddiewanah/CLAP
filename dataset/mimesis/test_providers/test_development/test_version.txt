@@ -1,0 +1,49 @@
+def version(self, calver: bool=False, pre_release: bool=False) -> str:
+    """Generate version number.
+
+        :param calver: Calendar versioning.
+        :param pre_release: Pre-release.
+        :return: Version.
+
+        :Example:
+            0.2.1
+        """
+    if calver:
+        major = self.random.randint(2016, self._now.year)
+        (minor, patch) = self.random.randints(2, 1, 10)
+    else:
+        (major, minor, patch) = self.random.randints(3, 0, 10)
+    version = f'{major}.{minor}.{patch}'
+    if pre_release:
+        suffix = self.random.choice(('alpha', 'beta', 'rc'))
+        number = self.random.randint(1, 11)
+        version = f'{version}-{suffix}.{number}'
+    return version
+
+----------
+
+def test_version(self, dev):
+    result = dev.version().split('.')
+    result = [int(i) for i in result]
+    assert len(result) == 3
+    major = result[0]
+    assert major >= 0 and major <= 11
+    minor = result[1]
+    assert minor >= 0 and minor <= 11
+    patch = result[2]
+    assert patch >= 0 and patch <= 11
+    pre_release = dev.version(pre_release=True)
+    assert len(pre_release.split('.')) == 4
+    calver = dev.version(calver=True)
+    (y, *_) = calver.split('.')
+    assert int(y) >= 2016 and int(y) <= dev._now.year
+    calver_pre_release = dev.version(calver=True, pre_release=True)
+    (y, *_) = calver_pre_release.split('.')
+    assert len(calver_pre_release.split('.')) == 4
+    assert int(y) >= 2016 and int(y) <= dev._now.year
+
+----------
+
+
+
+Test Class Name: TestDevelopment

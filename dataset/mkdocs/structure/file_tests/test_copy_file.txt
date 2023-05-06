@@ -1,0 +1,22 @@
+def assertPathIsFile(self, *parts):
+    path = os.path.join(*parts)
+    if not os.path.isfile(path):
+        msg = self._formatMessage(None, f"The path '{path}' is not a file that exists")
+        raise self.failureException(msg)
+
+----------
+
+@tempdir()
+@tempdir(files={'test.txt': 'source content'})
+def test_copy_file(self, src_dir, dest_dir):
+    file = File('test.txt', src_dir, dest_dir, use_directory_urls=False)
+    dest_path = os.path.join(dest_dir, 'test.txt')
+    self.assertPathNotExists(dest_path)
+    file.copy_file()
+    self.assertPathIsFile(dest_path)
+
+----------
+
+
+
+Test Class Name: TestFiles

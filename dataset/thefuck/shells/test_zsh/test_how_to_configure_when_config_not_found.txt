@@ -1,0 +1,14 @@
+def how_to_configure(self):
+    return self._create_shell_configuration(content=u'eval $(thefuck --alias)', path='~/.zshrc', reload='source ~/.zshrc')
+
+----------
+
+def test_how_to_configure_when_config_not_found(self, shell, config_exists):
+    config_exists.return_value = False
+    assert not shell.how_to_configure().can_configure_automatically
+
+----------
+
+
+
+Test Class Name: TestZsh

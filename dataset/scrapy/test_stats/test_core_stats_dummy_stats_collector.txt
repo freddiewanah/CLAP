@@ -1,0 +1,25 @@
+def spider_closed(self, spider, reason):
+    finish_time = datetime.utcnow()
+    elapsed_time = finish_time - self.start_time
+    elapsed_time_seconds = elapsed_time.total_seconds()
+    self.stats.set_value('elapsed_time_seconds', elapsed_time_seconds, spider=spider)
+    self.stats.set_value('finish_time', finish_time, spider=spider)
+    self.stats.set_value('finish_reason', reason, spider=spider)
+
+----------
+
+def test_core_stats_dummy_stats_collector(self):
+    self.crawler.stats = DummyStatsCollector(self.crawler)
+    ext = CoreStats.from_crawler(self.crawler)
+    ext.spider_opened(self.spider)
+    ext.item_scraped({}, self.spider)
+    ext.response_received(self.spider)
+    ext.item_dropped({}, self.spider, ZeroDivisionError())
+    ext.spider_closed(self.spider, 'finished')
+    self.assertEqual(ext.stats._stats, {})
+
+----------
+
+
+
+Test Class Name: CoreStatsExtensionTest

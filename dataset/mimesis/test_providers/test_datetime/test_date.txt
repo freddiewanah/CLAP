@@ -1,0 +1,25 @@
+def date(self, start: int=2000, end: int=_CURRENT_YEAR) -> Date:
+    """Generate random date object.
+
+        :param start: Minimum value of year.
+        :param end: Maximum value of year.
+        :return: Formatted date.
+        """
+    year = self.random.randint(start, end)
+    month = self.random.randint(1, 12)
+    day = self.random.randint(1, monthrange(year, month)[1])
+    date_object = date(year, month, day)
+    return date_object
+
+----------
+
+def test_date(self, dt):
+    date_object = dt.date(start=dt._CURRENT_YEAR, end=dt._CURRENT_YEAR)
+    assert isinstance(date_object, datetime.date)
+    assert date_object.year == dt._CURRENT_YEAR
+
+----------
+
+
+
+Test Class Name: TestDatetime

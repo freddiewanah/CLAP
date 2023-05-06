@@ -1,0 +1,30 @@
+def get_nowait(self) -> _T:
+    """Remove and return an item from the queue without blocking.
+
+        Return an item if one is immediately available, else raise
+        `QueueEmpty`.
+        """
+    self._consume_expired()
+    if self._putters:
+        assert self.full(), 'queue not full, why are putters waiting?'
+        (item, putter) = self._putters.popleft()
+        self.__put_internal(item)
+        future_set_result_unless_cancelled(putter, None)
+        return self._get()
+    elif self.qsize():
+        return self._get()
+    else:
+        raise QueueEmpty
+
+----------
+
+def test_nonblocking_get(self):
+    q = queues.Queue()
+    q.put_nowait(0)
+    self.assertEqual(0, q.get_nowait())
+
+----------
+
+
+
+Test Class Name: QueueGetTest

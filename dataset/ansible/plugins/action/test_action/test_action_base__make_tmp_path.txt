@@ -1,0 +1,83 @@
+def compile(self):
+    """
+        Compiles and returns the task list for this play, compiled from the
+        roles (which are themselves compiled recursively) and/or the list of
+        tasks specified in the play.
+        """
+    flush_block = Block.load(data={'meta': 'flush_handlers'}, play=self, variable_manager=self._variable_manager, loader=self._loader)
+    for task in flush_block.block:
+        task.implicit = True
+    block_list = []
+    if self.force_handlers:
+        noop_task = Task()
+        noop_task.action = 'meta'
+        noop_task.args['_raw_params'] = 'noop'
+        noop_task.implicit = True
+        noop_task.set_loader(self._loader)
+        b = Block(play=self)
+        b.block = self.pre_tasks or [noop_task]
+        b.always = [flush_block]
+        block_list.append(b)
+        tasks = self._compile_roles() + self.tasks
+        b = Block(play=self)
+        b.block = tasks or [noop_task]
+        b.always = [flush_block]
+        block_list.append(b)
+        b = Block(play=self)
+        b.block = self.post_tasks or [noop_task]
+        b.always = [flush_block]
+        block_list.append(b)
+        return block_list
+    block_list.extend(self.pre_tasks)
+    block_list.append(flush_block)
+    block_list.extend(self._compile_roles())
+    block_list.extend(self.tasks)
+    block_list.append(flush_block)
+    block_list.extend(self.post_tasks)
+    block_list.append(flush_block)
+    return block_list
+
+----------
+
+def test_action_base__make_tmp_path(self):
+    mock_task = MagicMock()
+
+    def get_shell_opt(opt):
+        ret = None
+        if opt == 'admin_users':
+            ret = ['root', 'toor', 'Administrator']
+        elif opt == 'remote_tmp':
+            ret = '~/.ansible/tmp'
+        return ret
+    mock_connection = MagicMock()
+    mock_connection.transport = 'ssh'
+    mock_connection._shell.mkdtemp.return_value = 'mkdir command'
+    mock_connection._shell.join_path.side_effect = os.path.join
+    mock_connection._shell.get_option = get_shell_opt
+    mock_connection._shell.HOMES_RE = re.compile('(\\\'|\\")?(~|\\$HOME)(.*)')
+    play_context = PlayContext()
+    play_context.become = True
+    play_context.become_user = 'foo'
+    mock_task.become = True
+    mock_task.become_user = True
+    action_base = DerivedActionBase(task=mock_task, connection=mock_connection, play_context=play_context, loader=None, templar=None, shared_loader_obj=None)
+    action_base._low_level_execute_command = MagicMock()
+    action_base._low_level_execute_command.return_value = dict(rc=0, stdout='/some/path')
+    self.assertEqual(action_base._make_tmp_path('root'), '/some/path/')
+    action_base._low_level_execute_command.return_value = dict(rc=0, stdout='')
+    self.assertRaises(AnsibleError, action_base._make_tmp_path, 'root')
+    action_base._low_level_execute_command.return_value = dict(rc=5, stdout='')
+    self.assertRaises(AnsibleError, action_base._make_tmp_path, 'root')
+    action_base._low_level_execute_command.return_value = dict(rc=255, stdout='', stderr='')
+    self.assertRaises(AnsibleError, action_base._make_tmp_path, 'root')
+    self.assertRaises(AnsibleError, action_base._make_tmp_path, 'root')
+    action_base._low_level_execute_command.return_value = dict(rc=1, stdout='some stuff here', stderr='')
+    self.assertRaises(AnsibleError, action_base._make_tmp_path, 'root')
+    action_base._low_level_execute_command.return_value = dict(rc=1, stdout='some stuff here', stderr='No space left on device')
+    self.assertRaises(AnsibleError, action_base._make_tmp_path, 'root')
+
+----------
+
+
+
+Test Class Name: TestActionBase

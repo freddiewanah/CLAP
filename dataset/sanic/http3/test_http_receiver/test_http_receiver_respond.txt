@@ -1,0 +1,30 @@
+def respond(self, response: BaseHTTPResponse) -> BaseHTTPResponse:
+    logger.debug(f'{Colors.BLUE}[respond]:{Colors.END} {response}', extra={'verbosity': 2})
+    if self.stage is not Stage.HANDLER:
+        self.stage = Stage.FAILED
+        raise RuntimeError('Response already started')
+    if self.response is not None:
+        self.response.stream = None
+    (self.response, response.stream) = (response, self)
+    return response
+
+----------
+
+def test_http_receiver_respond(app: Sanic, http_request: Request):
+    receiver = generate_http_receiver(app, http_request)
+    response = empty()
+    receiver.stage = Stage.RESPONSE
+    with pytest.raises(RuntimeError, match='Response already started'):
+        receiver.respond(response)
+    receiver.stage = Stage.HANDLER
+    receiver.response = Mock()
+    resp = receiver.respond(response)
+    assert receiver.response is resp
+    assert resp is response
+    assert response.stream is receiver
+
+----------
+
+
+
+Test Class Name: mock_handle

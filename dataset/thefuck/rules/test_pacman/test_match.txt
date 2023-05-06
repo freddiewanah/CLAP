@@ -1,0 +1,16 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.skipif(not getattr(pacman, 'enabled_by_default', True), reason='Skip if pacman is not available')
+@pytest.mark.parametrize('command', [Command('vim', 'vim: command not found'), Command('sudo vim', 'sudo: vim: command not found')])
+def test_match(command):
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

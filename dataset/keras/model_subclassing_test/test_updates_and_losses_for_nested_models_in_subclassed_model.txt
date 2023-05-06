@@ -1,0 +1,64 @@
+def get_losses_for(self, inputs=None):
+    return super(RNN, self).get_losses_for(inputs=inputs)
+
+----------
+
+def test_updates_and_losses_for_nested_models_in_subclassed_model(self):
+
+    class TestModel1(keras.Model):
+
+        def __init__(self):
+            super().__init__()
+            self.fc = keras.layers.Dense(10, input_shape=(784,), activity_regularizer='l1')
+            self.bn = keras.Sequential([keras.layers.BatchNormalization(axis=1)])
+
+        def call(self, x):
+            return self.bn(self.fc(x))
+    with tf.compat.v1.get_default_graph().as_default(), self.cached_session():
+        model = TestModel1()
+        x = tf.ones(shape=[100, 784], dtype='float32')
+        model(x)
+        self.assertLen(model.updates, 2)
+        self.assertLen(model.losses, 1)
+
+    class TestModel2(keras.Model):
+
+        def __init__(self):
+            super().__init__()
+            self.fc = keras.layers.Dense(10, input_shape=(784,), activity_regularizer='l1')
+            self.bn = keras.Sequential([keras.layers.BatchNormalization(axis=1, input_shape=(10,))])
+
+        def call(self, x):
+            return self.bn(self.fc(x))
+    with tf.compat.v1.get_default_graph().as_default(), self.cached_session():
+        model = TestModel2()
+        x = tf.ones(shape=[100, 784], dtype='float32')
+        model(x)
+        self.assertEqual(len(model.get_updates_for(x)), 2)
+        self.assertEqual(len(model.get_losses_for(x)), 1)
+    with tf.compat.v1.get_default_graph().as_default():
+        inputs = keras.Input((10,))
+        outputs = keras.layers.BatchNormalization(axis=1)(inputs)
+        bn = keras.Model(inputs, outputs)
+
+        class TestModel3(keras.Model):
+
+            def __init__(self):
+                super().__init__()
+                self.fc = keras.layers.Dense(10, input_shape=(784,), activity_regularizer='l1')
+                self.bn = bn
+
+            def call(self, x):
+                return self.bn(self.fc(x))
+        with self.cached_session():
+            model = TestModel3()
+            x = tf.ones(shape=[100, 784], dtype='float32')
+            model(x)
+            self.assertEqual(len(model.get_updates_for(x)), 2)
+            self.assertEqual(len(model.get_losses_for(x)), 1)
+
+----------
+
+
+
+Test Class Name: GraphSpecificModelSubclassingTests

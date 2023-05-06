@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('./gradlew assemble', ''), Command('gradle assemble', ''), Command('npm assembler', output_ambiguous('assembler')), Command('npm instar', output_not_found('instar'))])
+def test_not_match(command):
+    assert not match(command)
+
+----------
+
+
+
+Test Class Name: default

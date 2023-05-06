@@ -1,0 +1,32 @@
+def yaml_load(source: IO, loader: Optional[Type[yaml.Loader]]=None) -> Optional[Dict[str, Any]]:
+    """Return dict of source YAML file using loader, recursively deep merging inherited parent."""
+    Loader = loader or get_yaml_loader()
+    result = yaml.load(source, Loader=Loader)
+    if result is not None and 'INHERIT' in result:
+        relpath = result.pop('INHERIT')
+        abspath = os.path.normpath(os.path.join(os.path.dirname(source.name), relpath))
+        if not os.path.exists(abspath):
+            raise exceptions.ConfigurationError(f"Inherited config file '{relpath}' does not exist at '{abspath}'.")
+        log.debug(f'Loading inherited configuration file: {abspath}')
+        with open(abspath, 'rb') as fd:
+            parent = yaml_load(fd, Loader)
+        result = merge(parent, result)
+    return result
+
+----------
+
+@mock.patch.dict(os.environ, {'VARNAME': 'Hello, World!', 'BOOLVAR': 'false'})
+def test_env_var_in_yaml(self):
+    yaml_src = dedent('\n            key1: !ENV VARNAME\n            key2: !ENV UNDEFINED\n            key3: !ENV [UNDEFINED, default]\n            key4: !ENV [UNDEFINED, VARNAME, default]\n            key5: !ENV BOOLVAR\n            ')
+    config = utils.yaml_load(yaml_src)
+    self.assertEqual(config['key1'], 'Hello, World!')
+    self.assertIsNone(config['key2'])
+    self.assertEqual(config['key3'], 'default')
+    self.assertEqual(config['key4'], 'Hello, World!')
+    self.assertIs(config['key5'], False)
+
+----------
+
+
+
+Test Class Name: UtilsTests

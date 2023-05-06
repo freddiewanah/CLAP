@@ -1,0 +1,31 @@
+def container_to_text(d, encoding='utf-8', errors='surrogate_or_strict'):
+    """Recursively convert dict keys and values to text str
+
+    Specialized for json return because this only handles, lists, tuples,
+    and dict container types (the containers that the json module returns)
+    """
+    if isinstance(d, binary_type):
+        return to_text(d, encoding=encoding, errors=errors)
+    elif isinstance(d, dict):
+        return dict((container_to_text(o, encoding, errors) for o in iteritems(d)))
+    elif isinstance(d, list):
+        return [container_to_text(o, encoding, errors) for o in d]
+    elif isinstance(d, tuple):
+        return tuple((container_to_text(o, encoding, errors) for o in d))
+    else:
+        return d
+
+----------
+
+@pytest.mark.parametrize('test_input,expected', [({1: 1}, {1: 1}), ([1, 2], [1, 2]), ((1, 2), (1, 2)), (1, 1), (1.1, 1.1), (True, True), (None, None), (u'str', u'str'), (u'くらとみ'.encode(DEFAULT_ENCODING), u'くらとみ'), (u'café'.encode(DEFAULT_ENCODING), u'café'), (u'str'.encode(DEFAULT_ENCODING), u'str'), ([u'str'.encode(DEFAULT_ENCODING)], [u'str']), (u'str'.encode(DEFAULT_ENCODING), u'str'), ({b'str': b'str'}, {u'str': u'str'})])
+def test_container_to_text_default_encoding_and_err(test_input, expected):
+    """
+    Test for passing objects to container_to_text(). Default encoding and errors
+    """
+    assert container_to_text(test_input, encoding=DEFAULT_ENCODING, errors=DEFAULT_ERR_HANDLER) == expected
+
+----------
+
+
+
+Test Class Name: default

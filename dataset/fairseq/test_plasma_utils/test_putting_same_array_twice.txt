@@ -1,0 +1,32 @@
+@property
+def array(self):
+    """Fetch a read only view of an np.array, stored in plasma."""
+    ret = self.client.get(self.object_id)
+    return ret
+
+----------
+
+def test_putting_same_array_twice(self):
+    data = np.array([4, 4, 4])
+    arr1 = PlasmaView(data, dummy_path, 1, plasma_path=self.path)
+    assert len(self.client.list()) == 1
+    arr1b = PlasmaView(data, dummy_path, 1, plasma_path=self.path)
+    arr1c = PlasmaView(None, dummy_path, 1, plasma_path=self.path)
+    assert len(self.client.list()) == 1
+    self._assert_view_equal(arr1, arr1b)
+    self._assert_view_equal(arr1, arr1c)
+    PlasmaView(data, dummy_path, 2, plasma_path=self.path)
+    assert len(self.client.list()) == 2
+    new_client = plasma.connect(self.path)
+    assert len(new_client.list()) == 2
+    assert isinstance(arr1.object_id, plasma.ObjectID)
+    del arr1b
+    del arr1c
+
+----------
+
+@staticmethod
+def _assert_view_equal(pv1, pv2):
+    np.testing.assert_array_equal(pv1.array, pv2.array)
+
+Test Class Name: TestPlasmaView

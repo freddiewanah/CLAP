@@ -1,0 +1,50 @@
+def forward(self, x: List[torch.Tensor], box_lists: List[Boxes]):
+    """
+        Args:
+            x (list[Tensor]): A list of feature maps of NCHW shape, with scales matching those
+                used to construct this module.
+            box_lists (list[Boxes] | list[RotatedBoxes]):
+                A list of N Boxes or N RotatedBoxes, where N is the number of images in the batch.
+                The box coordinates are defined on the original image and
+                will be scaled by the `scales` argument of :class:`ROIPooler`.
+
+        Returns:
+            Tensor:
+                A tensor of shape (M, C, output_size, output_size) where M is the total number of
+                boxes aggregated over all N batch images and C is the number of channels in `x`.
+        """
+    num_level_assignments = len(self.level_poolers)
+    if not is_fx_tracing():
+        torch._assert(isinstance(x, list) and isinstance(box_lists, list), 'Arguments to pooler must be lists')
+    assert_fx_safe(len(x) == num_level_assignments, 'unequal value, num_level_assignments={}, but x is list of {} Tensors'.format(num_level_assignments, len(x)))
+    assert_fx_safe(len(box_lists) == x[0].size(0), 'unequal value, x[0] batch dim 0 is {}, but box_list has length {}'.format(x[0].size(0), len(box_lists)))
+    if len(box_lists) == 0:
+        return _create_zeros(None, x[0].shape[1], *self.output_size, x[0])
+    pooler_fmt_boxes = convert_boxes_to_pooler_format(box_lists)
+    if num_level_assignments == 1:
+        return self.level_poolers[0](x[0], pooler_fmt_boxes)
+    level_assignments = assign_boxes_to_levels(box_lists, self.min_level, self.max_level, self.canonical_box_size, self.canonical_level)
+    num_channels = x[0].shape[1]
+    output_size = self.output_size[0]
+    output = _create_zeros(pooler_fmt_boxes, num_channels, output_size, output_size, x[0])
+    for (level, pooler) in enumerate(self.level_poolers):
+        inds = nonzero_tuple(level_assignments == level)[0]
+        pooler_fmt_boxes_level = pooler_fmt_boxes[inds]
+        output.index_put_((inds,), pooler(x[level], pooler_fmt_boxes_level))
+    return output
+
+----------
+
+def test_no_images(self):
+    (N, C, H, W) = (0, 32, 32, 32)
+    feature = torch.rand(N, C, H, W) - 0.5
+    features = [feature]
+    pooler = ROIPooler(output_size=14, scales=(1.0,), sampling_ratio=0.0, pooler_type='ROIAlignV2')
+    output = pooler.forward(features, [])
+    self.assertEqual(output.shape, (0, C, 14, 14))
+
+----------
+
+
+
+Test Class Name: TestROIPooler

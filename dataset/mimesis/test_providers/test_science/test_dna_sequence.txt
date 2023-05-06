@@ -1,0 +1,23 @@
+def dna_sequence(self, length: int=10) -> str:
+    """Generate a random DNA sequence.
+
+        :param length: Length of block.
+        :return: DNA sequence.
+
+        :Example:
+            GCTTTAGACC
+        """
+    return self.random.generate_string('TCGA', length)
+
+----------
+
+def test_dna_sequence(self, science):
+    result = science.dna_sequence(length=10)
+    assert isinstance(result, str)
+    assert len(result) == 10
+
+----------
+
+
+
+Test Class Name: TestScience

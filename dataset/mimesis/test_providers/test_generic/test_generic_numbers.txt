@@ -1,0 +1,26 @@
+def integers(self, start: int=0, end: int=10, n: int=10) -> t.List[int]:
+    """Generate a list of random integers.
+
+        Integers can be negative or positive numbers.
+        .. note: You can use both positive and negative numbers.
+
+        :param start: Start.
+        :param end: End.
+        :param n: Length of list.
+        :return: List of integers.
+
+        :Example:
+            [-20, -19, -18, -17]
+        """
+    return self.random.randints(n, start, end)
+
+----------
+
+def test_generic_numbers(self, g1, g2):
+    assert g1.numeric.integers() == g2.numeric.integers()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

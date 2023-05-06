@@ -1,0 +1,29 @@
+def run(app, level=logging.DEBUG):
+
+    @app.after_server_start
+    async def stop(app, _):
+        app.stop()
+    with caplog.at_level(level):
+        Sanic.serve()
+    return caplog.record_tuples
+
+----------
+
+@pytest.mark.parametrize('protocol', [3, 4])
+def test_pickle_app_with_static(app, protocol):
+    app.route('/')(handler)
+    app.after_server_start(stop)
+    app.static('/static', '/tmp/static')
+    app.router.reset()
+    app.signal_router.reset()
+    p_app = pickle.dumps(app, protocol=protocol)
+    del app
+    up_p_app = pickle.loads(p_app)
+    assert up_p_app
+    up_p_app.run(single_process=True)
+
+----------
+
+
+
+Test Class Name: default

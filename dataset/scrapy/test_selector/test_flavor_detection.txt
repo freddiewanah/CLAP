@@ -1,0 +1,19 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_flavor_detection(self):
+    text = b'<div><img src="a.jpg"><p>Hello</div>'
+    sel = Selector(XmlResponse('http://example.com', body=text, encoding='utf-8'))
+    self.assertEqual(sel.type, 'xml')
+    self.assertEqual(sel.xpath('//div').getall(), ['<div><img src="a.jpg"><p>Hello</p></img></div>'])
+    sel = Selector(HtmlResponse('http://example.com', body=text, encoding='utf-8'))
+    self.assertEqual(sel.type, 'html')
+    self.assertEqual(sel.xpath('//div').getall(), ['<div><img src="a.jpg"><p>Hello</p></div>'])
+
+----------
+
+
+
+Test Class Name: SelectorTestCase

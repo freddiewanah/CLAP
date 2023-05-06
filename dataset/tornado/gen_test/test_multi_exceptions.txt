@@ -1,0 +1,23 @@
+@gen.coroutine
+def async_exception(self, e):
+    yield gen.moment
+    raise e
+
+----------
+
+@gen_test
+def test_multi_exceptions(self):
+    with ExpectLog(app_log, 'Multiple exceptions in yield list'):
+        with self.assertRaises(RuntimeError) as cm:
+            yield gen.Multi([self.async_exception(RuntimeError('error 1')), self.async_exception(RuntimeError('error 2'))])
+    self.assertEqual(str(cm.exception), 'error 1')
+    with self.assertRaises(RuntimeError):
+        yield gen.Multi([self.async_exception(RuntimeError('error 1')), self.async_future(2)])
+    with self.assertRaises(RuntimeError):
+        yield gen.Multi([self.async_exception(RuntimeError('error 1')), self.async_exception(RuntimeError('error 2'))], quiet_exceptions=RuntimeError)
+
+----------
+
+
+
+Test Class Name: GenBasicTest

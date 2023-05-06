@@ -1,0 +1,20 @@
+def keys(self):
+    return self._plugin.keys()
+
+----------
+
+def test_flush(self):
+    self.cache._plugin.set('monkey', 'animal')
+    self.cache._plugin.set('wolf', 'animal')
+    self.cache._plugin.set('another wolf', 'another animal')
+    assert len(self.cache.keys()) == 2
+    assert len(self.cache._plugin.keys()) == 3
+    self.cache.flush()
+    assert len(self.cache.keys()) == 0
+    assert len(self.cache._plugin.keys()) == 0
+
+----------
+
+
+
+Test Class Name: TestCachePluginAdjudicator

@@ -1,0 +1,30 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_middleware_added_response(app):
+
+    @app.on_response
+    def display(_, response):
+        response['foo'] = 'bar'
+        return json(response)
+
+    @app.get('/')
+    async def handler(request):
+        return {}
+    (_, response) = app.test_client.get('/')
+    assert response.json['foo'] == 'bar'
+
+----------
+
+
+
+Test Class Name: default

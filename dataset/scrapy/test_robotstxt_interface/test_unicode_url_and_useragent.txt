@@ -1,0 +1,31 @@
+@abstractmethod
+def allowed(self, url, user_agent):
+    """Return ``True`` if  ``user_agent`` is allowed to crawl ``url``, otherwise return ``False``.
+
+        :param url: Absolute URL
+        :type url: str
+
+        :param user_agent: User agent
+        :type user_agent: str
+        """
+    pass
+
+----------
+
+def test_unicode_url_and_useragent(self):
+    robotstxt_robotstxt_body = '\n        User-Agent: *\n        Disallow: /admin/\n        Disallow: /static/\n        # taken from https://en.wikipedia.org/robots.txt\n        Disallow: /wiki/K%C3%A4ytt%C3%A4j%C3%A4:\n        Disallow: /wiki/Käyttäjä:\n\n        User-Agent: UnicödeBöt\n        Disallow: /some/randome/page.html'.encode('utf-8')
+    rp = self.parser_cls.from_crawler(crawler=None, robotstxt_body=robotstxt_robotstxt_body)
+    self.assertTrue(rp.allowed('https://site.local/', '*'))
+    self.assertFalse(rp.allowed('https://site.local/admin/', '*'))
+    self.assertFalse(rp.allowed('https://site.local/static/', '*'))
+    self.assertTrue(rp.allowed('https://site.local/admin/', 'UnicödeBöt'))
+    self.assertFalse(rp.allowed('https://site.local/wiki/K%C3%A4ytt%C3%A4j%C3%A4:', '*'))
+    self.assertFalse(rp.allowed('https://site.local/wiki/Käyttäjä:', '*'))
+    self.assertTrue(rp.allowed('https://site.local/some/randome/page.html', '*'))
+    self.assertFalse(rp.allowed('https://site.local/some/randome/page.html', 'UnicödeBöt'))
+
+----------
+
+
+
+Test Class Name: BaseRobotParserTest

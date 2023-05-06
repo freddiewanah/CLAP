@@ -1,0 +1,29 @@
+def parse_iso8601(date_str, delimiter='T', timezone=None):
+    """ Return a UNIX timestamp from the given date """
+    if date_str is None:
+        return None
+    date_str = re.sub('\\.[0-9]+', '', date_str)
+    if timezone is None:
+        (timezone, date_str) = extract_timezone(date_str)
+    try:
+        date_format = '%Y-%m-%d{0}%H:%M:%S'.format(delimiter)
+        dt = datetime.datetime.strptime(date_str, date_format) - timezone
+        return calendar.timegm(dt.timetuple())
+    except ValueError:
+        pass
+
+----------
+
+def test_parse_iso8601(self):
+    self.assertEqual(parse_iso8601('2014-03-23T23:04:26+0100'), 1395612266)
+    self.assertEqual(parse_iso8601('2014-03-23T22:04:26+0000'), 1395612266)
+    self.assertEqual(parse_iso8601('2014-03-23T22:04:26Z'), 1395612266)
+    self.assertEqual(parse_iso8601('2014-03-23T22:04:26.1234Z'), 1395612266)
+    self.assertEqual(parse_iso8601('2015-09-29T08:27:31.727'), 1443515251)
+    self.assertEqual(parse_iso8601('2015-09-29T08-27-31.727'), None)
+
+----------
+
+
+
+Test Class Name: TestUtil

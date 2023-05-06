@@ -1,0 +1,19 @@
+def exec_in(code: Any, glob: Dict[str, Any], loc: Optional[Optional[Mapping[str, Any]]]=None) -> None:
+    if isinstance(code, str):
+        code = compile(code, '<string>', 'exec', dont_inherit=True)
+    exec(code, glob, loc)
+
+----------
+
+@unittest.skip('no testable future imports')
+def test_no_inherit_future(self):
+    f = StringIO()
+    print('hello', file=f)
+    exec_in('print >> f, "world"', dict(f=f))
+    self.assertEqual(f.getvalue(), 'hello\nworld\n')
+
+----------
+
+
+
+Test Class Name: ExecInTest

@@ -1,0 +1,56 @@
+def cnpj(self, with_mask: bool=True) -> str:
+    """Get a random CNPJ.
+
+        :param with_mask: Use cnpj mask (###.###.###-##)
+        :returns: Random cnpj.
+
+        :Example:
+            77.732.230/0001-70
+        """
+
+    def get_verifying_digit_cnpj(cnpj: t.List[int], peso: int) -> int:
+        """Calculate the verifying digit for the CNPJ.
+
+            :param cnpj: List of integers with the CNPJ.
+            :param peso: Integer with the weight for the modulo 11 calculate.
+            :returns: The verifying digit for the CNPJ.
+            """
+        soma = 0
+        if peso == 5:
+            peso_list = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        elif peso == 6:
+            peso_list = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        for (i, _) in enumerate(cnpj):
+            soma += peso_list[i] * cnpj[i]
+        resto = soma % 11
+        if resto < 2:
+            return 0
+        return 11 - resto
+    cnpj_without_dv = [self.random.randint(0, 9) for _ in range(12)]
+    first_dv = get_verifying_digit_cnpj(cnpj_without_dv, 5)
+    cnpj_without_dv.append(first_dv)
+    second_dv = get_verifying_digit_cnpj(cnpj_without_dv, 6)
+    cnpj_without_dv.append(second_dv)
+    cnpj = ''.join(map(str, cnpj_without_dv))
+    if with_mask:
+        return '{}.{}.{}/{}-{}'.format(cnpj[:2], cnpj[2:5], cnpj[5:8], cnpj[8:12], cnpj[12:])
+    return cnpj
+
+----------
+
+def test_cnpj(pt_br):
+    cnpj_with_mask = pt_br.cnpj()
+    assert len(cnpj_with_mask) == 18
+    non_numeric_digits = re.sub('\\d', '', cnpj_with_mask)
+    assert '../-' == non_numeric_digits == non_numeric_digits
+    assert len(re.sub('\\D', '', cnpj_with_mask)) == 14
+    cnpj_without_mask = pt_br.cnpj(False)
+    assert len(cnpj_without_mask) == 14
+    non_numeric_digits = re.sub('\\d', '', cnpj_without_mask)
+    assert '' == non_numeric_digits
+
+----------
+
+
+
+Test Class Name: default

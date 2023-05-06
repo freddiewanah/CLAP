@@ -1,0 +1,33 @@
+def datetime(self, start: int=2000, end: int=_CURRENT_YEAR, timezone: t.Optional[str]=None) -> DateTime:
+    """Generate random datetime.
+
+        :param start: Minimum value of year.
+        :param end: Maximum value of year.
+        :param timezone: Set custom timezone (pytz required).
+        :return: Datetime
+        """
+    datetime_obj = datetime.combine(date=self.date(start, end), time=self.time())
+    if timezone:
+        if not pytz:
+            raise ImportError('Timezones are supported only with pytz')
+        tz = pytz.timezone(timezone)
+        datetime_obj = tz.localize(datetime_obj)
+    return datetime_obj
+
+----------
+
+@pytest.mark.parametrize('start, end, timezone', [(2014, 2019, 'Europe/Paris'), (2014, 2019, None)])
+def test_datetime(self, _datetime, start, end, timezone):
+    dt_obj = _datetime.datetime(start=start, end=end, timezone=timezone)
+    assert start <= dt_obj.year <= end
+    assert isinstance(dt_obj, datetime.datetime)
+    if timezone:
+        assert dt_obj.tzinfo is not None
+    else:
+        assert dt_obj.tzinfo is None
+
+----------
+
+
+
+Test Class Name: TestDatetime

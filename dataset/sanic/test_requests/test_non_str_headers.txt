@@ -1,0 +1,20 @@
+def get(self, name: str, default: Optional[Any]=None) -> Optional[Any]:
+    """Return the first value, either the default or actual"""
+    return super().get(name, [default])[0]
+
+----------
+
+def test_non_str_headers(app):
+
+    @app.route('/')
+    async def handler(request):
+        headers = {'answer': 42}
+        return text('Hello', headers=headers)
+    (request, response) = app.test_client.get('/')
+    assert response.headers.get('answer') == '42'
+
+----------
+
+
+
+Test Class Name: Bar

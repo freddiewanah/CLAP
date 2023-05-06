@@ -1,0 +1,34 @@
+@staticmethod
+def try_parse_fqcr(ref, ref_type):
+    """
+        Attempt to parse a string as a fully-qualified collection reference, returning None on failure (instead of raising an error)
+        :param ref: collection reference to parse (a valid ref is of the form 'ns.coll.resource' or 'ns.coll.subdir1.subdir2.resource')
+        :param ref_type: the type of the reference, eg 'module', 'role', 'doc_fragment'
+        :return: a populated AnsibleCollectionRef object on successful parsing, else None
+        """
+    try:
+        return AnsibleCollectionRef.from_fqcr(ref, ref_type)
+    except ValueError:
+        pass
+
+----------
+
+@pytest.mark.parametrize('ref,ref_type,expected_collection,expected_subdirs,expected_resource,expected_python_pkg_name', [('ns.coll.myaction', 'action', 'ns.coll', '', 'myaction', 'ansible_collections.ns.coll.plugins.action'), ('ns.coll.subdir1.subdir2.myaction', 'action', 'ns.coll', 'subdir1.subdir2', 'myaction', 'ansible_collections.ns.coll.plugins.action.subdir1.subdir2'), ('ns.coll.myrole', 'role', 'ns.coll', '', 'myrole', 'ansible_collections.ns.coll.roles.myrole'), ('ns.coll.subdir1.subdir2.myrole', 'role', 'ns.coll', 'subdir1.subdir2', 'myrole', 'ansible_collections.ns.coll.roles.subdir1.subdir2.myrole')])
+def test_fqcr_parsing_valid(ref, ref_type, expected_collection, expected_subdirs, expected_resource, expected_python_pkg_name):
+    assert AnsibleCollectionRef.is_valid_fqcr(ref, ref_type)
+    r = AnsibleCollectionRef.from_fqcr(ref, ref_type)
+    assert r.collection == expected_collection
+    assert r.subdirs == expected_subdirs
+    assert r.resource == expected_resource
+    assert r.n_python_package_name == expected_python_pkg_name
+    r = AnsibleCollectionRef.try_parse_fqcr(ref, ref_type)
+    assert r.collection == expected_collection
+    assert r.subdirs == expected_subdirs
+    assert r.resource == expected_resource
+    assert r.n_python_package_name == expected_python_pkg_name
+
+----------
+
+
+
+Test Class Name: default

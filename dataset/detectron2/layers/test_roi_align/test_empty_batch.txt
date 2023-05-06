@@ -1,0 +1,25 @@
+def forward(self, input, rois):
+    """
+        Args:
+            input: NCHW images
+            rois: Bx5 boxes. First column is the index into N. The other 4 columns are xyxy.
+        """
+    assert rois.dim() == 2 and rois.size(1) == 5
+    if input.is_quantized:
+        input = input.dequantize()
+    return roi_align(input, rois.to(dtype=input.dtype), self.output_size, self.spatial_scale, self.sampling_ratio, self.aligned)
+
+----------
+
+def test_empty_batch(self):
+    input = torch.zeros(0, 3, 10, 10, dtype=torch.float32)
+    rois = torch.zeros(0, 5, dtype=torch.float32)
+    op = ROIAlign((7, 7), 1.0, 0, aligned=True)
+    output = op.forward(input, rois)
+    self.assertTrue(output.shape == (0, 3, 7, 7))
+
+----------
+
+
+
+Test Class Name: ROIAlignTest

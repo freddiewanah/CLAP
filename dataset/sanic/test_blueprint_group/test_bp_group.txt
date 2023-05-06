@@ -1,0 +1,115 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_bp_group(app: Sanic):
+    blueprint_1 = Blueprint('blueprint_1', url_prefix='/bp1')
+    blueprint_2 = Blueprint('blueprint_2', url_prefix='/bp2')
+
+    @blueprint_1.route('/')
+    def blueprint_1_default_route(request):
+        return text('BP1_OK')
+
+    @blueprint_1.route('/invalid')
+    def blueprint_1_error(request: Request):
+        raise BadRequest('Invalid')
+
+    @blueprint_2.route('/')
+    def blueprint_2_default_route(request):
+        return text('BP2_OK')
+
+    @blueprint_2.route('/error')
+    def blueprint_2_error(request: Request):
+        raise ServerError('Error')
+    blueprint_group_1 = Blueprint.group(blueprint_1, blueprint_2, url_prefix='/bp')
+    blueprint_3 = Blueprint('blueprint_3', url_prefix='/bp3')
+
+    @blueprint_group_1.exception(BadRequest)
+    def handle_group_exception(request, exception):
+        return text('BP1_ERR_OK')
+
+    @blueprint_group_1.middleware('request')
+    def blueprint_group_1_middleware(request):
+        global MIDDLEWARE_INVOKE_COUNTER
+        MIDDLEWARE_INVOKE_COUNTER['request'] += 1
+
+    @blueprint_group_1.middleware
+    def blueprint_group_1_middleware_not_called(request):
+        global MIDDLEWARE_INVOKE_COUNTER
+        MIDDLEWARE_INVOKE_COUNTER['request'] += 1
+
+    @blueprint_group_1.on_request
+    def blueprint_group_1_convenience_1(request):
+        global MIDDLEWARE_INVOKE_COUNTER
+        MIDDLEWARE_INVOKE_COUNTER['request'] += 1
+
+    @blueprint_group_1.on_request()
+    def blueprint_group_1_convenience_2(request):
+        global MIDDLEWARE_INVOKE_COUNTER
+        MIDDLEWARE_INVOKE_COUNTER['request'] += 1
+
+    @blueprint_3.route('/')
+    def blueprint_3_default_route(request):
+        return text('BP3_OK')
+
+    @blueprint_3.route('/forbidden')
+    def blueprint_3_forbidden(request: Request):
+        raise Forbidden('Forbidden')
+    blueprint_group_2 = Blueprint.group(blueprint_group_1, blueprint_3, url_prefix='/api')
+
+    @blueprint_group_2.exception(SanicException)
+    def handle_non_handled_exception(request, exception):
+        return text('BP2_ERR_OK')
+
+    @blueprint_group_2.middleware('response')
+    def blueprint_group_2_middleware(request, response):
+        global MIDDLEWARE_INVOKE_COUNTER
+        MIDDLEWARE_INVOKE_COUNTER['response'] += 1
+
+    @blueprint_group_2.on_response
+    def blueprint_group_2_middleware_convenience_1(request, response):
+        global MIDDLEWARE_INVOKE_COUNTER
+        MIDDLEWARE_INVOKE_COUNTER['response'] += 1
+
+    @blueprint_group_2.on_response()
+    def blueprint_group_2_middleware_convenience_2(request, response):
+        global MIDDLEWARE_INVOKE_COUNTER
+        MIDDLEWARE_INVOKE_COUNTER['response'] += 1
+    app.blueprint(blueprint_group_2)
+
+    @app.route('/')
+    def app_default_route(request):
+        return text('APP_OK')
+    (_, response) = app.test_client.get('/')
+    assert response.text == 'APP_OK'
+    (_, response) = app.test_client.get('/api/bp/bp1')
+    assert response.text == 'BP1_OK'
+    (_, response) = app.test_client.get('/api/bp/bp1/invalid')
+    assert response.text == 'BP1_ERR_OK'
+    (_, response) = app.test_client.get('/api/bp/bp2')
+    assert response.text == 'BP2_OK'
+    (_, response) = app.test_client.get('/api/bp/bp2/error')
+    assert response.text == 'BP2_ERR_OK'
+    (_, response) = app.test_client.get('/api/bp3')
+    assert response.text == 'BP3_OK'
+    (_, response) = app.test_client.get('/api/bp3/forbidden')
+    assert response.text == 'BP2_ERR_OK'
+    assert MIDDLEWARE_INVOKE_COUNTER['response'] == 18
+    assert MIDDLEWARE_INVOKE_COUNTER['request'] == 16
+
+----------
+
+
+
+Test Class Name: default

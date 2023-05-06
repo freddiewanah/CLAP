@@ -1,0 +1,21 @@
+def get(self, name: str, default: Optional[Any]=None) -> Optional[Any]:
+    """Return the first value, either the default or actual"""
+    return super().get(name, [default])[0]
+
+----------
+
+@pytest.mark.parametrize('payload,filename', [('------sanic\r\nContent-Disposition: form-data; filename="filename"; name="test"\r\n\r\nOK\r\n------sanic--\r\n', 'filename'), ('------sanic\r\ncontent-disposition: form-data; filename="filename"; name="test"\r\n\r\ncontent-type: application/json; {"field": "value"}\r\n------sanic--\r\n', 'filename'), ('------sanic\r\nContent-Disposition: form-data; filename=""; name="test"\r\n\r\nOK\r\n------sanic--\r\n', ''), ('------sanic\r\ncontent-disposition: form-data; filename=""; name="test"\r\n\r\ncontent-type: application/json; {"field": "value"}\r\n------sanic--\r\n', ''), ('------sanic\r\nContent-Disposition: form-data; filename*="utf-8\'\'filename_%C2%A0_test"; name="test"\r\n\r\nOK\r\n------sanic--\r\n', 'filename_\xa0_test'), ('------sanic\r\ncontent-disposition: form-data; filename*="utf-8\'\'filename_%C2%A0_test"; name="test"\r\n\r\ncontent-type: application/json; {"field": "value"}\r\n------sanic--\r\n', 'filename_\xa0_test'), ('------sanic\r\ncontent-disposition: form-data; filename*="utf-8\'\'filename_%C3%A4_test"; name="test"\r\n\r\nOK\r\n------sanic--\r\n', 'filename_ä_test'), ('------sanic\r\ncontent-disposition: form-data; filename*="utf-8\'\'filename_a%CC%88_test"; name="test"\r\n\r\nOK\r\n------sanic--\r\n', 'filename_ä_test')])
+def test_request_multipart_files(app, payload, filename):
+
+    @app.route('/', methods=['POST'])
+    async def post(request):
+        return text('OK')
+    headers = {'content-type': 'multipart/form-data; boundary=----sanic'}
+    (request, _) = app.test_client.post(data=payload, headers=headers)
+    assert request.files.get('test').name == filename
+
+----------
+
+
+
+Test Class Name: Bar

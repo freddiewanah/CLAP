@@ -1,0 +1,42 @@
+@keras_export('keras.backend.abs')
+@tf.__internal__.dispatch.add_dispatch_support
+@doc_controls.do_not_generate_docs
+def abs(x):
+    """Element-wise absolute value.
+
+    Args:
+        x: Tensor or variable.
+
+    Returns:
+        A tensor.
+    """
+    return tf.abs(x)
+
+----------
+
+def test_updates(self):
+    num_samples = 100
+    input_dim = 50
+
+    class BNNet(keras.Model):
+
+        def __init__(self):
+            super().__init__()
+            self.bn = keras.layers.BatchNormalization(beta_initializer='ones', gamma_initializer='ones')
+
+        def call(self, inputs):
+            return self.bn(inputs)
+    x = np.ones((num_samples, input_dim))
+    y = np.ones((num_samples, input_dim))
+    model = BNNet()
+    model.compile(loss='mse', optimizer='rmsprop', run_eagerly=test_utils.should_run_eagerly())
+    y_ref = model.predict(x)
+    model.train_on_batch(x, y)
+    y_new = model.predict(x)
+    self.assertGreater(np.sum(np.abs(y_ref - y_new)), 0.1)
+
+----------
+
+
+
+Test Class Name: ModelSubclassCompiledTest

@@ -1,0 +1,46 @@
+def select_command(corrected_commands):
+    """Returns:
+
+     - the first command when confirmation disabled;
+     - None when ctrl+c pressed;
+     - selected command.
+
+    :type corrected_commands: Iterable[thefuck.types.CorrectedCommand]
+    :rtype: thefuck.types.CorrectedCommand | None
+
+    """
+    try:
+        selector = CommandSelector(corrected_commands)
+    except NoRuleMatched:
+        logs.failed('No fucks given' if get_alias() == 'fuck' else 'Nothing found')
+        return
+    if not settings.require_confirmation:
+        logs.show_corrected_command(selector.value)
+        return selector.value
+    logs.confirm_text(selector.value)
+    for action in read_actions():
+        if action == const.ACTION_SELECT:
+            sys.stderr.write('\n')
+            return selector.value
+        elif action == const.ACTION_ABORT:
+            logs.failed('\nAborted')
+            return
+        elif action == const.ACTION_PREVIOUS:
+            selector.previous()
+            logs.confirm_text(selector.value)
+        elif action == const.ACTION_NEXT:
+            selector.next()
+            logs.confirm_text(selector.value)
+
+----------
+
+def test_with_confirmation(self, capsys, patch_get_key, commands):
+    patch_get_key(['\n'])
+    assert ui.select_command(iter(commands)) == commands[0]
+    assert capsys.readouterr() == ('', const.USER_COMMAND_MARK + u'\x1b[1K\rls [enter/↑/↓/ctrl+c]\n')
+
+----------
+
+
+
+Test Class Name: TestSelectCommand

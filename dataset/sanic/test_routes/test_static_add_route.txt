@@ -1,0 +1,35 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.parametrize('strict_slashes', [True, False, None])
+def test_static_add_route(app, strict_slashes):
+
+    async def handler1(request):
+        return text('OK1')
+
+    async def handler2(request):
+        return text('OK2')
+    app.add_route(handler1, '/test', strict_slashes=strict_slashes)
+    app.add_route(handler2, '/test2', strict_slashes=strict_slashes)
+    (request, response) = app.test_client.get('/test')
+    assert response.text == 'OK1'
+    (request, response) = app.test_client.get('/test2')
+    assert response.text == 'OK2'
+
+----------
+
+
+
+Test Class Name: default

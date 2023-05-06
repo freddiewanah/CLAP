@@ -1,0 +1,69 @@
+def add_providers(self, *providers: t.Type[BaseProvider]) -> None:
+    """Add a lot of custom providers to Generic() object.
+
+        :param providers: Custom providers.
+        :return: None
+        """
+    for provider in providers:
+        self.add_provider(provider)
+
+----------
+
+def test_add_providers(self, generic):
+
+    class Provider1(BaseProvider):
+
+        @staticmethod
+        def one():
+            return 1
+
+    class Provider2(BaseProvider):
+
+        class Meta:
+            name = 'custom_provider'
+
+        @staticmethod
+        def two():
+            return 2
+
+    class Provider3(BaseProvider):
+
+        @staticmethod
+        def three():
+            return 3
+
+    class Provider4:
+
+        @staticmethod
+        def empty():
+            ...
+
+    class Provider5(BaseProvider):
+
+        @staticmethod
+        def five():
+            return 5
+    generic.add_providers(Provider1, Provider2, Provider3)
+    assert generic.provider1.one() == 1
+    assert generic.custom_provider.two() == 2
+    assert generic.provider3.three() == 3
+    generic += Provider5
+    assert generic.provider5.five() == 5
+    with pytest.raises(TypeError):
+        generic.add_providers(Provider4)
+    with pytest.raises(TypeError):
+        generic.add_providers(3)
+
+    class UnnamedProvider(BaseProvider):
+
+        @staticmethod
+        def nothing():
+            return None
+    generic.add_provider(UnnamedProvider)
+    assert generic.unnamedprovider.nothing() is None
+
+----------
+
+
+
+Test Class Name: TestGeneric

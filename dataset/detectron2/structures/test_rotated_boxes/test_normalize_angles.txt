@@ -1,0 +1,32 @@
+def normalize_angles(self) -> None:
+    """
+        Restrict angles to the range of [-180, 180) degrees
+        """
+    angle_tensor = (self.tensor[:, 4] + 180.0) % 360.0 - 180.0
+    self.tensor = torch.cat((self.tensor[:, :4], angle_tensor[:, None]), dim=1)
+
+----------
+
+def test_normalize_angles(self):
+    for _ in range(50):
+        num_boxes = 100
+        boxes_5d = torch.zeros(num_boxes, 5)
+        boxes_5d[:, 0] = torch.FloatTensor(num_boxes).uniform_(-100, 500)
+        boxes_5d[:, 1] = torch.FloatTensor(num_boxes).uniform_(-100, 500)
+        boxes_5d[:, 2] = torch.FloatTensor(num_boxes).uniform_(0, 500)
+        boxes_5d[:, 3] = torch.FloatTensor(num_boxes).uniform_(0, 500)
+        boxes_5d[:, 4] = torch.FloatTensor(num_boxes).uniform_(-1800, 1800)
+        rotated_boxes = RotatedBoxes(boxes_5d)
+        normalized_boxes = rotated_boxes.clone()
+        normalized_boxes.normalize_angles()
+        self.assertTrue(torch.all(normalized_boxes.tensor[:, 4] >= -180))
+        self.assertTrue(torch.all(normalized_boxes.tensor[:, 4] < 180))
+        self.assertTrue(torch.allclose(boxes_5d[:, :4], normalized_boxes.tensor[:, :4]))
+        self.assertTrue(torch.allclose(torch.cos(boxes_5d[:, 4] * math.pi / 180), torch.cos(normalized_boxes.tensor[:, 4] * math.pi / 180), atol=1e-05))
+        self.assertTrue(torch.allclose(torch.sin(boxes_5d[:, 4] * math.pi / 180), torch.sin(normalized_boxes.tensor[:, 4] * math.pi / 180), atol=1e-05))
+
+----------
+
+
+
+Test Class Name: TestRotatedBoxesStructure

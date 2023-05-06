@@ -1,0 +1,23 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_oauth10_request_parameters(self):
+    response = self.fetch('/oauth10/client/request_params')
+    response.rethrow()
+    parsed = json_decode(response.body)
+    self.assertEqual(parsed['oauth_consumer_key'], 'asdf')
+    self.assertEqual(parsed['oauth_token'], 'uiop')
+    self.assertTrue('oauth_nonce' in parsed)
+    self.assertTrue('oauth_signature' in parsed)
+
+----------
+
+
+
+Test Class Name: AuthTest

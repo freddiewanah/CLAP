@@ -1,0 +1,16 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_file_not_a_directory(self):
+    filename = '/dev/null/foobar'
+    fake_loader = DictDataLoader({filename: 'sdfadf'})
+    secret = vault.FileVaultSecret(loader=fake_loader, filename=filename)
+    self.assertRaisesRegex(errors.AnsibleError, '.*Could not read vault password file.*/dev/null/foobar.*Not a directory', secret.load)
+
+----------
+
+
+
+Test Class Name: TestFileVaultSecret

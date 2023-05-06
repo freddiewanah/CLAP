@@ -1,0 +1,16 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('cat foo', 'cat: foo: Is a directory\n'), Command('cat /foo/bar/', 'cat: /foo/bar/: Is a directory\n'), Command('cat cat/', 'cat: cat/: Is a directory\n')])
+def test_match(command, isdir):
+    isdir.return_value = True
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

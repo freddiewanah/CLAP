@@ -1,0 +1,20 @@
+def compat_urllib_parse_unquote_plus(string, encoding='utf-8', errors='replace'):
+    """Like unquote(), but also replace plus signs by spaces, as required for
+        unquoting HTML form values.
+
+        unquote_plus('%7e/abc+def') -> '~/abc def'
+        """
+    string = string.replace('+', ' ')
+    return compat_urllib_parse_unquote(string, encoding, errors)
+
+----------
+
+def test_compat_urllib_parse_unquote_plus(self):
+    self.assertEqual(compat_urllib_parse_unquote_plus('abc%20def'), 'abc def')
+    self.assertEqual(compat_urllib_parse_unquote_plus('%7e/abc+def'), '~/abc def')
+
+----------
+
+
+
+Test Class Name: TestCompat

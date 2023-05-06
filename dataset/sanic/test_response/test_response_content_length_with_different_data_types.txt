@@ -1,0 +1,25 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_response_content_length_with_different_data_types(app):
+
+    @app.get('/')
+    async def get_data_with_different_types(request: Request):
+        return json({'bool': True, 'none': None, 'string': 'string', 'number': -1}, headers={'CONTENT-TYPE': 'application/json'})
+    (_, response) = app.test_client.get('/')
+    assert response.headers.get('Content-Length') == '55'
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,30 @@
+def item_completed(self, results, item, info):
+    with suppress(KeyError):
+        ItemAdapter(item)[self.images_result_field] = [x for (ok, x) in results if ok]
+    return item
+
+----------
+
+def test_default_item_completed(self):
+    item = dict(name='name')
+    assert self.pipe.item_completed([], item, self.info) is item
+    fail = Failure(Exception())
+    results = [(True, 1), (False, fail)]
+    with LogCapture() as log:
+        new_item = self.pipe.item_completed(results, item, self.info)
+    assert new_item is item
+    assert len(log.records) == 1
+    record = log.records[0]
+    assert record.levelname == 'ERROR'
+    self.assertTupleEqual(record.exc_info, failure_to_exc_info(fail))
+    self.pipe.LOG_FAILED_RESULTS = False
+    with LogCapture() as log:
+        new_item = self.pipe.item_completed(results, item, self.info)
+    assert new_item is item
+    assert len(log.records) == 0
+
+----------
+
+
+
+Test Class Name: BaseMediaPipelineTestCase

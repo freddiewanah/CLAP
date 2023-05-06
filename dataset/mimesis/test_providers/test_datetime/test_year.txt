@@ -1,0 +1,21 @@
+def year(self, minimum: int=1990, maximum: int=_CURRENT_YEAR) -> int:
+    """Generate a random year.
+
+        :param minimum: Minimum value.
+        :param maximum: Maximum value.
+        :return: Year.
+        """
+    return self.random.randint(minimum, maximum)
+
+----------
+
+def test_year(self, _datetime):
+    result = _datetime.year(minimum=2000, maximum=_datetime._CURRENT_YEAR)
+    assert result >= 2000
+    assert result <= _datetime._CURRENT_YEAR
+
+----------
+
+
+
+Test Class Name: TestDatetime

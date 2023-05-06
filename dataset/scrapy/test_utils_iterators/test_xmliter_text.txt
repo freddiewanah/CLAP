@@ -1,0 +1,14 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_xmliter_text(self):
+    body = '<?xml version="1.0" encoding="UTF-8"?><products><product>one</product><product>two</product></products>'
+    self.assertEqual([x.xpath('text()').getall() for x in self.xmliter(body, 'product')], [['one'], ['two']])
+
+----------
+
+
+
+Test Class Name: XmliterTestCase

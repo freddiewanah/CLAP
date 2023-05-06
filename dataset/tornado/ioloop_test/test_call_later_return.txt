@@ -1,0 +1,21 @@
+def remove_timeout(self, timeout: object) -> None:
+    """Cancels a pending timeout.
+
+        The argument is a handle as returned by `add_timeout`.  It is
+        safe to call `remove_timeout` even if the callback has already
+        been run.
+        """
+    raise NotImplementedError()
+
+----------
+
+def test_call_later_return(self):
+    handle = self.io_loop.call_later(0, lambda : None)
+    self.assertFalse(handle is None)
+    self.io_loop.remove_timeout(handle)
+
+----------
+
+
+
+Test Class Name: TestIOLoop

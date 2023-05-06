@@ -1,0 +1,21 @@
+def get(self, name: str, default: Optional[Any]=None) -> Optional[Any]:
+    """Return the first value, either the default or actual"""
+    return super().get(name, [default])[0]
+
+----------
+
+@pytest.mark.parametrize('payload', ['------sanic\r\nContent-Disposition: form-data; name="test"\r\n\r\nOK\r\n------sanic--\r\n', '------sanic\r\ncontent-disposition: form-data; name="test"\r\n\r\nOK\r\n------sanic--\r\n'])
+def test_post_form_multipart_form_data(app, payload):
+
+    @app.route('/', methods=['POST'])
+    async def handler(request):
+        return text('OK')
+    headers = {'content-type': 'multipart/form-data; boundary=----sanic'}
+    (request, response) = app.test_client.post(data=payload, headers=headers)
+    assert request.form.get('test') == 'OK'
+
+----------
+
+
+
+Test Class Name: Bar

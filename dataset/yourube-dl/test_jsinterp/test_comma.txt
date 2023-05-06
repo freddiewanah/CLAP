@@ -1,0 +1,18 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_comma(self):
+    jsi = JSInterpreter('\n        function x() { a=5; a -= 1, a+=3; return a }\n        ')
+    self.assertEqual(jsi.call_function('x'), 7)
+    jsi = JSInterpreter('\n        function x() { a=5; return (a -= 1, a+=3, a); }\n        ')
+    self.assertEqual(jsi.call_function('x'), 7)
+    jsi = JSInterpreter('\n        function x() { return (l=[0,1,2,3], function(a, b){return a+b})((l[1], l[2]), l[3]) }\n        ')
+    self.assertEqual(jsi.call_function('x'), 5)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

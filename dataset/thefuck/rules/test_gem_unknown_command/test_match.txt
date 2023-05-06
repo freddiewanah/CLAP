@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, command', [('gem isntall jekyll', 'isntall'), ('gem last --local', 'last')])
+def test_match(script, command):
+    assert match(Command(script, output.format(command)))
+
+----------
+
+
+
+Test Class Name: default

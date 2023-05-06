@@ -1,0 +1,23 @@
+def float_or_none(v, scale=1, invscale=1, default=None):
+    if v is None:
+        return default
+    try:
+        return float(v) * invscale / scale
+    except (ValueError, TypeError):
+        return default
+
+----------
+
+def test_float_or_none(self):
+    self.assertEqual(float_or_none('42.42'), 42.42)
+    self.assertEqual(float_or_none('42'), 42.0)
+    self.assertEqual(float_or_none(''), None)
+    self.assertEqual(float_or_none(None), None)
+    self.assertEqual(float_or_none([]), None)
+    self.assertEqual(float_or_none(set()), None)
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,16 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, output, which_result', [('npm --version', output.format('npm'), '/usr/bin/npm'), ('sudo npm --version', '', '/usr/bin/npm'), ('sudo npm --version', output.format('npm'), None)])
+def test_not_match(which, script, output, which_result):
+    which.return_value = which_result
+    assert not match(Command(script, output))
+
+----------
+
+
+
+Test Class Name: default

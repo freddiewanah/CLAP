@@ -1,0 +1,28 @@
+def get(self, name):
+    """
+        Call the registered function and return its results.
+
+        Args:
+            name (str): the name that identifies a dataset, e.g. "coco_2014_train".
+
+        Returns:
+            list[dict]: dataset annotations.
+        """
+    try:
+        f = self[name]
+    except KeyError as e:
+        raise KeyError("Dataset '{}' is not registered! Available datasets are: {}".format(name, ', '.join(list(self.keys())))) from e
+    return f()
+
+----------
+
+def test_get_returns_model(self):
+    model = model_zoo.get('Misc/scratch_mask_rcnn_R_50_FPN_3x_gn.yaml', trained=False)
+    self.assertIsInstance(model, GeneralizedRCNN)
+    self.assertIsInstance(model.backbone, FPN)
+
+----------
+
+
+
+Test Class Name: TestModelZoo

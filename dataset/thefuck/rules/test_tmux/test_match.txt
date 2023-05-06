@@ -1,0 +1,14 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_match(tmux_ambiguous):
+    assert match(Command('tmux list', tmux_ambiguous))
+
+----------
+
+
+
+Test Class Name: default

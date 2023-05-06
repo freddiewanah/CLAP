@@ -1,0 +1,19 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_selector(self):
+    body = b'<?xml version="1.0" encoding="utf-8"?><xml><elem>value</elem></xml>'
+    response = self.response_class('http://www.example.com', body=body)
+    self.assertIsInstance(response.selector, Selector)
+    self.assertEqual(response.selector.type, 'xml')
+    self.assertIs(response.selector, response.selector)
+    self.assertIs(response.selector.response, response)
+    self.assertEqual(response.selector.xpath('//elem/text()').getall(), ['value'])
+
+----------
+
+
+
+Test Class Name: XmlResponseTest

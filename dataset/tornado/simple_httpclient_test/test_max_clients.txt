@@ -1,0 +1,43 @@
+@classmethod
+def configure(cls, impl: 'Union[None, str, Type[Configurable]]', **kwargs: Any) -> None:
+    """Configures the `AsyncHTTPClient` subclass to use.
+
+        ``AsyncHTTPClient()`` actually creates an instance of a subclass.
+        This method may be called with either a class object or the
+        fully-qualified name of such a class (or ``None`` to use the default,
+        ``SimpleAsyncHTTPClient``)
+
+        If additional keyword arguments are given, they will be passed
+        to the constructor of each subclass instance created.  The
+        keyword argument ``max_clients`` determines the maximum number
+        of simultaneous `~AsyncHTTPClient.fetch()` operations that can
+        execute in parallel on each `.IOLoop`.  Additional arguments
+        may be supported depending on the implementation class in use.
+
+        Example::
+
+           AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
+        """
+    super(AsyncHTTPClient, cls).configure(impl, **kwargs)
+
+----------
+
+def test_max_clients(self):
+    AsyncHTTPClient.configure(SimpleAsyncHTTPClient)
+    with closing(AsyncHTTPClient(force_instance=True)) as client:
+        self.assertEqual(client.max_clients, 10)
+    with closing(AsyncHTTPClient(max_clients=11, force_instance=True)) as client:
+        self.assertEqual(client.max_clients, 11)
+    AsyncHTTPClient.configure(SimpleAsyncHTTPClient, max_clients=12)
+    with closing(AsyncHTTPClient(force_instance=True)) as client:
+        self.assertEqual(client.max_clients, 12)
+    with closing(AsyncHTTPClient(max_clients=13, force_instance=True)) as client:
+        self.assertEqual(client.max_clients, 13)
+    with closing(AsyncHTTPClient(max_clients=14, force_instance=True)) as client:
+        self.assertEqual(client.max_clients, 14)
+
+----------
+
+
+
+Test Class Name: CreateAsyncHTTPClientTestCase

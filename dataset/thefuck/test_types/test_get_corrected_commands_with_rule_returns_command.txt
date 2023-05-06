@@ -1,0 +1,24 @@
+def get_corrected_commands(self, command):
+    """Returns generator with corrected commands.
+
+        :type command: Command
+        :rtype: Iterable[CorrectedCommand]
+
+        """
+    new_commands = self.get_new_command(command)
+    if not isinstance(new_commands, list):
+        new_commands = (new_commands,)
+    for (n, new_command) in enumerate(new_commands):
+        yield CorrectedCommand(script=new_command, side_effect=self.side_effect, priority=(n + 1) * self.priority)
+
+----------
+
+def test_get_corrected_commands_with_rule_returns_command(self):
+    rule = Rule(get_new_command=lambda x: x.script + '!', priority=100)
+    assert list(rule.get_corrected_commands(Command('test', ''))) == [CorrectedCommand(script='test!', priority=100)]
+
+----------
+
+
+
+Test Class Name: TestRule

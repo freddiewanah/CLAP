@@ -1,0 +1,15 @@
+def search(value, pattern='', ignorecase=False, multiline=False):
+    """ Perform a `re.search` returning a boolean """
+    return regex(value, pattern, ignorecase, multiline, 'search')
+
+----------
+
+@pytest.mark.parametrize('testcase', ANSIBLE_MODULE_UTIL_STRINGS)
+def test_detect_new_style_python_module_re(self, testcase):
+    assert amc.NEW_STYLE_PYTHON_MODULE_RE.search(testcase)
+
+----------
+
+
+
+Test Class Name: TestDetectionRegexes

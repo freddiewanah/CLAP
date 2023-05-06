@@ -1,0 +1,44 @@
+def wait_for_exit(self, raise_error: bool=True) -> 'Future[int]':
+    """Returns a `.Future` which resolves when the process exits.
+
+        Usage::
+
+            ret = yield proc.wait_for_exit()
+
+        This is a coroutine-friendly alternative to `set_exit_callback`
+        (and a replacement for the blocking `subprocess.Popen.wait`).
+
+        By default, raises `subprocess.CalledProcessError` if the process
+        has a non-zero exit status. Use ``wait_for_exit(raise_error=False)``
+        to suppress this behavior and return the exit status without raising.
+
+        .. versionadded:: 4.2
+
+        Availability: Unix
+        """
+    future = Future()
+
+    def callback(ret: int) -> None:
+        if ret != 0 and raise_error:
+            future_set_exception_unless_cancelled(future, CalledProcessError(ret, 'unknown'))
+        else:
+            future_set_result_unless_cancelled(future, ret)
+    self.set_exit_callback(callback)
+    return future
+
+----------
+
+@gen_test
+def test_wait_for_exit_raise(self):
+    Subprocess.initialize()
+    self.addCleanup(Subprocess.uninitialize)
+    subproc = Subprocess([sys.executable, '-c', 'import sys; sys.exit(1)'])
+    with self.assertRaises(subprocess.CalledProcessError) as cm:
+        yield subproc.wait_for_exit()
+    self.assertEqual(cm.exception.returncode, 1)
+
+----------
+
+
+
+Test Class Name: SubprocessTest

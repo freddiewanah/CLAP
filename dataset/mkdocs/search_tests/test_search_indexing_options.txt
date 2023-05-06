@@ -1,0 +1,75 @@
+def generate_search_index(self) -> str:
+    """python to json conversion"""
+    page_dicts = {'docs': self._entries, 'config': self.config}
+    data = json.dumps(page_dicts, sort_keys=True, separators=(',', ':'), default=str)
+    if self.config['prebuild_index'] in (True, 'node'):
+        try:
+            script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'prebuild-index.js')
+            p = subprocess.Popen(['node', script_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+            (idx, err) = p.communicate(data)
+            if not err:
+                page_dicts['index'] = json.loads(idx)
+                data = json.dumps(page_dicts, sort_keys=True, separators=(',', ':'))
+                log.debug('Pre-built search index created successfully.')
+            else:
+                log.warning(f'Failed to pre-build search index. Error: {err}')
+        except (OSError, ValueError) as e:
+            log.warning(f'Failed to pre-build search index. Error: {e}')
+    elif self.config['prebuild_index'] == 'python':
+        if haslunrpy:
+            lunr_idx = lunr(ref='location', fields=('title', 'text'), documents=self._entries, languages=self.config['lang'])
+            page_dicts['index'] = lunr_idx.serialize()
+            data = json.dumps(page_dicts, sort_keys=True, separators=(',', ':'))
+        else:
+            log.warning("Failed to pre-build search index. The 'python' method was specified; however, the 'lunr.py' library does not appear to be installed. Try installing it with 'pip install lunr'. If you are using any language other than English you will also need to install 'lunr[languages]'.")
+    return data
+
+----------
+
+def test_search_indexing_options(self):
+
+    def test_page(title, filename, config):
+        test_page = Page(title, File(filename, config.docs_dir, config.site_dir, config.use_directory_urls), config)
+        test_page.content = '\n                <h1 id="heading-1">Heading 1</h1>\n                <p>Content 1</p>\n                <h2 id="heading-2">Heading 2</h1>\n                <p>Content 2</p>\n                <h3 id="heading-3">Heading 3</h1>\n                <p>Content 3</p>'
+        test_page.markdown = dedent('\n                # Heading 1\n                ## Heading 2\n                ### Heading 3')
+        test_page.toc = get_toc(get_markdown_toc(test_page.markdown))
+        return test_page
+
+    def validate_full(data, page):
+        self.assertEqual(len(data), 4)
+        for x in data:
+            self.assertTrue(x['title'])
+            self.assertTrue(x['text'])
+
+    def validate_sections(data, page):
+        self.assertEqual(len(data), 4)
+        self.assertEqual(data[0]['title'], page.title)
+        self.assertFalse(data[0]['text'])
+        for x in data[1:]:
+            self.assertTrue(x['title'])
+            self.assertFalse(x['text'])
+
+    def validate_titles(data, page):
+        self.assertEqual(len(data), 1)
+        for x in data:
+            self.assertFalse(x['text'])
+    for (option, validate) in {'full': validate_full, 'sections': validate_sections, 'titles': validate_titles}.items():
+        with self.subTest(option):
+            plugin = search.SearchPlugin()
+            (errors, warnings) = plugin.load_config({'indexing': option})
+            self.assertEqual(errors, [])
+            self.assertEqual(warnings, [])
+            base_cfg = load_config()
+            base_cfg['plugins']['search'].config.indexing = option
+            pages = [test_page('Home', 'index.md', base_cfg), test_page('About', 'about.md', base_cfg)]
+            for page in pages:
+                index = search_index.SearchIndex(**plugin.config)
+                index.add_entry_from_context(page)
+                data = index.generate_search_index()
+                validate(json.loads(data)['docs'], page)
+
+----------
+
+
+
+Test Class Name: SearchIndexTests

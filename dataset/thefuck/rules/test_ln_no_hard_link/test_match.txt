@@ -1,0 +1,16 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, output', [('ln barDir barLink', 'ln: ‘barDir’: {}'), ('sudo ln a b', 'ln: ‘a’: {}'), ('sudo ln -nbi a b', 'ln: ‘a’: {}')])
+def test_match(script, output):
+    command = Command(script, output.format(error))
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,53 @@
+def sleep(duration: float) -> 'Future[None]':
+    """Return a `.Future` that resolves after the given number of seconds.
+
+    When used with ``yield`` in a coroutine, this is a non-blocking
+    analogue to `time.sleep` (which should not be used in coroutines
+    because it is blocking)::
+
+        yield gen.sleep(0.5)
+
+    Note that calling this function on its own does nothing; you must
+    wait on the `.Future` it returns (usually by yielding it).
+
+    .. versionadded:: 4.1
+    """
+    f = _create_future()
+    IOLoop.current().call_later(duration, lambda : future_set_result_unless_cancelled(f, None))
+    return f
+
+----------
+
+def test_gc_infinite_coro(self):
+    loop = self.get_new_ioloop()
+    result = []
+    wfut = []
+
+    @gen.coroutine
+    def infinite_coro():
+        try:
+            while True:
+                yield gen.sleep(0.001)
+                result.append(True)
+        finally:
+            result.append(None)
+
+    @gen.coroutine
+    def do_something():
+        fut = infinite_coro()
+        fut._refcycle = fut
+        wfut.append(weakref.ref(fut))
+        yield gen.sleep(0.2)
+    loop.run_sync(do_something)
+    loop.close()
+    gc.collect()
+    self.assertIs(wfut[0](), None)
+    self.assertGreaterEqual(len(result), 2)
+    if not self.is_pypy3():
+        self.assertIs(result[-1], None)
+
+----------
+
+
+
+Test Class Name: RunnerGCTest

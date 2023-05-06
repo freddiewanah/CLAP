@@ -1,0 +1,23 @@
+def receive_body(self, data: bytes) -> None:
+    self.request_bytes += len(data)
+    if self.request_bytes > self.request_max_size:
+        raise PayloadTooLarge('Request body exceeds the size limit')
+    self.request.body += data
+
+----------
+
+def test_http_receiver_receive_body(app: Sanic, http_request: Request):
+    receiver = generate_http_receiver(app, http_request)
+    receiver.request_max_size = 4
+    receiver.receive_body(b'..')
+    assert receiver.request.body == b'..'
+    receiver.receive_body(b'..')
+    assert receiver.request.body == b'....'
+    with pytest.raises(PayloadTooLarge, match='Request body exceeds the size limit'):
+        receiver.receive_body(b'..')
+
+----------
+
+
+
+Test Class Name: mock_handle

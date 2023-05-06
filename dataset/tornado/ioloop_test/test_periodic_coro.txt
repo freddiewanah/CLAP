@@ -1,0 +1,39 @@
+def add_callback(self, callback: Callable, *args: Any, **kwargs: Any) -> None:
+    """Calls the given callback on the next I/O loop iteration.
+
+        It is safe to call this method from any thread at any time,
+        except from a signal handler.  Note that this is the **only**
+        method in `IOLoop` that makes this thread-safety guarantee; all
+        other interaction with the `IOLoop` must be done from that
+        `IOLoop`'s thread.  `add_callback()` may be used to transfer
+        control from other threads to the `IOLoop`'s thread.
+
+        To add a callback from a signal handler, see
+        `add_callback_from_signal`.
+        """
+    raise NotImplementedError()
+
+----------
+
+def test_periodic_coro(self) -> None:
+    counts = [0, 0]
+
+    @gen.coroutine
+    def callback() -> 'Generator[Future[None], object, None]':
+        counts[0] += 1
+        yield gen.sleep(0.025)
+        counts[1] += 1
+        if counts[1] == 3:
+            pc.stop()
+            self.io_loop.add_callback(self.stop)
+    pc = PeriodicCallback(callback, 10)
+    pc.start()
+    self.wait()
+    self.assertEqual(counts[0], 3)
+    self.assertEqual(counts[1], 3)
+
+----------
+
+
+
+Test Class Name: TestPeriodicCallbackAsync

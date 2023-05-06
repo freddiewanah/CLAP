@@ -1,0 +1,67 @@
+@torch.jit.script_if_tracing
+def batched_nms_rotated(boxes: torch.Tensor, scores: torch.Tensor, idxs: torch.Tensor, iou_threshold: float):
+    """
+    Performs non-maximum suppression in a batched fashion.
+
+    Each index value correspond to a category, and NMS
+    will not be applied between elements of different categories.
+
+    Args:
+        boxes (Tensor[N, 5]):
+           boxes where NMS will be performed. They
+           are expected to be in (x_ctr, y_ctr, width, height, angle_degrees) format
+        scores (Tensor[N]):
+           scores for each one of the boxes
+        idxs (Tensor[N]):
+           indices of the categories for each one of the boxes.
+        iou_threshold (float):
+           discards all overlapping boxes
+           with IoU < iou_threshold
+
+    Returns:
+        Tensor:
+            int64 tensor with the indices of the elements that have been kept
+            by NMS, sorted in decreasing order of scores
+    """
+    assert boxes.shape[-1] == 5
+    if boxes.numel() == 0:
+        return torch.empty((0,), dtype=torch.int64, device=boxes.device)
+    boxes = boxes.float()
+    max_coordinate = (torch.max(boxes[:, 0], boxes[:, 1]) + torch.max(boxes[:, 2], boxes[:, 3]) / 2).max()
+    min_coordinate = (torch.min(boxes[:, 0], boxes[:, 1]) - torch.max(boxes[:, 2], boxes[:, 3]) / 2).min()
+    offsets = idxs.to(boxes) * (max_coordinate - min_coordinate + 1)
+    boxes_for_nms = boxes.clone()
+    boxes_for_nms[:, :2] += offsets[:, None]
+    keep = nms_rotated(boxes_for_nms, scores, iou_threshold)
+    return keep
+
+----------
+
+def test_batched_nms_rotated_0_degree_cpu(self, device='cpu'):
+    N = 2000
+    num_classes = 50
+    (boxes, scores) = self._create_tensors(N, device=device)
+    idxs = torch.randint(0, num_classes, (N,))
+    rotated_boxes = torch.zeros(N, 5, device=device)
+    rotated_boxes[:, 0] = (boxes[:, 0] + boxes[:, 2]) / 2.0
+    rotated_boxes[:, 1] = (boxes[:, 1] + boxes[:, 3]) / 2.0
+    rotated_boxes[:, 2] = boxes[:, 2] - boxes[:, 0]
+    rotated_boxes[:, 3] = boxes[:, 3] - boxes[:, 1]
+    err_msg = 'Rotated NMS with 0 degree is incompatible with horizontal NMS for IoU={}'
+    for iou in [0.2, 0.5, 0.8]:
+        backup = boxes.clone()
+        keep_ref = batched_nms(boxes, scores, idxs, iou)
+        assert torch.allclose(boxes, backup), 'boxes modified by batched_nms'
+        backup = rotated_boxes.clone()
+        keep = batched_nms_rotated(rotated_boxes, scores, idxs, iou)
+        assert torch.allclose(rotated_boxes, backup), 'rotated_boxes modified by batched_nms_rotated'
+        self.assertLessEqual(nms_edit_distance(keep, keep_ref), 5, err_msg.format(iou))
+
+----------
+
+def _create_tensors(self, N, device='cpu'):
+    boxes = random_boxes(N, 200, device=device)
+    scores = torch.rand(N, device=device)
+    return (boxes, scores)
+
+Test Class Name: TestNMSRotated

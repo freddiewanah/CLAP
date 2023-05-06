@@ -1,0 +1,29 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+def test_content_length_zero_bodyless_post_request_headers(self):
+    """Tests if "Content-Length: 0" is sent for bodyless POST requests.
+
+        This is not strictly required by HTTP RFCs but can cause trouble
+        for some web servers.
+        See:
+        https://github.com/scrapy/scrapy/issues/823
+        https://issues.apache.org/jira/browse/TS-2902
+        https://github.com/kennethreitz/requests/issues/405
+        https://bugs.python.org/issue14721
+        """
+
+    def _test(response):
+        self.assertEqual(response.body, b'0')
+    request = Request(self.getURL('contentlength'), method='POST')
+    return self.download_request(request, Spider('foo')).addCallback(_test)
+
+----------
+
+
+
+Test Class Name: HttpTestCase

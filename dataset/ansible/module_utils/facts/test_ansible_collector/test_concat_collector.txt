@@ -1,0 +1,37 @@
+def collect(self, module=None, collected_facts=None):
+    collected_facts = collected_facts or {}
+    facts_dict = {}
+    for collector_obj in self.collectors:
+        info_dict = {}
+        try:
+            info_dict = collector_obj.collect_with_namespace(module=module, collected_facts=collected_facts)
+        except Exception as e:
+            sys.stderr.write(repr(e))
+            sys.stderr.write('\n')
+        collected_facts.update(info_dict.copy())
+        facts_dict.update(self._filter(info_dict, self.filter_spec))
+    return facts_dict
+
+----------
+
+def test_concat_collector(self):
+    _mock_module = mock_module(gather_subset=['all', '!facter', '!ohai'])
+    _collectors = self._collectors(_mock_module)
+    _collectors.append(ConCatFactCollector())
+    fact_collector = ansible_collector.AnsibleFactCollector(collectors=_collectors, namespace=ns, filter_spec=_mock_module.params['filter'])
+    collected_facts = {}
+    facts_dict = fact_collector.collect(module=_mock_module, collected_facts=collected_facts)
+    self.assertIn('concat_fact', facts_dict)
+    self.assertTrue('THE_NEEDED_FACT_VALUE' in facts_dict['concat_fact'])
+
+----------
+
+def _collectors(self, module, all_collector_classes=None, minimal_gather_subset=None):
+    return [ProvidesOtherFactCollector(), RequiresOtherFactCollector()]
+def _collect(self, _mock_module, collected_facts=None):
+    _collectors = self._collectors(_mock_module)
+    fact_collector = ansible_collector.AnsibleFactCollector(collectors=_collectors, namespace=ns, filter_spec=_mock_module.params['filter'])
+    facts_dict = fact_collector.collect(module=_mock_module, collected_facts=collected_facts)
+    return facts_dict
+
+Test Class Name: TestCollectorDepsWithFilter

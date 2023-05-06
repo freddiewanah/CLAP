@@ -1,0 +1,20 @@
+def close(self, all_fds: bool=False) -> None:
+    if self.is_current:
+        self._clear_current()
+    super().close(all_fds=all_fds)
+
+----------
+
+def test_explicit_asyncio_loop(self):
+    asyncio_loop = asyncio.new_event_loop()
+    loop = IOLoop(asyncio_loop=asyncio_loop, make_current=False)
+    assert loop.asyncio_loop is asyncio_loop
+    with self.assertRaises(RuntimeError):
+        IOLoop(asyncio_loop=asyncio_loop, make_current=False)
+    loop.close()
+
+----------
+
+
+
+Test Class Name: SocketWrapper

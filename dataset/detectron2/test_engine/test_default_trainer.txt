@@ -1,0 +1,29 @@
+def get_cfg() -> CfgNode:
+    """
+    Get a copy of the default config.
+
+    Returns:
+        a detectron2 CfgNode instance.
+    """
+    from .defaults import _C
+    return _C.clone()
+
+----------
+
+def test_default_trainer(self):
+    cfg = get_cfg()
+    cfg.MODEL.DEVICE = 'cpu'
+    cfg.MODEL.META_ARCHITECTURE = '_SimpleModel'
+    cfg.DATASETS.TRAIN = ('coco_2017_val_100',)
+    with tempfile.TemporaryDirectory(prefix='detectron2_test') as d:
+        cfg.OUTPUT_DIR = d
+        trainer = DefaultTrainer(cfg)
+        self.assertIs(trainer.model, trainer._trainer.model)
+        trainer.model = _SimpleModel()
+        self.assertIs(trainer.model, trainer._trainer.model)
+
+----------
+
+
+
+Test Class Name: TestTrainer

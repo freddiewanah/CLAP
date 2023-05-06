@@ -1,0 +1,30 @@
+def format_file_contents(src_contents: str, *, fast: bool, mode: Mode) -> FileContent:
+    """Reformat contents of a file and return new contents.
+
+    If `fast` is False, additionally confirm that the reformatted code is
+    valid by calling :func:`assert_equivalent` and :func:`assert_stable` on it.
+    `mode` is passed to :func:`format_str`.
+    """
+    if mode.is_ipynb:
+        dst_contents = format_ipynb_string(src_contents, fast=fast, mode=mode)
+    else:
+        dst_contents = format_str(src_contents, mode=mode)
+    if src_contents == dst_contents:
+        raise NothingChanged
+    if not fast and (not mode.is_ipynb):
+        check_stability_and_equivalence(src_contents, dst_contents, mode=mode)
+    return dst_contents
+
+----------
+
+def test_entire_notebook_empty_metadata() -> None:
+    content = read_jupyter_notebook('jupyter', 'notebook_empty_metadata')
+    result = format_file_contents(content, fast=True, mode=JUPYTER_MODE)
+    expected = '{\n "cells": [\n  {\n   "cell_type": "code",\n   "execution_count": null,\n   "metadata": {\n    "tags": []\n   },\n   "outputs": [],\n   "source": [\n    "%%time\\n",\n    "\\n",\n    "print(\\"foo\\")"\n   ]\n  },\n  {\n   "cell_type": "code",\n   "execution_count": null,\n   "metadata": {},\n   "outputs": [],\n   "source": []\n  }\n ],\n "metadata": {},\n "nbformat": 4,\n "nbformat_minor": 4\n}\n'
+    assert result == expected
+
+----------
+
+
+
+Test Class Name: default

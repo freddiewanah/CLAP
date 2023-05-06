@@ -1,0 +1,24 @@
+def content_type(self, mime_type: t.Optional[MimeType]=None) -> str:
+    """Get a random HTTP content type.
+
+        :return: Content type.
+
+        :Example:
+            Content-Type: application/json
+        """
+    fmt = self._file.mime_type(type_=mime_type)
+    return f'Content-Type: {fmt}'
+
+----------
+
+@pytest.mark.parametrize('mime_type', [MimeType.APPLICATION, MimeType.AUDIO, MimeType.IMAGE, MimeType.MESSAGE, MimeType.TEXT, MimeType.VIDEO])
+def test_content_type(self, net, mime_type):
+    ct = net.content_type(mime_type=mime_type)
+    ct = ct.split(':')[1].strip()
+    assert ct in data.MIME_TYPES[mime_type.value]
+
+----------
+
+
+
+Test Class Name: TestInternet

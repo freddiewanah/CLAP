@@ -1,0 +1,19 @@
+def replace_argument(script, from_, to):
+    """Replaces command line argument."""
+    replaced_in_the_end = re.sub(u' {}$'.format(re.escape(from_)), u' {}'.format(to), script, count=1)
+    if replaced_in_the_end != script:
+        return replaced_in_the_end
+    else:
+        return script.replace(u' {} '.format(from_), u' {} '.format(to), 1)
+
+----------
+
+@pytest.mark.parametrize('args, result', [(('apt-get instol vim', 'instol', 'install'), 'apt-get install vim'), (('git brnch', 'brnch', 'branch'), 'git branch')])
+def test_replace_argument(args, result):
+    assert replace_argument(*args) == result
+
+----------
+
+
+
+Test Class Name: TestGetCloseMatches

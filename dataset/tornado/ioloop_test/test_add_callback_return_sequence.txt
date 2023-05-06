@@ -1,0 +1,31 @@
+def start(self) -> None:
+    """Starts the I/O loop.
+
+        The loop will run until one of the callbacks calls `stop()`, which
+        will make the loop stop after the current event iteration completes.
+        """
+    raise NotImplementedError()
+
+----------
+
+def test_add_callback_return_sequence(self):
+    self.calls = 0
+    loop = self.io_loop
+    test = self
+    old_add_callback = loop.add_callback
+
+    def add_callback(self, callback, *args, **kwargs):
+        test.calls += 1
+        old_add_callback(callback, *args, **kwargs)
+    loop.add_callback = types.MethodType(add_callback, loop)
+    loop.add_callback(lambda : {})
+    loop.add_callback(lambda : [])
+    loop.add_timeout(datetime.timedelta(milliseconds=50), loop.stop)
+    loop.start()
+    self.assertLess(self.calls, 10)
+
+----------
+
+
+
+Test Class Name: TestIOLoop

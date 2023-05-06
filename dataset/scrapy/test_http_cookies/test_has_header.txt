@@ -1,0 +1,14 @@
+def has_header(self, name):
+    return name in self.request.headers
+
+----------
+
+def test_has_header(self):
+    self.assertTrue(self.wrapped.has_header('content-type'))
+    self.assertFalse(self.wrapped.has_header('xxxxx'))
+
+----------
+
+
+
+Test Class Name: WrappedRequestTest

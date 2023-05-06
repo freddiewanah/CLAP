@@ -1,0 +1,18 @@
+def get_receiver_by_stream_id(self, stream_id: int) -> Receiver:
+    return self.receivers[stream_id]
+
+----------
+
+def test_request_stream_id(app):
+    protocol = generate_protocol(app)
+    http3 = Http3(protocol, protocol.transmit)
+    http3.http_event_received(HeadersReceived([(b':method', b'GET'), (b':path', b'/location'), (b':scheme', b'https'), (b':authority', b'localhost:8443'), (b'foo', b'bar')], 1, False))
+    receiver = http3.get_receiver_by_stream_id(1)
+    assert isinstance(receiver.request, Request)
+    assert receiver.request.stream_id == 1
+
+----------
+
+
+
+Test Class Name: mock_handle

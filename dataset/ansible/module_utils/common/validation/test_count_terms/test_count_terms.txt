@@ -1,0 +1,24 @@
+def count_terms(terms, parameters):
+    """Count the number of occurrences of a key in a given dictionary
+
+    :arg terms: String or iterable of values to check
+    :arg parameters: Dictionary of parameters
+
+    :returns: An integer that is the number of occurrences of the terms values
+        in the provided dictionary.
+    """
+    if not is_iterable(terms):
+        terms = [terms]
+    return len(set(terms).intersection(parameters))
+
+----------
+
+def test_count_terms(params):
+    check = set(('name', 'dest'))
+    assert count_terms(check, params) == 2
+
+----------
+
+
+
+Test Class Name: default

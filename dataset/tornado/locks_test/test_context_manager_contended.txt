@@ -1,0 +1,42 @@
+def sleep(duration: float) -> 'Future[None]':
+    """Return a `.Future` that resolves after the given number of seconds.
+
+    When used with ``yield`` in a coroutine, this is a non-blocking
+    analogue to `time.sleep` (which should not be used in coroutines
+    because it is blocking)::
+
+        yield gen.sleep(0.5)
+
+    Note that calling this function on its own does nothing; you must
+    wait on the `.Future` it returns (usually by yielding it).
+
+    .. versionadded:: 4.1
+    """
+    f = _create_future()
+    IOLoop.current().call_later(duration, lambda : future_set_result_unless_cancelled(f, None))
+    return f
+
+----------
+
+@gen_test
+def test_context_manager_contended(self):
+    sem = locks.Semaphore()
+    history = []
+
+    @gen.coroutine
+    def f(index):
+        with (yield sem.acquire()):
+            history.append('acquired %d' % index)
+            yield gen.sleep(0.01)
+            history.append('release %d' % index)
+    yield [f(i) for i in range(2)]
+    expected_history = []
+    for i in range(2):
+        expected_history.extend(['acquired %d' % i, 'release %d' % i])
+    self.assertEqual(expected_history, history)
+
+----------
+
+
+
+Test Class Name: SemaphoreContextManagerTest

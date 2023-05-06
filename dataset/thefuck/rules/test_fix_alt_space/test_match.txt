@@ -1,0 +1,21 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_match():
+    """The character before 'grep' is Alt+Space, which happens frequently
+    on the Mac when typing the pipe character (Alt+7), and holding the Alt
+    key pressed for longer than necessary.
+
+    """
+    assert match(Command(u'ps -ef |\xa0grep foo', u'-bash: \xa0grep: command not found'))
+    assert not match(Command('ps -ef | grep foo', ''))
+    assert not match(Command('', ''))
+
+----------
+
+
+
+Test Class Name: default

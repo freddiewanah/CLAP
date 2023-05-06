@@ -1,0 +1,26 @@
+def remove_entity_headers(headers, allowed=('content-location', 'expires')):
+    """
+    Removes all the entity headers present in the headers given.
+    According to RFC 2616 Section 10.3.5,
+    Content-Location and Expires are allowed as for the
+    "strong cache validator".
+    https://tools.ietf.org/html/rfc2616#section-10.3.5
+
+    returns the headers without the entity headers
+    """
+    allowed = set([h.lower() for h in allowed])
+    headers = {header: value for (header, value) in headers.items() if not is_entity_header(header) or header.lower() in allowed}
+    return headers
+
+----------
+
+def test_remove_entity_headers():
+    tests = (({}, {}), ({'Allow': 'GET, POST, HEAD'}, {}), ({'Content-Type': 'application/json', 'Expires': 'Wed, 21 Oct 2015 07:28:00 GMT', 'Foo': 'Bar'}, {'Expires': 'Wed, 21 Oct 2015 07:28:00 GMT', 'Foo': 'Bar'}), ({'Allow': 'GET, POST, HEAD', 'Content-Location': '/test'}, {'Content-Location': '/test'}))
+    for (header, expected) in tests:
+        assert helpers.remove_entity_headers(header) == expected
+
+----------
+
+
+
+Test Class Name: default

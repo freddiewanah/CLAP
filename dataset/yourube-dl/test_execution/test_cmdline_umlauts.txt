@@ -1,0 +1,17 @@
+def encodeArgument(s):
+    if not isinstance(s, compat_str):
+        s = s.decode('ascii')
+    return encodeFilename(s, True)
+
+----------
+
+def test_cmdline_umlauts(self):
+    p = subprocess.Popen([sys.executable, 'youtube_dl/__main__.py', encodeArgument('ä'), '--version'], cwd=rootDir, stdout=_DEV_NULL, stderr=subprocess.PIPE)
+    (_, stderr) = p.communicate()
+    self.assertFalse(stderr)
+
+----------
+
+
+
+Test Class Name: TestExecution

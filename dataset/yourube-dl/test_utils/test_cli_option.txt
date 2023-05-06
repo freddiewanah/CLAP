@@ -1,0 +1,19 @@
+def cli_option(params, command_option, param):
+    param = params.get(param)
+    if param:
+        param = compat_str(param)
+    return [command_option, param] if param is not None else []
+
+----------
+
+def test_cli_option(self):
+    self.assertEqual(cli_option({'proxy': '127.0.0.1:3128'}, '--proxy', 'proxy'), ['--proxy', '127.0.0.1:3128'])
+    self.assertEqual(cli_option({'proxy': None}, '--proxy', 'proxy'), [])
+    self.assertEqual(cli_option({}, '--proxy', 'proxy'), [])
+    self.assertEqual(cli_option({'retries': 10}, '--retries', 'retries'), ['--retries', '10'])
+
+----------
+
+
+
+Test Class Name: TestUtil

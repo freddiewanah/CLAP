@@ -1,0 +1,17 @@
+def build_criterion(cfg: DictConfig, task, from_checkpoint=False):
+    return build_criterion_(cfg, task, from_checkpoint=from_checkpoint)
+
+----------
+
+def test_reduction(self):
+    self.args.label_smoothing = 0.1
+    crit = LabelSmoothedCrossEntropyCriterion.build_criterion(self.args, self.task)
+    (loss, _, logging_output) = crit(self.model, self.sample, reduce=True)
+    (unreduced_loss, _, _) = crit(self.model, self.sample, reduce=False)
+    self.assertAlmostEqual(loss, unreduced_loss.sum())
+
+----------
+
+
+
+Test Class Name: TestLabelSmoothing

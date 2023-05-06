@@ -1,0 +1,35 @@
+@classmethod
+def from_response(cls: Type[FormRequestTypeVar], response: TextResponse, formname: Optional[str]=None, formid: Optional[str]=None, formnumber: Optional[int]=0, formdata: FormdataType=None, clickdata: Optional[dict]=None, dont_click: bool=False, formxpath: Optional[str]=None, formcss: Optional[str]=None, **kwargs) -> FormRequestTypeVar:
+    kwargs.setdefault('encoding', response.encoding)
+    if formcss is not None:
+        from parsel.csstranslator import HTMLTranslator
+        formxpath = HTMLTranslator().css_to_xpath(formcss)
+    form = _get_form(response, formname, formid, formnumber, formxpath)
+    formdata = _get_inputs(form, formdata, dont_click, clickdata)
+    url = _get_form_url(form, kwargs.pop('url', None))
+    method = kwargs.pop('method', form.method)
+    if method is not None:
+        method = method.upper()
+        if method not in cls.valid_form_methods:
+            method = 'GET'
+    return cls(url=url, method=method, formdata=formdata, **kwargs)
+
+----------
+
+def test_from_response_post_nonascii_bytes_latin1(self):
+    response = _buildresponse(b'<form action="post.php" method="POST">\n            <input type="hidden" name="test \xa3" value="val1">\n            <input type="hidden" name="test \xa3" value="val2">\n            <input type="hidden" name="test2" value="xxx \xb5">\n            </form>', url='http://www.example.com/this/list.html', encoding='latin1')
+    req = self.request_class.from_response(response, formdata={'one': ['two', 'three'], 'six': 'seven'})
+    self.assertEqual(req.method, 'POST')
+    self.assertEqual(req.headers[b'Content-type'], b'application/x-www-form-urlencoded')
+    self.assertEqual(req.url, 'http://www.example.com/this/post.php')
+    fs = _qs(req, to_unicode=True, encoding='latin1')
+    self.assertEqual(set(fs['test £']), {'val1', 'val2'})
+    self.assertEqual(set(fs['one']), {'two', 'three'})
+    self.assertEqual(fs['test2'], ['xxx µ'])
+    self.assertEqual(fs['six'], ['seven'])
+
+----------
+
+
+
+Test Class Name: FormRequestTest

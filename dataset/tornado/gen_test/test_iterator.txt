@@ -1,0 +1,41 @@
+def next(self) -> Future:
+    """Returns a `.Future` that will yield the next available result.
+
+        Note that this `.Future` will not be the same object as any of
+        the inputs.
+        """
+    self._running_future = Future()
+    if self._finished:
+        return self._return_result(self._finished.popleft())
+    return self._running_future
+
+----------
+
+@gen_test
+def test_iterator(self):
+    futures = [Future(), Future(), Future(), Future()]
+    self.finish_coroutines(0, futures)
+    g = gen.WaitIterator(*futures)
+    i = 0
+    while not g.done():
+        try:
+            r = (yield g.next())
+        except ZeroDivisionError:
+            self.assertIs(g.current_future, futures[0], 'exception future invalid')
+        else:
+            if i == 0:
+                self.assertEqual(r, 24, 'iterator value incorrect')
+                self.assertEqual(g.current_index, 2, 'wrong index')
+            elif i == 2:
+                self.assertEqual(r, 42, 'iterator value incorrect')
+                self.assertEqual(g.current_index, 1, 'wrong index')
+            elif i == 3:
+                self.assertEqual(r, 84, 'iterator value incorrect')
+                self.assertEqual(g.current_index, 3, 'wrong index')
+        i += 1
+
+----------
+
+
+
+Test Class Name: WaitIteratorTest

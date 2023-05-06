@@ -1,0 +1,39 @@
+def remove_handler(self, fd: Union[int, _Selectable]) -> None:
+    """Stop listening for events on ``fd``.
+
+        .. versionchanged:: 4.0
+           Added the ability to pass file-like objects in addition to
+           raw file descriptors.
+        """
+    raise NotImplementedError()
+
+----------
+
+@skipIfNonUnix
+def test_remove_handler_from_handler(self):
+    (client, server) = socket.socketpair()
+    try:
+        client.send(b'abc')
+        server.send(b'abc')
+        chunks = []
+
+        def handle_read(fd, events):
+            chunks.append(fd.recv(1024))
+            if fd is client:
+                self.io_loop.remove_handler(server)
+            else:
+                self.io_loop.remove_handler(client)
+        self.io_loop.add_handler(client, handle_read, self.io_loop.READ)
+        self.io_loop.add_handler(server, handle_read, self.io_loop.READ)
+        self.io_loop.call_later(0.1, self.stop)
+        self.wait()
+        self.assertEqual(chunks, [b'abc'])
+    finally:
+        client.close()
+        server.close()
+
+----------
+
+
+
+Test Class Name: SocketWrapper

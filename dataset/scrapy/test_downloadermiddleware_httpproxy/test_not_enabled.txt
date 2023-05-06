@@ -1,0 +1,19 @@
+@classmethod
+def from_crawler(cls, crawler):
+    if not crawler.settings.getbool('HTTPPROXY_ENABLED'):
+        raise NotConfigured
+    auth_encoding = crawler.settings.get('HTTPPROXY_AUTH_ENCODING')
+    return cls(auth_encoding)
+
+----------
+
+def test_not_enabled(self):
+    crawler = get_crawler(Spider, {'HTTPPROXY_ENABLED': False})
+    with pytest.raises(NotConfigured):
+        HttpProxyMiddleware.from_crawler(crawler)
+
+----------
+
+
+
+Test Class Name: TestHttpProxyMiddleware

@@ -1,0 +1,21 @@
+def graphics(self) -> str:
+    """Get a random graphics.
+
+        :return: Graphics.
+
+        :Example:
+            Intel\xae Iris\u2122 Pro Graphics 6200.
+        """
+    return self.random.choice(GRAPHICS)
+
+----------
+
+def test_graphics(self, hard):
+    result = hard.graphics()
+    assert result in GRAPHICS
+
+----------
+
+
+
+Test Class Name: TestHardware

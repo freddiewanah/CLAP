@@ -1,0 +1,31 @@
+def title(self, gender: t.Optional[Gender]=None, title_type: t.Optional[TitleType]=None) -> str:
+    """Generate a random title for name.
+
+        You can generate random prefix or suffix
+        for name using this method.
+
+        :param gender: The gender.
+        :param title_type: TitleType enum object.
+        :return: The title.
+        :raises NonEnumerableError: if gender or title_type in incorrect format.
+
+        :Example:
+            PhD.
+        """
+    gender_key = self.validate_enum(gender, Gender)
+    title_key = self.validate_enum(title_type, TitleType)
+    titles: t.List[str] = self.extract(['title', gender_key, title_key])
+    return self.random.choice(titles)
+
+----------
+
+def test_title(self, text):
+    result = text.title()
+    assert result is not None
+    assert result.strip() in text._data['text']
+
+----------
+
+
+
+Test Class Name: TestText

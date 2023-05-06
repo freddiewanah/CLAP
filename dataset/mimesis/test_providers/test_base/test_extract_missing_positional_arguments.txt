@@ -1,0 +1,27 @@
+def extract(self, keys: t.List[str], default: t.Optional[t.Any]=None) -> t.Any:
+    """Extracts nested values from JSON file by list of keys.
+
+        :param keys: List of keys (order extremely matters).
+        :param default: Default value.
+        :return: Data.
+        """
+    if not keys:
+        raise ValueError('The list of keys to extract cannot be empty.')
+    try:
+        return reduce(operator.getitem, keys, self._data)
+    except (TypeError, KeyError):
+        return default
+
+----------
+
+def test_extract_missing_positional_arguments(self, base_data_provider):
+    with pytest.raises(TypeError):
+        assert base_data_provider.extract(default=None)
+    with pytest.raises(TypeError):
+        assert base_data_provider.extract()
+
+----------
+
+
+
+Test Class Name: TestBase

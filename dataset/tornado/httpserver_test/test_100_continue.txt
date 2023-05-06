@@ -1,0 +1,30 @@
+def get_http_port(self) -> int:
+    """Returns the port used by the server.
+
+        A new port is chosen for each test.
+        """
+    return self.__port
+
+----------
+
+@gen_test
+def test_100_continue(self):
+    stream = IOStream(socket.socket())
+    yield stream.connect(('127.0.0.1', self.get_http_port()))
+    yield stream.write(b'\r\n'.join([b'POST /hello HTTP/1.1', b'Content-Length: 1024', b'Expect: 100-continue', b'Connection: close', b'\r\n']))
+    data = (yield stream.read_until(b'\r\n\r\n'))
+    self.assertTrue(data.startswith(b'HTTP/1.1 100 '), data)
+    stream.write(b'a' * 1024)
+    first_line = (yield stream.read_until(b'\r\n'))
+    self.assertTrue(first_line.startswith(b'HTTP/1.1 200'), first_line)
+    header_data = (yield stream.read_until(b'\r\n\r\n'))
+    headers = HTTPHeaders.parse(native_str(header_data.decode('latin1')))
+    body = (yield stream.read_bytes(int(headers['Content-Length'])))
+    self.assertEqual(body, b'Got 1024 bytes in POST')
+    stream.close()
+
+----------
+
+
+
+Test Class Name: HTTPConnectionTest

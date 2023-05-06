@@ -1,0 +1,24 @@
+def str_to_int(int_str):
+    """ A more relaxed version of int_or_none """
+    if isinstance(int_str, compat_integer_types):
+        return int_str
+    elif isinstance(int_str, compat_str):
+        int_str = re.sub('[,\\.\\+]', '', int_str)
+        return int_or_none(int_str)
+
+----------
+
+def test_str_to_int(self):
+    self.assertEqual(str_to_int('123,456'), 123456)
+    self.assertEqual(str_to_int('123.456'), 123456)
+    self.assertEqual(str_to_int(523), 523)
+    if sys.version_info < (3, 0):
+        eval('self.assertEqual(str_to_int(123456L), 123456)')
+    self.assertEqual(str_to_int('noninteger'), None)
+    self.assertEqual(str_to_int([]), None)
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,31 @@
+def fetch(self, request: Union['HTTPRequest', str], **kwargs: Any) -> 'HTTPResponse':
+    """Executes a request, returning an `HTTPResponse`.
+
+        The request may be either a string URL or an `HTTPRequest` object.
+        If it is a string, we construct an `HTTPRequest` using any additional
+        kwargs: ``HTTPRequest(request, **kwargs)``
+
+        If an error occurs during the fetch, we raise an `HTTPError` unless
+        the ``raise_error`` keyword argument is set to False.
+        """
+    response = self._io_loop.run_sync(functools.partial(self._async_client.fetch, request, **kwargs))
+    return response
+
+----------
+
+def test_get_body_arguments(self):
+    body = urllib.parse.urlencode(dict(foo='bar'))
+    response = self.fetch('/get_argument?source=body&foo=hello', method='POST', body=body)
+    self.assertEqual(response.body, b'bar')
+    body = urllib.parse.urlencode(dict(foo=''))
+    response = self.fetch('/get_argument?source=body&foo=hello', method='POST', body=body)
+    self.assertEqual(response.body, b'')
+    body = urllib.parse.urlencode(dict())
+    response = self.fetch('/get_argument?source=body&foo=hello', method='POST', body=body)
+    self.assertEqual(response.body, b'default')
+
+----------
+
+
+
+Test Class Name: WSGISafeWebTest

@@ -1,0 +1,23 @@
+def get_media_requests(self, item, info):
+    urls = ItemAdapter(item).get(self.images_urls_field, [])
+    return [Request(u) for u in urls]
+
+----------
+
+def test_item_fields_override_settings(self):
+    url = 'http://www.example.com/images/1.jpg'
+    item = self.item_class(name='item1', custom_image_urls=[url])
+    pipeline = ImagesPipeline.from_settings(Settings({'IMAGES_STORE': 's3://example/images/', 'IMAGES_URLS_FIELD': 'custom_image_urls', 'IMAGES_RESULT_FIELD': 'custom_images'}))
+    requests = list(pipeline.get_media_requests(item, None))
+    self.assertEqual(requests[0].url, url)
+    results = [(True, {'url': url})]
+    item = pipeline.item_completed(results, item, None)
+    custom_images = ItemAdapter(item).get('custom_images')
+    self.assertEqual(custom_images, [results[0][1]])
+    self.assertIsInstance(item, self.item_class)
+
+----------
+
+
+
+Test Class Name: ImagesPipelineTestCaseFieldsMixin

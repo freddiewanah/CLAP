@@ -1,0 +1,31 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_rekey_file_not_encrypted(self):
+    self._test_dir = self._create_test_dir()
+    src_file_contents = to_bytes('some info in a file\nyup.')
+    src_file_path = self._create_file(self._test_dir, 'src_file', content=src_file_contents)
+    ve = self._vault_editor()
+    new_password = 'password2:electricbugaloo'
+    self.assertRaisesRegex(errors.AnsibleError, 'input is not vault encrypted data', ve.rekey_file, src_file_path, new_password)
+
+----------
+
+def _create_test_dir(self):
+    suffix = '_ansible_unit_test_%s_' % self.__class__.__name__
+    return tempfile.mkdtemp(suffix=suffix)
+def _create_file(self, test_dir, name, content=None, symlink=False):
+    file_path = os.path.join(test_dir, name)
+    opened_file = open(file_path, 'wb')
+    if content:
+        opened_file.write(content)
+    opened_file.close()
+    return file_path
+def _vault_editor(self, vault_secrets=None):
+    if vault_secrets is None:
+        vault_secrets = self._secrets(self.vault_password)
+    return VaultEditor(VaultLib(vault_secrets))
+
+Test Class Name: TestVaultEditor

@@ -1,0 +1,86 @@
+def coroutine(func: Union[Callable[..., 'Generator[Any, Any, _T]'], Callable[..., _T]]) -> Callable[..., 'Future[_T]']:
+    """Decorator for asynchronous generators.
+
+    For compatibility with older versions of Python, coroutines may
+    also "return" by raising the special exception `Return(value)
+    <Return>`.
+
+    Functions with this decorator return a `.Future`.
+
+    .. warning::
+
+       When exceptions occur inside a coroutine, the exception
+       information will be stored in the `.Future` object. You must
+       examine the result of the `.Future` object, or the exception
+       may go unnoticed by your code. This means yielding the function
+       if called from another coroutine, using something like
+       `.IOLoop.run_sync` for top-level calls, or passing the `.Future`
+       to `.IOLoop.add_future`.
+
+    .. versionchanged:: 6.0
+
+       The ``callback`` argument was removed. Use the returned
+       awaitable object instead.
+
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        future = _create_future()
+        if contextvars is not None:
+            ctx_run = contextvars.copy_context().run
+        else:
+            ctx_run = _fake_ctx_run
+        try:
+            result = ctx_run(func, *args, **kwargs)
+        except (Return, StopIteration) as e:
+            result = _value_from_stopiteration(e)
+        except Exception:
+            future_set_exc_info(future, sys.exc_info())
+            try:
+                return future
+            finally:
+                future = None
+        else:
+            if isinstance(result, Generator):
+                try:
+                    yielded = ctx_run(next, result)
+                except (StopIteration, Return) as e:
+                    future_set_result_unless_cancelled(future, _value_from_stopiteration(e))
+                except Exception:
+                    future_set_exc_info(future, sys.exc_info())
+                else:
+                    runner = Runner(ctx_run, result, future, yielded)
+                    future.add_done_callback(lambda _: runner)
+                yielded = None
+                try:
+                    return future
+                finally:
+                    future = None
+        future_set_result_unless_cancelled(future, result)
+        return future
+    wrapper.__wrapped__ = func
+    wrapper.__tornado_coroutine__ = True
+    return wrapper
+
+----------
+
+def test_asyncio_future_debug_info(self):
+    self.finished = True
+    asyncio_loop = asyncio.get_event_loop()
+    self.addCleanup(asyncio_loop.set_debug, asyncio_loop.get_debug())
+    asyncio_loop.set_debug(True)
+
+    def f():
+        yield gen.moment
+    coro = gen.coroutine(f)()
+    self.assertIsInstance(coro, asyncio.Future)
+    expected = 'created at %s:%d' % (__file__, f.__code__.co_firstlineno + 3)
+    actual = repr(coro)
+    self.assertIn(expected, actual)
+
+----------
+
+
+
+Test Class Name: Foo

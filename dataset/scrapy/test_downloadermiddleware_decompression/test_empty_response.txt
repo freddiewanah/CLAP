@@ -1,0 +1,24 @@
+def process_response(self, request, response, spider):
+    if not response.body:
+        return response
+    for (fmt, func) in self._formats.items():
+        new_response = func(response)
+        if new_response:
+            logger.debug('Decompressed response with format: %(responsefmt)s', {'responsefmt': fmt}, extra={'spider': spider})
+            return new_response
+    return response
+
+----------
+
+def test_empty_response(self):
+    rsp = Response(url='http://test.com', body=b'')
+    new = self.mw.process_response(None, rsp, self.spider)
+    assert new is rsp
+    assert not rsp.body
+    assert not new.body
+
+----------
+
+
+
+Test Class Name: DecompressionMiddlewareTest

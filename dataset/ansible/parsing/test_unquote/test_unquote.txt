@@ -1,0 +1,17 @@
+def unquote(data):
+    """ removes first and last quotes from a string, if the string starts and ends with the same quotes """
+    if is_quoted(data):
+        return data[1:-1]
+    return data
+
+----------
+
+@pytest.mark.parametrize('quoted, expected', UNQUOTE_DATA)
+def test_unquote(quoted, expected):
+    assert unquote(quoted) == expected
+
+----------
+
+
+
+Test Class Name: default

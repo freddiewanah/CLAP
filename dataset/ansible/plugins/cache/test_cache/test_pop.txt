@@ -1,0 +1,17 @@
+def pop(self, key, *args):
+    if args:
+        return self._cache.pop(key, args[0])
+    return self._cache.pop(key)
+
+----------
+
+def test_pop(self):
+    v = self.cache.pop('cache_key_2')
+    assert v == {'key': 'value'}
+    assert 'cache_key_2' not in self.cache
+
+----------
+
+
+
+Test Class Name: TestCachePluginAdjudicator

@@ -1,0 +1,29 @@
+def replace(m: Match[str]) -> str:
+    groups = m.groupdict()
+    back_slashes = groups['backslashes']
+    if len(back_slashes) % 2 == 0:
+        return back_slashes + groups['body']
+    if groups['u']:
+        return back_slashes + 'u' + groups['u'].lower()
+    elif groups['U']:
+        return back_slashes + 'U' + groups['U'].lower()
+    elif groups['x']:
+        return back_slashes + 'x' + groups['x'].lower()
+    else:
+        assert groups['N'], f'Unexpected match: {m}'
+        return back_slashes + 'N{' + groups['N'].upper() + '}'
+
+----------
+
+@pytest.mark.parametrize('mode', [pytest.param(JUPYTER_MODE, id='default mode'), pytest.param(replace(JUPYTER_MODE, python_cell_magics={'cust1', 'cust1'}), id='custom cell magics mode')])
+def test_cell_magic(mode: Mode) -> None:
+    src = '%%time\nfoo =bar'
+    result = format_cell(src, fast=True, mode=mode)
+    expected = '%%time\nfoo = bar'
+    assert result == expected
+
+----------
+
+
+
+Test Class Name: default

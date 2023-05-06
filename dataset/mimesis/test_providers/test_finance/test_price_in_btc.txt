@@ -1,0 +1,22 @@
+def price_in_btc(self, minimum: float=0, maximum: float=2) -> float:
+    """Generate random price in BTC.
+
+        :param minimum: Minimum value of price.
+        :param maximum: Maximum value of price.
+        :return: Price in BTC.
+        """
+    return self.random.uniform(minimum, maximum, precision=7)
+
+----------
+
+@pytest.mark.parametrize('minimum, maximum', [(1, 2), (2, 4), (4, 16)])
+def test_price_in_btc(self, _finance, minimum, maximum):
+    price = _finance.price_in_btc(minimum, maximum)
+    assert float(price) >= minimum
+    assert float(price) <= maximum
+
+----------
+
+
+
+Test Class Name: TestFinance

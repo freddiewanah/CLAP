@@ -1,0 +1,36 @@
+def run_event(self, name: str, item=None, **kwargs):
+    """
+        Run all registered methods of an event.
+
+        `item` is the object to be modified or replaced and returned by the event method.
+        If it isn't given the event method creates a new object to be returned.
+        All other keywords are variables for context, but would not generally
+        be modified by the event method.
+        """
+    pass_item = item is not None
+    events = self.events[name]
+    if events:
+        log.debug(f'Running {len(events)} `{name}` events')
+    for method in events:
+        if pass_item:
+            result = method(item, **kwargs)
+        else:
+            result = method(**kwargs)
+        if result is not None:
+            item = result
+    return item
+
+----------
+
+def test_run_event_on_collection(self):
+    collection = plugins.PluginCollection()
+    plugin = DummyPlugin()
+    plugin.load_config({'foo': 'new'})
+    collection['foo'] = plugin
+    self.assertEqual(collection.run_event('pre_page', 'page content'), 'new page content')
+
+----------
+
+
+
+Test Class Name: TestPluginCollection

@@ -1,0 +1,24 @@
+def get_branches():
+    proc = subprocess.Popen(['git', 'branch', '-a', '--no-color', '--no-column'], stdout=subprocess.PIPE)
+    for line in proc.stdout.readlines():
+        line = line.decode('utf-8')
+        if '->' in line:
+            continue
+        if line.startswith('*'):
+            line = line.split(' ')[1]
+        if line.strip().startswith('remotes/'):
+            line = '/'.join(line.split('/')[2:])
+        yield line.strip()
+
+----------
+
+@pytest.mark.parametrize('branches, branch_list', [(b'', []), (b'* master', ['master']), (b'  remotes/origin/master', ['master']), (b'  remotes/origin/test/1', ['test/1']), (b'  remotes/origin/test/1/2/3', ['test/1/2/3']), (b'  test/1', ['test/1']), (b'  test/1/2/3', ['test/1/2/3']), (b'  remotes/origin/HEAD -> origin/master', []), (b'  just-another-branch', ['just-another-branch']), (b'* master\n  just-another-branch', ['master', 'just-another-branch']), (b'* master\n  remotes/origin/master\n  just-another-branch', ['master', 'master', 'just-another-branch'])])
+def test_get_branches(branches, branch_list, git_branch):
+    git_branch(branches)
+    assert list(get_branches()) == branch_list
+
+----------
+
+
+
+Test Class Name: default

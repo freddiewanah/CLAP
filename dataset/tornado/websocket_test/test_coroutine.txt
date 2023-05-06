@@ -1,0 +1,45 @@
+def write_message(self, message: Union[bytes, str, Dict[str, Any]], binary: bool=False) -> 'Future[None]':
+    """Sends the given message to the client of this Web Socket.
+
+        The message may be either a string or a dict (which will be
+        encoded as json).  If the ``binary`` argument is false, the
+        message will be sent as utf8; in binary mode any byte string
+        is allowed.
+
+        If the connection is already closed, raises `WebSocketClosedError`.
+        Returns a `.Future` which can be used for flow control.
+
+        .. versionchanged:: 3.2
+           `WebSocketClosedError` was added (previously a closed connection
+           would raise an `AttributeError`)
+
+        .. versionchanged:: 4.3
+           Returns a `.Future` which can be used for flow control.
+
+        .. versionchanged:: 5.0
+           Consistently raises `WebSocketClosedError`. Previously could
+           sometimes raise `.StreamClosedError`.
+        """
+    if self.ws_connection is None or self.ws_connection.is_closing():
+        raise WebSocketClosedError()
+    if isinstance(message, dict):
+        message = tornado.escape.json_encode(message)
+    return self.ws_connection.write_message(message, binary=binary)
+
+----------
+
+@gen_test
+def test_coroutine(self):
+    ws = (yield self.ws_connect('/coroutine'))
+    yield ws.write_message('hello1')
+    yield ws.write_message('hello2')
+    res = (yield ws.read_message())
+    self.assertEqual(res, 'hello1')
+    res = (yield ws.read_message())
+    self.assertEqual(res, 'hello2')
+
+----------
+
+
+
+Test Class Name: WebSocketTest

@@ -1,0 +1,38 @@
+def parse(self):
+    """Parse the command line args
+
+        This method parses the command line arguments.  It uses the parser
+        stored in the self.parser attribute and saves the args and options in
+        context.CLIARGS.
+
+        Subclasses need to implement two helper methods, init_parser() and post_process_args() which
+        are called from this function before and after parsing the arguments.
+        """
+    self.init_parser()
+    if HAS_ARGCOMPLETE:
+        argcomplete.autocomplete(self.parser)
+    try:
+        options = self.parser.parse_args(self.args[1:])
+    except SystemExit as ex:
+        if ex.code != 0:
+            self.parser.exit(status=2, message=' \n%s' % self.parser.format_help())
+        raise
+    options = self.post_process_args(options)
+    context._init_global_context(options)
+
+----------
+
+def test_parse_import(self):
+    """ testing the options parser when the action 'import' is given """
+    gc = GalaxyCLI(args=['ansible-galaxy', 'import', 'foo', 'bar'])
+    gc.parse()
+    self.assertEqual(context.CLIARGS['wait'], True)
+    self.assertEqual(context.CLIARGS['reference'], None)
+    self.assertEqual(context.CLIARGS['check_status'], False)
+    self.assertEqual(context.CLIARGS['verbosity'], 0)
+
+----------
+
+
+
+Test Class Name: TestGalaxy

@@ -1,0 +1,18 @@
+@classmethod
+def create_from_ssl_context(cls, context: ssl.SSLContext):
+    context.__class__ = cls
+    return context
+
+----------
+
+def test_sanic_ssl_context_create():
+    context = ssl.SSLContext()
+    sanic_context = SanicSSLContext.create_from_ssl_context(context)
+    assert sanic_context is context
+    assert isinstance(sanic_context, SanicSSLContext)
+
+----------
+
+
+
+Test Class Name: Creator

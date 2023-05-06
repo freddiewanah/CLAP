@@ -1,0 +1,47 @@
+def restart(self, restart_order=RestartOrder.SHUTDOWN_FIRST, **kwargs):
+    logger.debug(f'{Colors.BLUE}Restarting a process: {Colors.BOLD}{Colors.SANIC}%s {Colors.BLUE}[%s]{Colors.END}', self.name, self.pid)
+    self.set_state(ProcessState.RESTARTING, force=True)
+    if restart_order is RestartOrder.SHUTDOWN_FIRST:
+        self._terminate_now()
+    else:
+        self._old_process = self._current_process
+    self.kwargs.update({'config': {k.upper(): v for (k, v) in kwargs.items()}})
+    try:
+        self.spawn()
+        self.start()
+    except AttributeError:
+        raise RuntimeError('Restart failed')
+    if restart_order is RestartOrder.STARTUP_FIRST:
+        self._terminate_soon()
+    self.worker_state[self.name] = {**self.worker_state[self.name], 'pid': self.pid, 'starts': self.worker_state[self.name]['starts'] + 1, 'restart_at': get_now()}
+
+----------
+
+@pytest.mark.parametrize('order,expected', ((RestartOrder.SHUTDOWN_FIRST, ['Restarting a process', 'Begin restart termination', 'Starting a process']), (RestartOrder.STARTUP_FIRST, ['Restarting a process', 'Starting a process', 'Begin restart termination', 'Waiting for process to be acked', 'Process acked. Terminating'])))
+def test_default_reload_shutdown_order(monkeypatch, caplog, order, expected):
+    current_process = Mock()
+    worker_process = WorkerProcess(lambda **_: current_process, 'Test', lambda **_: ..., {}, {})
+
+    def start(self):
+        worker_process.set_state(ProcessState.ACKED)
+        self._target()
+    orig = threading.Thread.start
+    monkeypatch.setattr(threading.Thread, 'start', start)
+    with caplog.at_level(DEBUG):
+        worker_process.restart(restart_order=order)
+    ansi = re.compile('\\x1B(?:[@-Z\\\\-_]|\\[[0-?]*[ -/]*[@-~])')
+
+    def clean(msg: str):
+        (msg, _) = ansi.sub('', msg).split(':', 1)
+        return msg
+    debug = [clean(record[2]) for record in caplog.record_tuples]
+    assert debug == expected
+    current_process.start.assert_called_once()
+    current_process.terminate.assert_called_once()
+    monkeypatch.setattr(threading.Thread, 'start', orig)
+
+----------
+
+
+
+Test Class Name: default

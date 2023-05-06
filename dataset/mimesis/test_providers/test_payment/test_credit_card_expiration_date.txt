@@ -1,0 +1,25 @@
+def credit_card_expiration_date(self, minimum: int=16, maximum: int=25) -> str:
+    """Generate a random expiration date for credit card.
+
+        :param minimum: Date of issue.
+        :param maximum: Maximum of expiration_date.
+        :return: Expiration date of credit card.
+
+        :Example:
+            03/19.
+        """
+    month = self.random.randint(1, 12)
+    year = self.random.randint(minimum, maximum)
+    return f'{month:02d}/{year}'
+
+----------
+
+def test_credit_card_expiration_date(self, p1, p2):
+    assert p1.credit_card_expiration_date() == p2.credit_card_expiration_date()
+    assert p1.credit_card_expiration_date(minimum=18, maximum=24) == p2.credit_card_expiration_date(minimum=18, maximum=24)
+
+----------
+
+
+
+Test Class Name: TestSeededPayment

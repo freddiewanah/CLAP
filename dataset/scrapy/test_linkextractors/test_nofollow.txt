@@ -1,0 +1,37 @@
+def extract_links(self, response):
+    """Returns a list of :class:`~scrapy.link.Link` objects from the
+        specified :class:`response <scrapy.http.Response>`.
+
+        Only links that match the settings passed to the ``__init__`` method of
+        the link extractor are returned.
+
+        Duplicate links are omitted if the ``unique`` attribute is set to ``True``,
+        otherwise they are returned.
+        """
+    base_url = get_base_url(response)
+    if self.restrict_xpaths:
+        docs = [subdoc for x in self.restrict_xpaths for subdoc in response.xpath(x)]
+    else:
+        docs = [response.selector]
+    all_links = []
+    for doc in docs:
+        links = self._extract_links(doc, response.url, response.encoding, base_url)
+        all_links.extend(self._process_links(links))
+    if self.link_extractor.unique:
+        return unique_list(all_links)
+    return all_links
+
+----------
+
+def test_nofollow(self):
+    """Test the extractor's behaviour for links with rel=\"nofollow\""""
+    html = b'<html><head><title>Page title<title>\n            <body>\n            <div class=\'links\'>\n            <p><a href="/about.html">About us</a></p>\n            </div>\n            <div>\n            <p><a href="/follow.html">Follow this link</a></p>\n            </div>\n            <div>\n            <p><a href="/nofollow.html" rel="nofollow">Dont follow this one</a></p>\n            </div>\n            <div>\n            <p><a href="/nofollow2.html" rel="blah">Choose to follow or not</a></p>\n            </div>\n            <div>\n            <p><a href="http://google.com/something" rel="external nofollow">External link not to follow</a></p>\n            </div>\n            </body></html>'
+    response = HtmlResponse('http://example.org/somepage/index.html', body=html)
+    lx = self.extractor_cls()
+    self.assertEqual(lx.extract_links(response), [Link(url='http://example.org/about.html', text='About us'), Link(url='http://example.org/follow.html', text='Follow this link'), Link(url='http://example.org/nofollow.html', text='Dont follow this one', nofollow=True), Link(url='http://example.org/nofollow2.html', text='Choose to follow or not'), Link(url='http://google.com/something', text='External link not to follow', nofollow=True)])
+
+----------
+
+
+
+Test Class Name: LinkExtractorTestCase

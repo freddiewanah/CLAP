@@ -1,0 +1,50 @@
+def read_bytes(self, num_bytes: int, partial: bool=False) -> Awaitable[bytes]:
+    """Asynchronously read a number of bytes.
+
+        If ``partial`` is true, data is returned as soon as we have
+        any bytes to return (but never more than ``num_bytes``)
+
+        .. versionchanged:: 4.0
+            Added the ``partial`` argument.  The callback argument is now
+            optional and a `.Future` will be returned if it is omitted.
+
+        .. versionchanged:: 6.0
+
+           The ``callback`` and ``streaming_callback`` arguments have
+           been removed. Use the returned `.Future` (and
+           ``partial=True`` for ``streaming_callback``) instead.
+
+        """
+    future = self._start_read()
+    assert isinstance(num_bytes, numbers.Integral)
+    self._read_bytes = num_bytes
+    self._read_partial = partial
+    try:
+        self._try_inline_read()
+    except:
+        future.add_done_callback(lambda f: f.exception())
+        raise
+    return future
+
+----------
+
+@gen_test
+def test_close_buffered_data(self: typing.Any):
+    (rs, ws) = (yield self.make_iostream_pair(read_chunk_size=256))
+    try:
+        ws.write(b'A' * 512)
+        data = (yield rs.read_bytes(256))
+        self.assertEqual(b'A' * 256, data)
+        ws.close()
+        yield gen.sleep(0.01)
+        data = (yield rs.read_bytes(256))
+        self.assertEqual(b'A' * 256, data)
+    finally:
+        ws.close()
+        rs.close()
+
+----------
+
+
+
+Test Class Name: IOStreamPairContext

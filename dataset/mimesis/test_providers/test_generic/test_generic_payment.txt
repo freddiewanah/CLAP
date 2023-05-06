@@ -1,0 +1,21 @@
+def paypal(self) -> str:
+    """Generate a random PayPal account.
+
+        :return: Email of PapPal user.
+
+        :Example:
+            wolf235@gmail.com
+        """
+    return self._person.email()
+
+----------
+
+def test_generic_payment(self, g1, g2):
+    assert g1.payment.cid() == g2.payment.cid()
+    assert g1.payment.paypal() == g2.payment.paypal()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

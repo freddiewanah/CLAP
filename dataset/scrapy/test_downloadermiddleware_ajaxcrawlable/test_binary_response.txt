@@ -1,0 +1,27 @@
+def process_response(self, request, response, spider):
+    if not isinstance(response, HtmlResponse) or response.status != 200:
+        return response
+    if request.method != 'GET':
+        return response
+    if 'ajax_crawlable' in request.meta:
+        return response
+    if not self._has_ajax_crawlable_variant(response):
+        return response
+    ajax_crawl_request = request.replace(url=request.url + '#!')
+    logger.debug('Downloading AJAX crawlable %(ajax_crawl_request)s instead of %(request)s', {'ajax_crawl_request': ajax_crawl_request, 'request': request}, extra={'spider': spider})
+    ajax_crawl_request.meta['ajax_crawlable'] = True
+    return ajax_crawl_request
+
+----------
+
+def test_binary_response(self):
+    req = Request('http://example.com/')
+    resp = Response('http://example.com/', body=b'foobar\x00\x01\x02', request=req)
+    resp2 = self.mw.process_response(req, resp, self.spider)
+    self.assertIs(resp, resp2)
+
+----------
+
+
+
+Test Class Name: AjaxCrawlMiddlewareTest

@@ -1,0 +1,21 @@
+def get_all(self) -> Iterable[Tuple[str, str]]:
+    """Returns an iterable of all (name, value) pairs.
+
+        If a header has multiple values, multiple pairs will be
+        returned with the same name.
+        """
+    for (name, values) in self._as_list.items():
+        for value in values:
+            yield (name, value)
+
+----------
+
+def test_optional_cr(self):
+    headers = HTTPHeaders.parse('CRLF: crlf\r\nLF: lf\nCR: cr\rMore: more\r\n')
+    self.assertEqual(sorted(headers.get_all()), [('Cr', 'cr\rMore: more'), ('Crlf', 'crlf'), ('Lf', 'lf')])
+
+----------
+
+
+
+Test Class Name: HTTPHeadersTest

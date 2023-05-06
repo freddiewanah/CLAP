@@ -1,0 +1,36 @@
+def inference(self, predictions: Tuple[torch.Tensor, torch.Tensor], proposals: List[Instances]):
+    """
+        Args:
+            predictions: return values of :meth:`forward()`.
+            proposals (list[Instances]): proposals that match the features that were
+                used to compute predictions. The ``proposal_boxes`` field is expected.
+
+        Returns:
+            list[Instances]: same as `fast_rcnn_inference`.
+            list[Tensor]: same as `fast_rcnn_inference`.
+        """
+    boxes = self.predict_boxes(predictions, proposals)
+    scores = self.predict_probs(predictions, proposals)
+    image_shapes = [x.image_size for x in proposals]
+    return fast_rcnn_inference(boxes, scores, image_shapes, self.test_score_thresh, self.test_nms_thresh, self.test_topk_per_image)
+
+----------
+
+def test_fast_rcnn_empty_batch(self, device='cpu'):
+    box_predictor = FastRCNNOutputLayers(ShapeSpec(channels=10), box2box_transform=Box2BoxTransform(weights=(10, 10, 5, 5)), num_classes=8).to(device=device)
+    logits = torch.randn(0, 100, requires_grad=True, device=device)
+    deltas = torch.randn(0, 4, requires_grad=True, device=device)
+    losses = box_predictor.losses([logits, deltas], [])
+    for value in losses.values():
+        self.assertTrue(torch.allclose(value, torch.zeros_like(value)))
+    sum(losses.values()).backward()
+    self.assertTrue(logits.grad is not None)
+    self.assertTrue(deltas.grad is not None)
+    (predictions, _) = box_predictor.inference([logits, deltas], [])
+    self.assertEqual(len(predictions), 0)
+
+----------
+
+
+
+Test Class Name: FastRCNNTest

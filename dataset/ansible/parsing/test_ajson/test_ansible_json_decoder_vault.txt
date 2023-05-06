@@ -1,0 +1,22 @@
+def replace(self, old, new, maxsplit=-1):
+    if isinstance(old, AnsibleVaultEncryptedUnicode):
+        old = old.data
+    if isinstance(new, AnsibleVaultEncryptedUnicode):
+        new = new.data
+    return self.data.replace(old, new, maxsplit)
+
+----------
+
+@pytest.mark.parametrize('test_input,expected', vault_data())
+def test_ansible_json_decoder_vault(self, ansible_json_encoder, test_input, expected):
+    """
+        Test for passing AnsibleVaultEncryptedUnicode to AnsibleJSONEncoder.default().
+        """
+    assert ansible_json_encoder.default(test_input) == {'__ansible_vault': expected}
+    assert json.dumps(test_input, cls=AnsibleJSONEncoder, preprocess_unsafe=True) == '{"__ansible_vault": "%s"}' % expected.replace('\n', '\\n')
+
+----------
+
+
+
+Test Class Name: M

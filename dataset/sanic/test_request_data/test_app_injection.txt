@@ -1,0 +1,32 @@
+def json(body: Any, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='application/json', dumps: Optional[Callable[..., str]]=None, **kwargs: Any) -> JSONResponse:
+    """
+    Returns response object with body in json format.
+
+    :param body: Response data to be serialized.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param kwargs: Remaining arguments that are passed to the json encoder.
+    """
+    return JSONResponse(body, status=status, headers=headers, content_type=content_type, dumps=dumps, **kwargs)
+
+----------
+
+def test_app_injection(app):
+    expected = random.choice(range(0, 100))
+
+    @app.listener('after_server_start')
+    async def inject_data(app, loop):
+        app.ctx.injected = expected
+
+    @app.get('/')
+    async def handler(request):
+        return json({'injected': request.app.ctx.injected})
+    (request, response) = app.test_client.get('/')
+    response_json = loads(response.text)
+    assert response_json['injected'] == expected
+
+----------
+
+
+
+Test Class Name: default

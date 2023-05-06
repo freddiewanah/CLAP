@@ -1,0 +1,27 @@
+def copy(self, exclude_parent=False, exclude_tasks=False):
+    new_me = super(Task, self).copy()
+    new_me._parent = None
+    if self._parent and (not exclude_parent):
+        new_me._parent = self._parent.copy(exclude_tasks=exclude_tasks)
+    new_me._role = None
+    if self._role:
+        new_me._role = self._role
+    new_me.implicit = self.implicit
+    new_me.resolved_action = self.resolved_action
+    new_me._uuid = self._uuid
+    return new_me
+
+----------
+
+def test_clean_results(self):
+    cb = CallbackBase()
+    result = {'item': 'some_item', 'invocation': 'foo --bar whatever [some_json]', 'a': 'a single a in result note letter a is in invocation', 'b': 'a single b in result note letter b is not in invocation', 'changed': True}
+    expected_result = result.copy()
+    cb._clean_results(result, 'ebug')
+    self.assertEqual(result, expected_result)
+
+----------
+
+
+
+Test Class Name: TestCallbackResults

@@ -1,0 +1,22 @@
+@classmethod
+def from_options(cls, options):
+    return cls(vars(options))
+
+----------
+
+def test_cliargs():
+
+    class FakeOptions:
+        pass
+    options = FakeOptions()
+    options.tags = [u'production', u'webservers']
+    options.check_mode = True
+    options.start_at_task = u'Start with くらとみ'
+    expected = frozenset((('tags', (u'production', u'webservers')), ('check_mode', True), ('start_at_task', u'Start with くらとみ')))
+    assert frozenset(co.CLIArgs.from_options(options).items()) == expected
+
+----------
+
+
+
+Test Class Name: default

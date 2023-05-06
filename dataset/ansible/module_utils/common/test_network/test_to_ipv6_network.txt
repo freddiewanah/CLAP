@@ -1,0 +1,31 @@
+def to_ipv6_network(addr):
+    """ IPv6 addresses are eight groupings. The first three groupings (48 bits) comprise the network address. """
+    ipv6_prefix = addr.split('::')[0]
+    found_groups = []
+    for group in ipv6_prefix.split(':'):
+        found_groups.append(group)
+        if len(found_groups) == 3:
+            break
+    if len(found_groups) < 3:
+        found_groups.append('::')
+    network_addr = ''
+    for group in found_groups:
+        if group != '::':
+            network_addr += str(group)
+        network_addr += str(':')
+    if not network_addr.endswith('::'):
+        network_addr += str(':')
+    return network_addr
+
+----------
+
+def test_to_ipv6_network():
+    assert '2001:db8::' == to_ipv6_network('2001:db8::')
+    assert '2001:0db8:85a3::' == to_ipv6_network('2001:0db8:85a3:0000:0000:8a2e:0370:7334')
+    assert '2001:0db8:85a3::' == to_ipv6_network('2001:0db8:85a3:0:0:8a2e:0370:7334')
+
+----------
+
+
+
+Test Class Name: default

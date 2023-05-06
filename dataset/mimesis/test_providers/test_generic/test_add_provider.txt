@@ -1,0 +1,47 @@
+def add_provider(self, cls: t.Type[BaseProvider], **kwargs: t.Any) -> None:
+    """Add a custom provider to Generic() object.
+
+        :param cls: Custom provider.
+        :return: None
+        :raises TypeError: if cls is not class or is not a subclass
+            of BaseProvider.
+        """
+    if inspect.isclass(cls):
+        if not issubclass(cls, BaseProvider):
+            raise TypeError('The provider must be a subclass of mimesis.providers.BaseProvider')
+        try:
+            name = cls.Meta.name
+        except AttributeError:
+            name = cls.__name__.lower()
+        if 'seed' in kwargs:
+            kwargs.pop('seed')
+        setattr(self, name, cls(seed=self.seed, **kwargs))
+    else:
+        raise TypeError('The provider must be a class')
+
+----------
+
+def test_add_provider(self, generic):
+
+    class CustomProvider(BaseProvider):
+
+        def __init__(self, seed, a, b, c):
+            super().__init__(seed=seed)
+            self.a = a
+            self.b = b
+            self.c = c
+
+        class Meta:
+            name = 'custom_provider'
+    generic.add_provider(CustomProvider, a='a', b='b', c='c', seed=4095)
+    assert generic.custom_provider.seed != 4095
+    assert generic.custom_provider.seed == generic.seed
+    assert generic.custom_provider.a == 'a'
+    assert generic.custom_provider.b == 'b'
+    assert generic.custom_provider.c == 'c'
+
+----------
+
+
+
+Test Class Name: UnnamedProvider

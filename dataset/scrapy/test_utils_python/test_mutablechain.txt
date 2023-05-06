@@ -1,0 +1,19 @@
+def extend(self, *iterables: Iterable) -> None:
+    self.data = chain(self.data, chain.from_iterable(iterables))
+
+----------
+
+def test_mutablechain(self):
+    m = MutableChain(range(2), [2, 3], (4, 5))
+    m.extend(range(6, 7))
+    m.extend([7, 8])
+    m.extend([9, 10], (11, 12))
+    self.assertEqual(next(m), 0)
+    self.assertEqual(m.__next__(), 1)
+    self.assertEqual(list(m), list(range(2, 13)))
+
+----------
+
+
+
+Test Class Name: MutableChainTest

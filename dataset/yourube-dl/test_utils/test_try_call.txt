@@ -1,0 +1,33 @@
+def try_call(*funcs, **kwargs):
+    expected_type = kwargs.get('expected_type')
+    fargs = kwargs.get('args', [])
+    fkwargs = kwargs.get('kwargs', {})
+    for f in funcs:
+        try:
+            val = f(*fargs, **fkwargs)
+        except (AttributeError, KeyError, TypeError, IndexError, ZeroDivisionError):
+            pass
+        else:
+            if expected_type is None or isinstance(val, expected_type):
+                return val
+
+----------
+
+def test_try_call(self):
+
+    def total(*x, **kwargs):
+        return sum(x) + sum(kwargs.values())
+    self.assertEqual(try_call(None), None, msg='not a fn should give None')
+    self.assertEqual(try_call(lambda : 1), 1, msg='int fn with no expected_type should give int')
+    self.assertEqual(try_call(lambda : 1, expected_type=int), 1, msg='int fn with expected_type int should give int')
+    self.assertEqual(try_call(lambda : 1, expected_type=dict), None, msg='int fn with wrong expected_type should give None')
+    self.assertEqual(try_call(total, args=(0, 1, 0), expected_type=int), 1, msg='fn should accept arglist')
+    self.assertEqual(try_call(total, kwargs={'a': 0, 'b': 1, 'c': 0}, expected_type=int), 1, msg='fn should accept kwargs')
+    self.assertEqual(try_call(lambda : 1, expected_type=dict), None, msg='int fn with no expected_type should give None')
+    self.assertEqual(try_call(lambda x: {}, total, args=(42,), expected_type=int), 42, msg='expect first int result with expected_type int')
+
+----------
+
+
+
+Test Class Name: TestUtil

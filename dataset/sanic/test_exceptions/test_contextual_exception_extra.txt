@@ -1,0 +1,53 @@
+@route('/')
+def index():
+    return ujson.dumps({'test': True})
+
+----------
+
+@pytest.mark.parametrize('debug', (True, False))
+def test_contextual_exception_extra(debug):
+    app = Sanic('Test')
+
+    class TeapotError(SanicException):
+        status_code = 418
+
+        @property
+        def message(self):
+            return f"Found {self.extra['foo']}"
+
+    def fail():
+        raise TeapotError(extra={'foo': 'bar'})
+    app.post('/coffee/json', error_format='json')(lambda _: fail())
+    app.post('/coffee/html', error_format='html')(lambda _: fail())
+    app.post('/coffee/text', error_format='text')(lambda _: fail())
+    (_, response) = app.test_client.post('/coffee/json', debug=debug)
+    assert response.status == 418
+    assert response.json['message'] == 'Found bar'
+    if debug:
+        assert response.json['extra'] == {'foo': 'bar'}
+    else:
+        assert 'extra' not in response.json
+    (_, response) = app.test_client.post('/coffee/html', debug=debug)
+    soup = BeautifulSoup(response.body, 'html.parser')
+    dl = dl_to_dict(soup, 'exception-extra')
+    assert response.status == 418
+    assert 'Found bar' in soup.find('p').text
+    if debug:
+        assert dl == {'foo': 'bar'}
+    else:
+        assert not dl
+    (_, response) = app.test_client.post('/coffee/text', debug=debug)
+    lines = list(map(lambda x: x.decode(), response.body.split(b'\n')))
+    assert response.status == 418
+    assert lines[2] == 'Found bar'
+    if debug:
+        idx = lines.index('Extra') + 1
+        assert lines[idx] == '    foo: "bar"'
+    else:
+        assert 'Extra' not in lines
+
+----------
+
+
+
+Test Class Name: TeapotError

@@ -1,0 +1,52 @@
+def losses(self, predictions, proposals):
+    """
+        Args:
+            predictions: return values of :meth:`forward()`.
+            proposals (list[Instances]): proposals that match the features that were used
+                to compute predictions. The fields ``proposal_boxes``, ``gt_boxes``,
+                ``gt_classes`` are expected.
+
+        Returns:
+            Dict[str, Tensor]: dict of losses
+        """
+    (scores, proposal_deltas) = predictions
+    gt_classes = cat([p.gt_classes for p in proposals], dim=0) if len(proposals) else torch.empty(0)
+    _log_classification_stats(scores, gt_classes)
+    if len(proposals):
+        proposal_boxes = cat([p.proposal_boxes.tensor for p in proposals], dim=0)
+        assert not proposal_boxes.requires_grad, 'Proposals should not require gradients!'
+        gt_boxes = cat([(p.gt_boxes if p.has('gt_boxes') else p.proposal_boxes).tensor for p in proposals], dim=0)
+    else:
+        proposal_boxes = gt_boxes = torch.empty((0, 4), device=proposal_deltas.device)
+    if self.use_sigmoid_ce:
+        loss_cls = self.sigmoid_cross_entropy_loss(scores, gt_classes)
+    else:
+        loss_cls = cross_entropy(scores, gt_classes, reduction='mean')
+    losses = {'loss_cls': loss_cls, 'loss_box_reg': self.box_reg_loss(proposal_boxes, gt_boxes, proposal_deltas, gt_classes)}
+    return {k: v * self.loss_weight.get(k, 1.0) for (k, v) in losses.items()}
+
+----------
+
+def test_fast_rcnn(self):
+    torch.manual_seed(132)
+    box_head_output_size = 8
+    box_predictor = FastRCNNOutputLayers(ShapeSpec(channels=box_head_output_size), box2box_transform=Box2BoxTransform(weights=(10, 10, 5, 5)), num_classes=5)
+    feature_pooled = torch.rand(2, box_head_output_size)
+    predictions = box_predictor(feature_pooled)
+    proposal_boxes = torch.tensor([[0.8, 1.1, 3.2, 2.8], [2.3, 2.5, 7, 8]], dtype=torch.float32)
+    gt_boxes = torch.tensor([[1, 1, 3, 3], [2, 2, 6, 6]], dtype=torch.float32)
+    proposal = Instances((10, 10))
+    proposal.proposal_boxes = Boxes(proposal_boxes)
+    proposal.gt_boxes = Boxes(gt_boxes)
+    proposal.gt_classes = torch.tensor([1, 2])
+    with EventStorage():
+        losses = box_predictor.losses(predictions, [proposal])
+    expected_losses = {'loss_cls': torch.tensor(1.7951188087), 'loss_box_reg': torch.tensor(4.0357131958)}
+    for name in expected_losses.keys():
+        assert torch.allclose(losses[name], expected_losses[name])
+
+----------
+
+
+
+Test Class Name: FastRCNNTest

@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script', ['workon tehfuck', 'workon code-view', 'workon new-env'])
+def test_match(script):
+    assert match(Command(script, ''))
+
+----------
+
+
+
+Test Class Name: default

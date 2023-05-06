@@ -1,0 +1,26 @@
+def bytes_to_human(size, isbits=False, unit=None):
+    base = 'Bytes'
+    if isbits:
+        base = 'bits'
+    suffix = ''
+    for (suffix, limit) in sorted(iteritems(SIZE_RANGES), key=lambda item: -item[1]):
+        if unit is None and size >= limit or (unit is not None and unit.upper() == suffix[0]):
+            break
+    if limit != 1:
+        suffix += base[0]
+    else:
+        suffix = base
+    return '%.2f %s' % (size / limit, suffix)
+
+----------
+
+@pytest.mark.parametrize('input_data,expected', [(0, u'0.00 Bytes'), (0.5, u'0.50 Bytes'), (0.54, u'0.54 Bytes'), (1024, u'1.00 KB'), (1025, u'1.00 KB'), (1536, u'1.50 KB'), (1790, u'1.75 KB'), (1048576, u'1.00 MB'), (1073741824, u'1.00 GB'), (1099511627776, u'1.00 TB'), (1125899906842624, u'1.00 PB'), (1152921504606846976, u'1.00 EB'), (1180591620717411303424, u'1.00 ZB'), (1208925819614629174706176, u'1.00 YB')])
+def test_bytes_to_human(input_data, expected):
+    """Test of bytes_to_human function, only proper numbers are passed."""
+    assert bytes_to_human(input_data) == expected
+
+----------
+
+
+
+Test Class Name: default

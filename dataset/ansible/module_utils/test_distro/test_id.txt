@@ -1,0 +1,92 @@
+def id():
+    """
+    Return the distro ID of the current distribution, as a
+    machine-readable string.
+
+    For a number of OS distributions, the returned distro ID value is
+    *reliable*, in the sense that it is documented and that it does not change
+    across releases of the distribution.
+
+    This package maintains the following reliable distro ID values:
+
+    ==============  =========================================
+    Distro ID       Distribution
+    ==============  =========================================
+    "ubuntu"        Ubuntu
+    "debian"        Debian
+    "rhel"          RedHat Enterprise Linux
+    "centos"        CentOS
+    "fedora"        Fedora
+    "sles"          SUSE Linux Enterprise Server
+    "opensuse"      openSUSE
+    "amzn"          Amazon Linux
+    "arch"          Arch Linux
+    "buildroot"     Buildroot
+    "cloudlinux"    CloudLinux OS
+    "exherbo"       Exherbo Linux
+    "gentoo"        GenToo Linux
+    "ibm_powerkvm"  IBM PowerKVM
+    "kvmibm"        KVM for IBM z Systems
+    "linuxmint"     Linux Mint
+    "mageia"        Mageia
+    "mandriva"      Mandriva Linux
+    "parallels"     Parallels
+    "pidora"        Pidora
+    "raspbian"      Raspbian
+    "oracle"        Oracle Linux (and Oracle Enterprise Linux)
+    "scientific"    Scientific Linux
+    "slackware"     Slackware
+    "xenserver"     XenServer
+    "openbsd"       OpenBSD
+    "netbsd"        NetBSD
+    "freebsd"       FreeBSD
+    "midnightbsd"   MidnightBSD
+    "rocky"         Rocky Linux
+    "guix"          Guix System
+    ==============  =========================================
+
+    If you have a need to get distros for reliable IDs added into this set,
+    or if you find that the :func:`distro.id` function returns a different
+    distro ID for one of the listed distros, please create an issue in the
+    `distro issue tracker`_.
+
+    **Lookup hierarchy and transformations:**
+
+    First, the ID is obtained from the following sources, in the specified
+    order. The first available and non-empty value is used:
+
+    * the value of the "ID" attribute of the os-release file,
+
+    * the value of the "Distributor ID" attribute returned by the lsb_release
+      command,
+
+    * the first part of the file name of the distro release file,
+
+    The so determined ID value then passes the following transformations,
+    before it is returned by this method:
+
+    * it is translated to lower case,
+
+    * blanks (which should not be there anyway) are translated to underscores,
+
+    * a normalization of the ID is performed, based upon
+      `normalization tables`_. The purpose of this normalization is to ensure
+      that the ID is as reliable as possible, even across incompatible changes
+      in the OS distributions. A common reason for an incompatible change is
+      the addition of an os-release file, or the addition of the lsb_release
+      command, with ID values that differ from what was previously determined
+      from the distro release file name.
+    """
+    return _distro.id()
+
+----------
+
+def test_id(self):
+    id = distro.id()
+    assert isinstance(id, string_types), 'distro.id() returned %s (%s) which is not a string' % (id, type(id))
+
+----------
+
+
+
+Test Class Name: TestDistro

@@ -1,0 +1,20 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_list_default(self) -> None:
+
+    class Schema(Config):
+        option = c.ListOfItems(c.Type(int), default=[])
+    conf = self.get_config(Schema, {})
+    assert_type(conf.option, List[int])
+    self.assertEqual(conf.option, [])
+    with self.expect_error(option='Required configuration not provided.'):
+        conf = self.get_config(Schema, {'option': None})
+
+----------
+
+
+
+Test Class Name: default

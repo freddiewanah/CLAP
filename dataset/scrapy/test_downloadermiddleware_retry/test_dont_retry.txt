@@ -1,0 +1,25 @@
+def process_response(self, request, response, spider):
+    if request.meta.get('dont_retry', False):
+        return response
+    if response.status in self.retry_http_codes:
+        reason = response_status_message(response.status)
+        return self._retry(request, reason, spider) or response
+    return response
+
+----------
+
+def test_dont_retry(self):
+    req = Request('http://www.scrapytest.org/503', meta={'dont_retry': True})
+    rsp = Response('http://www.scrapytest.org/503', body=b'', status=503)
+    r = self.mw.process_response(req, rsp, self.spider)
+    assert r is rsp
+    req = Request('http://www.scrapytest.org/503', meta={'dont_retry': False})
+    rsp = Response('http://www.scrapytest.org/503')
+    r = self.mw.process_response(req, rsp, self.spider)
+    assert r is rsp
+
+----------
+
+
+
+Test Class Name: RetryTest

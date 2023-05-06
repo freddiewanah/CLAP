@@ -1,0 +1,21 @@
+def home(self) -> str:
+    """Generate a home path.
+
+        :return: Home path.
+
+        :Example:
+            /home
+        """
+    return str(self._pathlib_home)
+
+----------
+
+def test_generic_path(self, g1, g2):
+    assert g1.path.root() == g2.path.root()
+    assert g1.path.home() == g2.path.home()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

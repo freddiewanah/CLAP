@@ -1,0 +1,19 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_flow_control_fixed_body(self: typing.Any):
+    response = self.fetch('/', body='abcdefghijklmnopqrstuvwxyz', method='POST')
+    response.rethrow()
+    self.assertEqual(json_decode(response.body), dict(methods=['prepare', 'data_received', 'data_received', 'data_received', 'post']))
+
+----------
+
+
+
+Test Class Name: BaseStreamingRequestFlowControlTest

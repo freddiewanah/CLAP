@@ -1,0 +1,44 @@
+def do_request(server, content):
+    request = FakeRequest(content + ' HTTP/1.1')
+    server.RequestHandlerClass(request, ('127.0.0.1', 0), server)
+    response = request.out_file.getvalue()
+    (headers, _, content) = response.partition(b'\r\n\r\n')
+    (status, _, headers) = headers.partition(b'\r\n')
+    status = status.split(None, 1)[1].decode()
+    headers = email.message_from_bytes(headers)
+    headers['_status'] = status
+    return (headers, content.decode())
+
+----------
+
+@tempdir({'docs/foo.docs': 'docs1', 'mkdocs.yml': 'yml1'})
+@tempdir({'foo.site': 'original'})
+def test_basic_rebuild(self, site_dir, origin_dir):
+    docs_dir = Path(origin_dir, 'docs')
+    started_building = threading.Event()
+
+    def rebuild():
+        started_building.set()
+        Path(site_dir, 'foo.site').write_text(Path(docs_dir, 'foo.docs').read_text() + Path(origin_dir, 'mkdocs.yml').read_text())
+    with testing_server(site_dir, rebuild) as server:
+        server.watch(docs_dir, rebuild)
+        server.watch(Path(origin_dir, 'mkdocs.yml'), rebuild)
+        time.sleep(0.01)
+        (_, output) = do_request(server, 'GET /foo.site')
+        self.assertEqual(output, 'original')
+        Path(docs_dir, 'foo.docs').write_text('docs2')
+        self.assertTrue(started_building.wait(timeout=10))
+        started_building.clear()
+        (_, output) = do_request(server, 'GET /foo.site')
+        self.assertEqual(output, 'docs2yml1')
+        Path(origin_dir, 'mkdocs.yml').write_text('yml2')
+        self.assertTrue(started_building.wait(timeout=10))
+        started_building.clear()
+        (_, output) = do_request(server, 'GET /foo.site')
+        self.assertEqual(output, 'docs2yml2')
+
+----------
+
+
+
+Test Class Name: BuildTests

@@ -1,0 +1,27 @@
+def execute_list(self):
+    """
+        List installed collections or roles
+        """
+    if context.CLIARGS['type'] == 'role':
+        self.execute_list_role()
+    elif context.CLIARGS['type'] == 'collection':
+        self.execute_list_collection()
+
+----------
+
+def test_execute_list_role_called(mocker):
+    """Make sure the correct method is called for a role"""
+    gc = GalaxyCLI(['ansible-galaxy', 'role', 'list'])
+    context.CLIARGS._store = {'type': 'role'}
+    execute_list_role_mock = mocker.patch('ansible.cli.galaxy.GalaxyCLI.execute_list_role', side_effect=AttributeError('raised intentionally'))
+    execute_list_collection_mock = mocker.patch('ansible.cli.galaxy.GalaxyCLI.execute_list_collection', side_effect=AttributeError('raised intentionally'))
+    with pytest.raises(AttributeError):
+        gc.execute_list()
+    assert execute_list_role_mock.call_count == 1
+    assert execute_list_collection_mock.call_count == 0
+
+----------
+
+
+
+Test Class Name: default

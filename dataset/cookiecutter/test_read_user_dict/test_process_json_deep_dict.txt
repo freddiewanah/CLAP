@@ -1,0 +1,30 @@
+def process_json(user_value, default_value=None):
+    """Load user-supplied value as a JSON dict.
+
+    :param str user_value: User-supplied value to load as a JSON dict
+    """
+    if user_value == DEFAULT_DISPLAY:
+        return default_value
+    try:
+        user_dict = json.loads(user_value, object_pairs_hook=OrderedDict)
+    except Exception as error:
+        raise click.UsageError('Unable to decode to JSON.') from error
+    if not isinstance(user_dict, dict):
+        raise click.UsageError('Requires JSON dict.')
+    return user_dict
+
+----------
+
+def test_process_json_deep_dict():
+    """Test `process_json` for correct output on JSON input.
+
+    Test for dict in dict case.
+    """
+    user_value = '{\n        "key": "value",\n        "integer_key": 37,\n        "dict_key": {\n            "deep_key": "deep_value",\n            "deep_integer": 42,\n            "deep_list": [\n                "deep value 1",\n                "deep value 2",\n                "deep value 3"\n            ]\n        },\n        "list_key": [\n            "value 1",\n            "value 2",\n            "value 3"\n        ]\n    }'
+    assert process_json(user_value) == {'key': 'value', 'integer_key': 37, 'dict_key': {'deep_key': 'deep_value', 'deep_integer': 42, 'deep_list': ['deep value 1', 'deep value 2', 'deep value 3']}, 'list_key': ['value 1', 'value 2', 'value 3']}
+
+----------
+
+
+
+Test Class Name: default

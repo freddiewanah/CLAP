@@ -1,0 +1,26 @@
+@tf.function(input_signature=[tf.TensorSpec((None, 3))])
+def predict(inputs):
+    return {'predictions': model(inputs)}
+
+----------
+
+@test_combinations.run_with_all_model_types
+def test_timeseries_classification(self):
+    np.random.seed(1337)
+    ((x_train, y_train), _) = test_utils.get_test_data(train_samples=100, test_samples=0, input_shape=(4, 10), num_classes=2)
+    y_train = utils.to_categorical(y_train)
+    layers = [keras.layers.LSTM(5, return_sequences=True), keras.layers.GRU(y_train.shape[-1], activation='softmax')]
+    model = test_utils.get_model_from_layers(layers, input_shape=x_train.shape[1:])
+    model.compile(loss='categorical_crossentropy', optimizer=keras.optimizers.legacy.adam.Adam(0.005), metrics=['acc'], run_eagerly=test_utils.should_run_eagerly())
+    history = model.fit(x_train, y_train, epochs=15, batch_size=10, validation_data=(x_train, y_train), verbose=2)
+    self.assertGreater(history.history['val_acc'][-1], 0.7)
+    (_, val_acc) = model.evaluate(x_train, y_train)
+    self.assertAlmostEqual(history.history['val_acc'][-1], val_acc)
+    predictions = model.predict(x_train)
+    self.assertEqual(predictions.shape, (x_train.shape[0], 2))
+
+----------
+
+
+
+Test Class Name: TimeseriesClassificationIntegrationTest

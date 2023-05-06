@@ -1,0 +1,34 @@
+def unwatch(self, path: str) -> None:
+    """Stop watching file changes for path. Raises if there was no corresponding `watch` call."""
+    path = os.path.abspath(path)
+    self._watched_paths[path] -= 1
+    if self._watched_paths[path] <= 0:
+        self._watched_paths.pop(path)
+        self.observer.unschedule(self._watch_refs.pop(path))
+
+----------
+
+@tempdir()
+def test_unwatch(self, site_dir):
+    started_building = threading.Event()
+    with testing_server(site_dir, started_building.set) as server:
+        with self.assertRaises(KeyError):
+            server.unwatch(site_dir)
+        server.watch(site_dir)
+        server.watch(site_dir)
+        server.unwatch(site_dir)
+        time.sleep(0.01)
+        Path(site_dir, 'foo').write_text('foo')
+        self.assertTrue(started_building.wait(timeout=10))
+        started_building.clear()
+        server.unwatch(site_dir)
+        Path(site_dir, 'foo').write_text('bar')
+        self.assertFalse(started_building.wait(timeout=0.5))
+        with self.assertRaises(KeyError):
+            server.unwatch(site_dir)
+
+----------
+
+
+
+Test Class Name: BuildTests

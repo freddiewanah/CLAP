@@ -1,0 +1,42 @@
+def do_request(server, content):
+    request = FakeRequest(content + ' HTTP/1.1')
+    server.RequestHandlerClass(request, ('127.0.0.1', 0), server)
+    response = request.out_file.getvalue()
+    (headers, _, content) = response.partition(b'\r\n\r\n')
+    (status, _, headers) = headers.partition(b'\r\n')
+    status = status.split(None, 1)[1].decode()
+    headers = email.message_from_bytes(headers)
+    headers['_status'] = status
+    return (headers, content.decode())
+
+----------
+
+@tempdir({'foo.docs': 'a'})
+@tempdir({'foo.site': 'original'})
+def test_change_is_detected_while_building(self, site_dir, docs_dir):
+    before_finished_building = threading.Barrier(2)
+    can_finish_building = threading.Event()
+
+    def rebuild():
+        content = Path(docs_dir, 'foo.docs').read_text()
+        Path(site_dir, 'foo.site').write_text(content * 5)
+        before_finished_building.wait(timeout=10)
+        self.assertTrue(can_finish_building.wait(timeout=10))
+    with testing_server(site_dir, rebuild) as server:
+        server.watch(docs_dir)
+        time.sleep(0.01)
+        Path(docs_dir, 'foo.docs').write_text('b')
+        before_finished_building.wait(timeout=10)
+        Path(docs_dir, 'foo.docs').write_text('c')
+        can_finish_building.set()
+        (_, output) = do_request(server, 'GET /foo.site')
+        self.assertEqual(output, 'bbbbb')
+        before_finished_building.wait(timeout=10)
+        (_, output) = do_request(server, 'GET /foo.site')
+        self.assertEqual(output, 'ccccc')
+
+----------
+
+
+
+Test Class Name: BuildTests

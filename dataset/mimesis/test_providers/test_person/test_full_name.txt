@@ -1,0 +1,38 @@
+def full_name(self, gender: t.Optional[Gender]=None, reverse: bool=False) -> str:
+    """Generate a random full name.
+
+        :param reverse: Return reversed full name.
+        :param gender: Gender's enum object.
+        :return: Full name.
+
+        :Example:
+            Johann Wolfgang.
+        """
+    if gender is None:
+        gender = get_random_item(Gender, rnd=self.random)
+    if gender and isinstance(gender, Gender):
+        gender = gender
+    else:
+        raise NonEnumerableError(Gender)
+    name = self.name(gender)
+    surname = self.surname(gender)
+    return f'{surname} {name}' if reverse else f'{name} {surname}'
+
+----------
+
+@pytest.mark.parametrize('gender', [Gender.FEMALE, Gender.MALE])
+def test_full_name(self, person, gender):
+    result = person.full_name(gender=gender)
+    result = result.split(' ')
+    assert result[0] is not None
+    assert result[1] is not None
+    result = person.full_name(reverse=True)
+    assert result is not None
+    with pytest.raises(NonEnumerableError):
+        person.full_name(gender='nil')
+
+----------
+
+
+
+Test Class Name: TestPerson

@@ -1,0 +1,25 @@
+def extension(self, file_type: t.Optional[FileType]=None) -> str:
+    """Get a random file extension from list.
+
+        :param file_type: Enum object FileType.
+        :return: Extension of the file.
+
+        :Example:
+            .py
+        """
+    key = self.validate_enum(item=file_type, enum=FileType)
+    extensions = EXTENSIONS[key]
+    return self.random.choice(extensions)
+
+----------
+
+@pytest.mark.parametrize('extension', [FileType.AUDIO, FileType.COMPRESSED, FileType.DATA, FileType.EXECUTABLE, FileType.IMAGE, FileType.SOURCE, FileType.TEXT, FileType.VIDEO])
+def test_extension(self, file, extension):
+    ext = file.extension(file_type=extension)
+    assert ext in EXTENSIONS[extension.value]
+
+----------
+
+
+
+Test Class Name: TestFile

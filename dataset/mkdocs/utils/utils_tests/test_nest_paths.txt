@@ -1,0 +1,26 @@
+def nest_paths(paths):
+    """
+    Given a list of paths, convert them into a nested structure that will match
+    the pages config.
+    """
+    nested = []
+    for path in paths:
+        parts = PurePath(path).parent.parts
+        branch = nested
+        for part in parts:
+            part = dirname_to_title(part)
+            branch = find_or_create_node(branch, part)
+        branch.append(path)
+    return nested
+
+----------
+
+def test_nest_paths(self, j=posixpath.join):
+    result = utils.nest_paths(['index.md', j('user-guide', 'configuration.md'), j('user-guide', 'styling-your-docs.md'), j('user-guide', 'writing-your-docs.md'), j('about', 'contributing.md'), j('about', 'license.md'), j('about', 'release-notes.md')])
+    self.assertEqual(result, ['index.md', {'User guide': [j('user-guide', 'configuration.md'), j('user-guide', 'styling-your-docs.md'), j('user-guide', 'writing-your-docs.md')]}, {'About': [j('about', 'contributing.md'), j('about', 'license.md'), j('about', 'release-notes.md')]}])
+
+----------
+
+
+
+Test Class Name: UtilsTests

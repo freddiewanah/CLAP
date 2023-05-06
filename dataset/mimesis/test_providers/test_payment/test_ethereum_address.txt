@@ -1,0 +1,27 @@
+def ethereum_address(self) -> str:
+    """Generate a random Ethereum address.
+
+        ..note: The address will look like Ethereum address,
+        but keep in mind that it is not the valid address.
+
+        :return: Ethereum address.
+
+        :Example:
+            0xe8ece9e6ff7dba52d4c07d37418036a89af9698d
+        """
+    bits = self.random.getrandbits(160)
+    address = bits.to_bytes(20, byteorder='big')
+    return '0x' + address.hex()
+
+----------
+
+def test_ethereum_address(self, payment):
+    pattern = '^0x([a-zA-Z0-9]{40})$'
+    address = payment.ethereum_address()
+    assert re.match(pattern, address)
+
+----------
+
+
+
+Test Class Name: TestPayment

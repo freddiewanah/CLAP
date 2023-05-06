@@ -1,0 +1,23 @@
+def quote(self, s):
+    if not s:
+        return '""'
+    if _find_unsafe(s) is None:
+        return s
+    for c in '^()%!"<>&|':
+        if c in s:
+            s = s.replace(c, ('\\^' if c == '"' else '^') + c)
+    return '^"' + s + '^"'
+
+----------
+
+@pytest.mark.parametrize('s, expected', [['arg1', 'arg1'], [None, '""'], ['arg1 and 2', '^"arg1 and 2^"'], ['malicious argument\\"&whoami', '^"malicious argument\\\\^"^&whoami^"'], ['C:\\temp\\some ^%file% > nul', '^"C:\\temp\\some ^^^%file^% ^> nul^"']])
+def test_quote_args(s, expected):
+    cmd = ShellModule()
+    actual = cmd.quote(s)
+    assert actual == expected
+
+----------
+
+
+
+Test Class Name: default

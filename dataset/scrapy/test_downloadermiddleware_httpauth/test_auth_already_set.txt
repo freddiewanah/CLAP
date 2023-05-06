@@ -1,0 +1,22 @@
+def process_request(self, request, spider):
+    auth = getattr(self, 'auth', None)
+    if auth and b'Authorization' not in request.headers:
+        domain = urlparse_cached(request).hostname
+        if self.domain_unset:
+            self.domain = domain
+            self.domain_unset = False
+        if not self.domain or url_is_from_any_domain(request.url, [self.domain]):
+            request.headers[b'Authorization'] = auth
+
+----------
+
+def test_auth_already_set(self):
+    req = Request('http://example.com/', headers=dict(Authorization='Digest 123'))
+    assert self.mw.process_request(req, self.spider) is None
+    self.assertEqual(req.headers['Authorization'], b'Digest 123')
+
+----------
+
+
+
+Test Class Name: HttpAuthAnyMiddlewareTest

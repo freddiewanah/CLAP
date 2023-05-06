@@ -1,0 +1,14 @@
+def urlencode_postdata(*args, **kargs):
+    return compat_urllib_parse_urlencode(*args, **kargs).encode('ascii')
+
+----------
+
+def test_urlencode_postdata(self):
+    data = urlencode_postdata({'username': 'foo@bar.com', 'password': '1234'})
+    self.assertTrue(isinstance(data, bytes))
+
+----------
+
+
+
+Test Class Name: TestUtil

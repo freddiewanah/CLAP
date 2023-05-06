@@ -1,0 +1,19 @@
+def get_warning_messages():
+    """Return a tuple of warning messages accumulated over this run"""
+    return tuple(_global_warnings)
+
+----------
+
+@pytest.mark.parametrize('stdin', [{'arg_pass': 'testing'}], indirect=['stdin'])
+def test_no_log_none(stdin, capfd):
+    """Allow Ansible to make the decision by matching the argument name
+    against PASSWORD_MATCH."""
+    arg_spec = {'arg_pass': {}}
+    am = basic.AnsibleModule(arg_spec)
+    assert len(get_warning_messages()) > 0
+
+----------
+
+
+
+Test Class Name: TestLoadFileCommonArguments

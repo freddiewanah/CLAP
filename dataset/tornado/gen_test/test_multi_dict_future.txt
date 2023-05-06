@@ -1,0 +1,17 @@
+@gen.coroutine
+def async_future(self, result):
+    yield gen.moment
+    return result
+
+----------
+
+@gen_test
+def test_multi_dict_future(self):
+    results = (yield dict(foo=self.async_future(1), bar=self.async_future(2)))
+    self.assertEqual(results, dict(foo=1, bar=2))
+
+----------
+
+
+
+Test Class Name: GenBasicTest

@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('hostscli block a_website_that_does_not_exist', no_website_long)])
+def test_match(command):
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

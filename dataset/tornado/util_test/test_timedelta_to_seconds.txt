@@ -1,0 +1,15 @@
+def timedelta_to_seconds(td):
+    """Equivalent to ``td.total_seconds()`` (introduced in Python 2.7)."""
+    return td.total_seconds()
+
+----------
+
+def test_timedelta_to_seconds(self):
+    time_delta = datetime.timedelta(hours=1)
+    self.assertEqual(timedelta_to_seconds(time_delta), 3600.0)
+
+----------
+
+
+
+Test Class Name: TimedeltaToSecondsTest

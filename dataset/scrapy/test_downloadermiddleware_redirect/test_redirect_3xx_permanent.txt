@@ -1,0 +1,47 @@
+def process_response(self, request, response, spider):
+    if request.meta.get('dont_redirect', False) or response.status in getattr(spider, 'handle_httpstatus_list', []) or response.status in request.meta.get('handle_httpstatus_list', []) or request.meta.get('handle_httpstatus_all', False):
+        return response
+    allowed_status = (301, 302, 303, 307, 308)
+    if 'Location' not in response.headers or response.status not in allowed_status:
+        return response
+    location = safe_url_string(response.headers['Location'])
+    if response.headers['Location'].startswith(b'//'):
+        request_scheme = urlparse(request.url).scheme
+        location = request_scheme + '://' + location.lstrip('/')
+    redirected_url = urljoin(request.url, location)
+    if response.status in (301, 307, 308) or request.method == 'HEAD':
+        redirected = _build_redirect_request(request, url=redirected_url)
+        return self._redirect(redirected, request, spider, response.status)
+    redirected = self._redirect_request_using_get(request, redirected_url)
+    return self._redirect(redirected, request, spider, response.status)
+
+----------
+
+def test_redirect_3xx_permanent(self):
+
+    def _test(method, status=301):
+        url = f'http://www.example.com/{status}'
+        url2 = 'http://www.example.com/redirected'
+        req = Request(url, method=method)
+        rsp = Response(url, headers={'Location': url2}, status=status)
+        req2 = self.mw.process_response(req, rsp, self.spider)
+        assert isinstance(req2, Request)
+        self.assertEqual(req2.url, url2)
+        self.assertEqual(req2.method, method)
+        del rsp.headers['Location']
+        assert self.mw.process_response(req, rsp, self.spider) is rsp
+    _test('GET')
+    _test('POST')
+    _test('HEAD')
+    _test('GET', status=307)
+    _test('POST', status=307)
+    _test('HEAD', status=307)
+    _test('GET', status=308)
+    _test('POST', status=308)
+    _test('HEAD', status=308)
+
+----------
+
+
+
+Test Class Name: RedirectMiddlewareTest

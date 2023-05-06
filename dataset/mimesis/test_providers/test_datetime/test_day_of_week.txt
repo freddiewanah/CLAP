@@ -1,0 +1,23 @@
+def day_of_week(self, abbr: bool=False) -> str:
+    """Get a random day of week.
+
+        :param abbr: Abbreviated day name.
+        :return: Day of the week.
+        """
+    key = 'abbr' if abbr else 'name'
+    days: t.List[str] = self.extract(['day', key])
+    return self.random.choice(days)
+
+----------
+
+def test_day_of_week(self, dt):
+    result = dt.day_of_week()
+    assert result in dt._data['day']['name']
+    result_abbr = dt.day_of_week(abbr=True)
+    assert result_abbr in dt._data['day']['abbr']
+
+----------
+
+
+
+Test Class Name: TestDatetime

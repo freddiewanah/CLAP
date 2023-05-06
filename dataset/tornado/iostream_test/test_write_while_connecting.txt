@@ -1,0 +1,35 @@
+def next(self) -> Future:
+    """Returns a `.Future` that will yield the next available result.
+
+        Note that this `.Future` will not be the same object as any of
+        the inputs.
+        """
+    self._running_future = Future()
+    if self._finished:
+        return self._return_result(self._finished.popleft())
+    return self._running_future
+
+----------
+
+@gen_test
+def test_write_while_connecting(self: typing.Any):
+    stream = self._make_client_iostream()
+    connect_fut = stream.connect(('127.0.0.1', self.get_http_port()))
+    write_fut = stream.write(b'GET / HTTP/1.0\r\nConnection: close\r\n\r\n')
+    self.assertFalse(connect_fut.done())
+    it = gen.WaitIterator(connect_fut, write_fut)
+    resolved_order = []
+    while not it.done():
+        yield it.next()
+        resolved_order.append(it.current_future)
+    self.assertEqual(resolved_order, [connect_fut, write_fut])
+    data = (yield stream.read_until_close())
+    self.assertTrue(data.endswith(b'Hello'))
+    stream.close()
+
+----------
+
+def _make_client_iostream(self):
+    raise NotImplementedError()
+
+Test Class Name: TestIOStreamWebMixin

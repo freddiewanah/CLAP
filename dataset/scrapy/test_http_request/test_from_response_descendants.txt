@@ -1,0 +1,29 @@
+@classmethod
+def from_response(cls: Type[FormRequestTypeVar], response: TextResponse, formname: Optional[str]=None, formid: Optional[str]=None, formnumber: Optional[int]=0, formdata: FormdataType=None, clickdata: Optional[dict]=None, dont_click: bool=False, formxpath: Optional[str]=None, formcss: Optional[str]=None, **kwargs) -> FormRequestTypeVar:
+    kwargs.setdefault('encoding', response.encoding)
+    if formcss is not None:
+        from parsel.csstranslator import HTMLTranslator
+        formxpath = HTMLTranslator().css_to_xpath(formcss)
+    form = _get_form(response, formname, formid, formnumber, formxpath)
+    formdata = _get_inputs(form, formdata, dont_click, clickdata)
+    url = _get_form_url(form, kwargs.pop('url', None))
+    method = kwargs.pop('method', form.method)
+    if method is not None:
+        method = method.upper()
+        if method not in cls.valid_form_methods:
+            method = 'GET'
+    return cls(url=url, method=method, formdata=formdata, **kwargs)
+
+----------
+
+def test_from_response_descendants(self):
+    res = _buildresponse('<form>\n            <div>\n              <fieldset>\n                <input type="text" name="i1">\n                <select name="i2">\n                    <option value="v1" selected>\n                </select>\n              </fieldset>\n              <input type="radio" name="i3" value="i3v2" checked>\n              <input type="checkbox" name="i4" value="i4v2" checked>\n              <textarea name="i5"></textarea>\n              <input type="hidden" name="h1" value="h1v">\n              </div>\n            <input type="hidden" name="h2" value="h2v">\n            </form>')
+    req = self.request_class.from_response(res)
+    fs = _qs(req)
+    self.assertEqual(set(fs), {b'h2', b'i2', b'i1', b'i3', b'h1', b'i5', b'i4'})
+
+----------
+
+
+
+Test Class Name: FormRequestTest

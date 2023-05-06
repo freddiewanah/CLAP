@@ -1,0 +1,18 @@
+def build_criterion(cfg: DictConfig, task, from_checkpoint=False):
+    return build_criterion_(cfg, task, from_checkpoint=from_checkpoint)
+
+----------
+
+def test_zero_eps(self):
+    self.args.label_smoothing = 0.0
+    nll_crit = CrossEntropyCriterion.build_criterion(self.args, self.task)
+    smooth_crit = LabelSmoothedCrossEntropyCriterion.build_criterion(self.args, self.task)
+    (nll_loss, nll_sample_size, nll_logging_output) = nll_crit(self.model, self.sample)
+    (smooth_loss, smooth_sample_size, smooth_logging_output) = smooth_crit(self.model, self.sample)
+    self.assertAlmostEqual(nll_loss, smooth_loss)
+
+----------
+
+
+
+Test Class Name: TestLabelSmoothing

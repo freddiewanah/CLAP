@@ -1,0 +1,29 @@
+@classmethod
+def from_response(cls: Type[FormRequestTypeVar], response: TextResponse, formname: Optional[str]=None, formid: Optional[str]=None, formnumber: Optional[int]=0, formdata: FormdataType=None, clickdata: Optional[dict]=None, dont_click: bool=False, formxpath: Optional[str]=None, formcss: Optional[str]=None, **kwargs) -> FormRequestTypeVar:
+    kwargs.setdefault('encoding', response.encoding)
+    if formcss is not None:
+        from parsel.csstranslator import HTMLTranslator
+        formxpath = HTMLTranslator().css_to_xpath(formcss)
+    form = _get_form(response, formname, formid, formnumber, formxpath)
+    formdata = _get_inputs(form, formdata, dont_click, clickdata)
+    url = _get_form_url(form, kwargs.pop('url', None))
+    method = kwargs.pop('method', form.method)
+    if method is not None:
+        method = method.upper()
+        if method not in cls.valid_form_methods:
+            method = 'GET'
+    return cls(url=url, method=method, formdata=formdata, **kwargs)
+
+----------
+
+def test_from_response_dont_submit_image_as_input(self):
+    response = _buildresponse('<form>\n            <input type="hidden" name="i1" value="i1v">\n            <input type="image" name="i2" src="http://my.image.org/1.jpg">\n            <input type="submit" name="i3" value="i3v">\n            </form>')
+    req = self.request_class.from_response(response, dont_click=True)
+    fs = _qs(req)
+    self.assertEqual(fs, {b'i1': [b'i1v']})
+
+----------
+
+
+
+Test Class Name: FormRequestTest

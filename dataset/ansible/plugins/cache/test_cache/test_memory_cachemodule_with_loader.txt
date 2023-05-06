@@ -1,0 +1,13 @@
+def get(self, key):
+    return self._cache.get(key)
+
+----------
+
+def test_memory_cachemodule_with_loader():
+    assert isinstance(cache_loader.get('memory'), MemoryCache)
+
+----------
+
+
+
+Test Class Name: TestFactCache

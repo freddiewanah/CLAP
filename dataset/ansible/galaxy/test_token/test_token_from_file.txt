@@ -1,0 +1,14 @@
+def get(self):
+    return self.config.get('token', None)
+
+----------
+
+@pytest.mark.parametrize('b_token_file', ['file'], indirect=True)
+def test_token_from_file(b_token_file):
+    assert GalaxyToken().get() == 'file'
+
+----------
+
+
+
+Test Class Name: default

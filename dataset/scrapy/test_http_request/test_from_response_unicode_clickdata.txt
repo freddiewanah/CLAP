@@ -1,0 +1,29 @@
+@classmethod
+def from_response(cls: Type[FormRequestTypeVar], response: TextResponse, formname: Optional[str]=None, formid: Optional[str]=None, formnumber: Optional[int]=0, formdata: FormdataType=None, clickdata: Optional[dict]=None, dont_click: bool=False, formxpath: Optional[str]=None, formcss: Optional[str]=None, **kwargs) -> FormRequestTypeVar:
+    kwargs.setdefault('encoding', response.encoding)
+    if formcss is not None:
+        from parsel.csstranslator import HTMLTranslator
+        formxpath = HTMLTranslator().css_to_xpath(formcss)
+    form = _get_form(response, formname, formid, formnumber, formxpath)
+    formdata = _get_inputs(form, formdata, dont_click, clickdata)
+    url = _get_form_url(form, kwargs.pop('url', None))
+    method = kwargs.pop('method', form.method)
+    if method is not None:
+        method = method.upper()
+        if method not in cls.valid_form_methods:
+            method = 'GET'
+    return cls(url=url, method=method, formdata=formdata, **kwargs)
+
+----------
+
+def test_from_response_unicode_clickdata(self):
+    response = _buildresponse('<form action="get.php" method="GET">\n            <input type="submit" name="price in £" value="£ 1000">\n            <input type="submit" name="price in €" value="€ 2000">\n            <input type="hidden" name="poundsign" value="£">\n            <input type="hidden" name="eurosign" value="€">\n            </form>')
+    req = self.request_class.from_response(response, clickdata={'name': 'price in £'})
+    fs = _qs(req, to_unicode=True)
+    self.assertTrue(fs['price in £'])
+
+----------
+
+
+
+Test Class Name: FormRequestTest

@@ -1,0 +1,22 @@
+def getlist(self, key, def_val=None):
+    try:
+        return super().__getitem__(key)
+    except KeyError:
+        if def_val is not None:
+            return self.normvalue(def_val)
+        return []
+
+----------
+
+def test_single_value(self):
+    h = Headers()
+    h['Content-Type'] = 'text/html'
+    self.assertEqual(h['Content-Type'], b'text/html')
+    self.assertEqual(h.get('Content-Type'), b'text/html')
+    self.assertEqual(h.getlist('Content-Type'), [b'text/html'])
+
+----------
+
+
+
+Test Class Name: HeadersTest

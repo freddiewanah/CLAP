@@ -1,0 +1,48 @@
+def sanitize_path(s):
+    """Sanitizes and normalizes path on Windows"""
+    if sys.platform != 'win32':
+        return s
+    (drive_or_unc, _) = os.path.splitdrive(s)
+    if sys.version_info < (2, 7) and (not drive_or_unc):
+        (drive_or_unc, _) = os.path.splitunc(s)
+    norm_path = os.path.normpath(remove_start(s, drive_or_unc)).split(os.path.sep)
+    if drive_or_unc:
+        norm_path.pop(0)
+    sanitized_path = [path_part if path_part in ['.', '..'] else re.sub('(?:[/<>:"\\|\\\\?\\*]|[\\s.]$)', '#', path_part) for path_part in norm_path]
+    if drive_or_unc:
+        sanitized_path.insert(0, drive_or_unc + os.path.sep)
+    return os.path.join(*sanitized_path)
+
+----------
+
+def test_sanitize_path(self):
+    if sys.platform != 'win32':
+        return
+    self.assertEqual(sanitize_path('abc'), 'abc')
+    self.assertEqual(sanitize_path('abc/def'), 'abc\\def')
+    self.assertEqual(sanitize_path('abc\\def'), 'abc\\def')
+    self.assertEqual(sanitize_path('abc|def'), 'abc#def')
+    self.assertEqual(sanitize_path('<>:"|?*'), '#######')
+    self.assertEqual(sanitize_path('C:/abc/def'), 'C:\\abc\\def')
+    self.assertEqual(sanitize_path('C?:/abc/def'), 'C##\\abc\\def')
+    self.assertEqual(sanitize_path('\\\\?\\UNC\\ComputerName\\abc'), '\\\\?\\UNC\\ComputerName\\abc')
+    self.assertEqual(sanitize_path('\\\\?\\UNC/ComputerName/abc'), '\\\\?\\UNC\\ComputerName\\abc')
+    self.assertEqual(sanitize_path('\\\\?\\C:\\abc'), '\\\\?\\C:\\abc')
+    self.assertEqual(sanitize_path('\\\\?\\C:/abc'), '\\\\?\\C:\\abc')
+    self.assertEqual(sanitize_path('\\\\?\\C:\\ab?c\\de:f'), '\\\\?\\C:\\ab#c\\de#f')
+    self.assertEqual(sanitize_path('\\\\?\\C:\\abc'), '\\\\?\\C:\\abc')
+    self.assertEqual(sanitize_path('youtube/%(uploader)s/%(autonumber)s-%(title)s-%(upload_date)s.%(ext)s'), 'youtube\\%(uploader)s\\%(autonumber)s-%(title)s-%(upload_date)s.%(ext)s')
+    self.assertEqual(sanitize_path('youtube/TheWreckingYard ./00001-Not bad, Especially for Free! (1987 Yamaha 700)-20141116.mp4.part'), 'youtube\\TheWreckingYard #\\00001-Not bad, Especially for Free! (1987 Yamaha 700)-20141116.mp4.part')
+    self.assertEqual(sanitize_path('abc/def...'), 'abc\\def..#')
+    self.assertEqual(sanitize_path('abc.../def'), 'abc..#\\def')
+    self.assertEqual(sanitize_path('abc.../def...'), 'abc..#\\def..#')
+    self.assertEqual(sanitize_path('../abc'), '..\\abc')
+    self.assertEqual(sanitize_path('../../abc'), '..\\..\\abc')
+    self.assertEqual(sanitize_path('./abc'), 'abc')
+    self.assertEqual(sanitize_path('./../abc'), '..\\abc')
+
+----------
+
+
+
+Test Class Name: TestUtil

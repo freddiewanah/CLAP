@@ -1,0 +1,36 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_required(self) -> None:
+
+    class Sub(Config):
+        opt = c.Type(int)
+
+    class Schema(Config):
+        sub = c.ListOfItems(c.SubConfig(Sub))
+    with self.expect_error(sub='Required configuration not provided.'):
+        conf = self.get_config(Schema, {})
+    with self.expect_error(sub='Required configuration not provided.'):
+        conf = self.get_config(Schema, {'sub': None})
+    with self.expect_error(sub="Sub-option 'opt': Expected type: <class 'int'> but received: <class 'str'>"):
+        conf = self.get_config(Schema, {'sub': [{'opt': 'asdf'}, {}]})
+    conf = self.get_config(Schema, {'sub': []})
+    conf = self.get_config(Schema, {'sub': [{'opt': 1}, {'opt': 2}]})
+    assert_type(conf.sub, List[Sub])
+    self.assertEqual(conf.sub, [{'opt': 1}, {'opt': 2}])
+    assert_type(conf.sub[0].opt, int)
+    self.assertEqual(conf.sub[0].opt, 1)
+    with self.expect_error(sub="Sub-option 'opt': Expected type: <class 'int'> but received: <class 'str'>"):
+        self.get_config(Schema, {'sub': [{'opt': 'z'}, {'opt': 2}]})
+    with self.expect_error(sub="Sub-option 'opt': Expected type: <class 'int'> but received: <class 'str'>"):
+        conf = self.get_config(Schema, {'sub': [{'opt': 'z'}, {'opt': 2}]})
+    with self.expect_error(sub="The configuration is invalid. The expected type was a key value mapping (a python dict) but we got an object of type: <class 'int'>"):
+        conf = self.get_config(Schema, {'sub': [1, 2]})
+
+----------
+
+
+
+Test Class Name: default

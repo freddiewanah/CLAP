@@ -1,0 +1,30 @@
+def coordinates(self, dms: bool=False) -> t.Dict[str, t.Union[str, float]]:
+    """Generate random geo coordinates.
+
+        :param dms: DMS format.
+        :return: Dict with coordinates.
+        """
+    return {'longitude': self._get_fs('lg', dms), 'latitude': self._get_fs('lt', dms)}
+
+----------
+
+def test_coordinates(self, _address):
+    result = _address.coordinates()
+    assert isinstance(result, dict)
+    latitude = result['latitude']
+    assert isinstance(latitude, float)
+    assert latitude <= 90
+    assert latitude >= -90
+    longitude = result['longitude']
+    assert isinstance(latitude, float)
+    assert longitude <= 180
+    assert longitude >= -180
+    coord = _address.coordinates(dms=True)
+    assert isinstance(coord['longitude'], str)
+    assert isinstance(coord['latitude'], str)
+
+----------
+
+
+
+Test Class Name: TestAddress

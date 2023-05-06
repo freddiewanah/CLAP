@@ -1,0 +1,14 @@
+def add_unredirected_header(self, name, value):
+    self.request.headers.appendlist(name, value)
+
+----------
+
+def test_add_unredirected_header(self):
+    self.wrapped.add_unredirected_header('hello', 'world')
+    self.assertEqual(self.request.headers['hello'], b'world')
+
+----------
+
+
+
+Test Class Name: WrappedRequestTest

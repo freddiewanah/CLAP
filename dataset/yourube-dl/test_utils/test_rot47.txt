@@ -1,0 +1,14 @@
+def rot47(s):
+    return caesar(s, '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~', 47)
+
+----------
+
+def test_rot47(self):
+    self.assertEqual(rot47('youtube-dl'), 'J@FEF36\\5=')
+    self.assertEqual(rot47('YOUTUBE-DL'), '*~&%&qt\\s{')
+
+----------
+
+
+
+Test Class Name: TestUtil

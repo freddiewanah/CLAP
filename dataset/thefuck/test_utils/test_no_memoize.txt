@@ -1,0 +1,31 @@
+def memoize(fn):
+    """Caches previous calls to the function."""
+    memo = {}
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not memoize.disabled:
+            key = pickle.dumps((args, kwargs))
+            if key not in memo:
+                memo[key] = fn(*args, **kwargs)
+            value = memo[key]
+        else:
+            value = fn(*args, **kwargs)
+        return value
+    return wrapper
+
+----------
+
+@pytest.mark.usefixtures('no_memoize')
+def test_no_memoize():
+    fn = Mock(__name__='fn')
+    memoized = memoize(fn)
+    memoized()
+    memoized()
+    assert fn.call_count == 2
+
+----------
+
+
+
+Test Class Name: default

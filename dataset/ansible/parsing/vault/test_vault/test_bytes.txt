@@ -1,0 +1,18 @@
+def load(self, data, file_name='<string>', show_content=True, json_only=False):
+    """Backwards compat for now"""
+    return from_yaml(data, file_name, show_content, self._vault.secrets, json_only=json_only)
+
+----------
+
+def test_bytes(self):
+    some_text = u'私はガラスを食べられます。それは私を傷つけません。'
+    _bytes = to_bytes(some_text)
+    secret = vault.VaultSecret(_bytes)
+    secret.load()
+    self.assertEqual(secret.bytes, _bytes)
+
+----------
+
+
+
+Test Class Name: TestVaultSecret

@@ -1,0 +1,55 @@
+def run() -> None:
+    try:
+        result = func()
+        if result is not None:
+            from tornado.gen import convert_yielded
+            result = convert_yielded(result)
+    except Exception:
+        fut = Future()
+        future_cell[0] = fut
+        future_set_exc_info(fut, sys.exc_info())
+    else:
+        if is_future(result):
+            future_cell[0] = result
+        else:
+            fut = Future()
+            future_cell[0] = fut
+            fut.set_result(result)
+    assert future_cell[0] is not None
+    self.add_future(future_cell[0], lambda future: self.stop())
+
+----------
+
+def test_set_up_tear_down(self):
+    """
+        This test makes sure that AsyncTestCase calls super methods for
+        setUp and tearDown.
+
+        InheritBoth is a subclass of both AsyncTestCase and
+        SetUpTearDown, with the ordering so that the super of
+        AsyncTestCase will be SetUpTearDown.
+        """
+    events = []
+    result = unittest.TestResult()
+
+    class SetUpTearDown(unittest.TestCase):
+
+        def setUp(self):
+            events.append('setUp')
+
+        def tearDown(self):
+            events.append('tearDown')
+
+    class InheritBoth(AsyncTestCase, SetUpTearDown):
+
+        def test(self):
+            events.append('test')
+    InheritBoth('test').run(result)
+    expected = ['setUp', 'test', 'tearDown']
+    self.assertEqual(expected, events)
+
+----------
+
+
+
+Test Class Name: SetUpTearDownTest

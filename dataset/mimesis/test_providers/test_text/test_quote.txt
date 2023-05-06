@@ -1,0 +1,22 @@
+def quote(self) -> str:
+    """Get a random quote.
+
+        :return: Quote from movie.
+
+        :Example:
+            "Bond... James Bond."
+        """
+    quotes: t.List[str] = self.extract(['quotes'])
+    return self.random.choice(quotes)
+
+----------
+
+def test_quote(self, text):
+    result = text.quote()
+    assert result in text._data['quotes']
+
+----------
+
+
+
+Test Class Name: TestText

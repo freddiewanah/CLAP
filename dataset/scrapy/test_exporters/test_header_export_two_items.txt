@@ -1,0 +1,20 @@
+def finish_exporting(self):
+    pass
+
+----------
+
+def test_header_export_two_items(self):
+    for item in [self.i, ItemAdapter(self.i).asdict()]:
+        output = BytesIO()
+        ie = CsvItemExporter(output)
+        ie.start_exporting()
+        ie.export_item(item)
+        ie.export_item(item)
+        ie.finish_exporting()
+        self.assertCsvEqual(output.getvalue(), b'age,name\r\n22,John\xc2\xa3\r\n22,John\xc2\xa3\r\n')
+
+----------
+
+
+
+Test Class Name: CsvItemExporterTest

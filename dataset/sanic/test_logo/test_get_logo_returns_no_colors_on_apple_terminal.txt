@@ -1,0 +1,24 @@
+def get_logo(full=False, coffee=False):
+    logo = (FULL_COLOR_LOGO if full else COFFEE_LOGO if coffee else COLOR_LOGO) if is_atty() else BASE_LOGO
+    if sys.platform == 'darwin' and environ.get('TERM_PROGRAM') == 'Apple_Terminal':
+        logo = ansi_pattern.sub('', logo)
+    return logo
+
+----------
+
+def test_get_logo_returns_no_colors_on_apple_terminal():
+    platform = sys.platform
+    sys.platform = 'darwin'
+    os.environ['TERM_PROGRAM'] = 'Apple_Terminal'
+    with patch('sys.stdout.isatty') as isatty:
+        isatty.return_value = False
+        logo = get_logo()
+    assert '\x1b' not in logo
+    sys.platform = platform
+    del os.environ['TERM_PROGRAM']
+
+----------
+
+
+
+Test Class Name: default

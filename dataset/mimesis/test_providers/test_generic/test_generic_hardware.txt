@@ -1,0 +1,21 @@
+def cpu(self) -> str:
+    """Get a random CPU name.
+
+        :return: CPU name.
+
+        :Example:
+            Intel\xae Core i7.
+        """
+    return self.random.choice(CPU)
+
+----------
+
+def test_generic_hardware(self, g1, g2):
+    assert g1.hardware.screen_size() == g2.hardware.screen_size()
+    assert g1.hardware.cpu() == g2.hardware.cpu()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

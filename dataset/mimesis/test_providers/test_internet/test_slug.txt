@@ -1,0 +1,30 @@
+def slug(self, parts_count: t.Optional[int]=None) -> str:
+    """Generate a random slug of given parts count.
+
+        :param parts_count: Slug's parts count.
+        :return: Slug.
+        """
+    if not parts_count:
+        parts_count = self.random.randint(2, 12)
+    if parts_count > 12:
+        raise ValueError("Slug's parts count must be <= 12")
+    if parts_count < 2:
+        raise ValueError('Slug must contain more than 2 parts')
+    return '-'.join(self._text.words(parts_count))
+
+----------
+
+def test_slug(self, net):
+    with pytest.raises(ValueError):
+        net.slug(parts_count=13)
+    with pytest.raises(ValueError):
+        net.slug(parts_count=1)
+    parts_count = 5
+    parts = net.slug(parts_count=parts_count).split('-')
+    assert len(parts) == parts_count
+
+----------
+
+
+
+Test Class Name: TestInternet

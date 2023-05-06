@@ -1,0 +1,19 @@
+def calling_code(self) -> str:
+    """Get a random calling code of random country.
+
+        :return: Calling code.
+        """
+    return self.random.choice(CALLING_CODES)
+
+----------
+
+def test_calling_code(self, _address):
+    result = _address.calling_code()
+    assert result is not None
+    assert result in CALLING_CODES
+
+----------
+
+
+
+Test Class Name: TestAddress

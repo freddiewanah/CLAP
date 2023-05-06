@@ -1,0 +1,27 @@
+def nip(self) -> str:
+    """Generate random valid 10-digit NIP.
+
+        :return: Valid 10-digit NIP
+        """
+    nip_digits = [int(d) for d in str(self.random.randint(101, 998))]
+    nip_digits += [self.random.randint(0, 9) for _ in range(6)]
+    nip_coefficients = (6, 5, 7, 2, 3, 4, 5, 6, 7)
+    sum_v = sum((nc * nd for (nc, nd) in zip(nip_coefficients, nip_digits)))
+    checksum_digit = sum_v % 11
+    if checksum_digit > 9:
+        return self.nip()
+    nip_digits.append(checksum_digit)
+    return ''.join(map(str, nip_digits))
+
+----------
+
+def test_nip(pl):
+    nip = pl.nip()
+    assert len(nip) == 10
+    assert validate_nip(nip)
+
+----------
+
+
+
+Test Class Name: default

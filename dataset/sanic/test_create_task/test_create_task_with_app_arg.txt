@@ -1,0 +1,36 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_create_task_with_app_arg(app):
+
+    @app.after_server_start
+    async def setup_q(app, _):
+        app.ctx.q = asyncio.Queue()
+
+    @app.route('/')
+    async def not_set(request):
+        return text(await request.app.ctx.q.get())
+
+    async def coro(app):
+        await app.ctx.q.put(app.name)
+    app.add_task(coro)
+    (_, response) = app.test_client.get('/')
+    assert response.text == 'test_create_task_with_app_arg'
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,22 @@
+def postal_code(self) -> str:
+    """Generate a postal code for current locale.
+
+        :return: Postal code.
+        """
+    return self.random.custom_code(self.extract(['postal_code_fmt']))
+
+----------
+
+def test_postal_code(self, address):
+    result = address.postal_code()
+    current_locale = address.get_current_locale()
+    if current_locale in patterns.POSTAL_CODE_REGEX:
+        assert re.match(patterns.POSTAL_CODE_REGEX[current_locale], result)
+    else:
+        assert re.match(patterns.POSTAL_CODE_REGEX['default'], result)
+
+----------
+
+
+
+Test Class Name: TestAddress

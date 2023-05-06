@@ -1,0 +1,24 @@
+def urlopen(self, req):
+    """ Start an HTTP download """
+    if isinstance(req, compat_basestring):
+        req = sanitized_Request(req)
+    return self._opener.open(req, timeout=self._socket_timeout)
+
+----------
+
+def test_proxy(self):
+    geo_proxy = '127.0.0.1:{0}'.format(self.geo_port)
+    ydl = YoutubeDL({'proxy': '127.0.0.1:{0}'.format(self.port), 'geo_verification_proxy': geo_proxy})
+    url = 'http://foo.com/bar'
+    response = ydl.urlopen(url).read().decode('utf-8')
+    self.assertEqual(response, 'normal: {0}'.format(url))
+    req = compat_urllib_request.Request(url)
+    req.add_header('Ytdl-request-proxy', geo_proxy)
+    response = ydl.urlopen(req).read().decode('utf-8')
+    self.assertEqual(response, 'geo: {0}'.format(url))
+
+----------
+
+
+
+Test Class Name: TestProxy

@@ -1,0 +1,24 @@
+@classmethod
+def parse(cls, identifier, sep):
+    if not isinstance(identifier, str):
+        raise TypeError(f"Unexpected value for identifier: '{identifier}'")
+    locale = cls(*identifier.split(sep, 1))
+    if not all((x in ascii_letters for x in locale.language)):
+        raise ValueError(f"expected only letters, got '{locale.language}'")
+    if len(locale.language) != 2:
+        raise UnknownLocaleError(f"unknown locale '{locale.language}'")
+    return locale
+
+----------
+
+def test_parse_locale_language_only(self):
+    locale = Locale.parse('fr', '_')
+    self.assertEqual(locale.language, 'fr')
+    self.assertEqual(locale.territory, '')
+    self.assertEqual(str(locale), 'fr')
+
+----------
+
+
+
+Test Class Name: BabelStubTests

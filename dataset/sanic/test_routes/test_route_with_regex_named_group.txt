@@ -1,0 +1,28 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_route_with_regex_named_group(app):
+
+    @app.route('/path/to/<ext:file\\.(?P<ext>txt)>')
+    async def handler(request, ext):
+        return text(ext)
+    (_, response) = app.test_client.get('/path/to/file.txt')
+    assert response.text == 'txt'
+
+----------
+
+
+
+Test Class Name: default

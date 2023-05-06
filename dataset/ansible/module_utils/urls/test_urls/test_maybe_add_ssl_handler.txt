@@ -1,0 +1,47 @@
+def maybe_add_ssl_handler(url, validate_certs, ca_path=None, ciphers=None):
+    parsed = generic_urlparse(urlparse(url))
+    if parsed.scheme == 'https' and validate_certs:
+        if not HAS_SSL:
+            raise NoSSLError('SSL validation is not available in your version of python. You can use validate_certs=False, however this is unsafe and not recommended')
+        return SSLValidationHandler(parsed.hostname, parsed.port or 443, ca_path=ca_path, ciphers=ciphers, validate_certs=validate_certs)
+
+----------
+
+def test_maybe_add_ssl_handler(mocker):
+    mocker.patch.object(urls, 'HAS_SSL', new=False)
+    with pytest.raises(urls.NoSSLError):
+        urls.maybe_add_ssl_handler('https://ansible.com/', True)
+    mocker.patch.object(urls, 'HAS_SSL', new=True)
+    url = 'https://user:passwd@ansible.com/'
+    handler = urls.maybe_add_ssl_handler(url, True)
+    assert handler.hostname == 'ansible.com'
+    assert handler.port == 443
+    url = 'https://ansible.com:4433/'
+    handler = urls.maybe_add_ssl_handler(url, True)
+    assert handler.hostname == 'ansible.com'
+    assert handler.port == 4433
+    url = 'https://user:passwd@ansible.com:4433/'
+    handler = urls.maybe_add_ssl_handler(url, True)
+    assert handler.hostname == 'ansible.com'
+    assert handler.port == 4433
+    url = 'https://ansible.com/'
+    handler = urls.maybe_add_ssl_handler(url, True)
+    assert handler.hostname == 'ansible.com'
+    assert handler.port == 443
+    url = 'http://ansible.com/'
+    handler = urls.maybe_add_ssl_handler(url, True)
+    assert handler is None
+    url = 'https://[2a00:16d8:0:7::205]:4443/'
+    handler = urls.maybe_add_ssl_handler(url, True)
+    assert handler.hostname == '2a00:16d8:0:7::205'
+    assert handler.port == 4443
+    url = 'https://[2a00:16d8:0:7::205]/'
+    handler = urls.maybe_add_ssl_handler(url, True)
+    assert handler.hostname == '2a00:16d8:0:7::205'
+    assert handler.port == 443
+
+----------
+
+
+
+Test Class Name: default

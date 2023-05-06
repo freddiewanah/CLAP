@@ -1,0 +1,28 @@
+def check_type_bool(value):
+    """Verify that the value is a bool or convert it to a bool and return it.
+
+    Raises :class:`TypeError` if unable to convert to a bool
+
+    :arg value: String, int, or float to convert to bool. Valid booleans include:
+         '1', 'on', 1, '0', 0, 'n', 'f', 'false', 'true', 'y', 't', 'yes', 'no', 'off'
+
+    :returns: Boolean True or False
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, string_types) or isinstance(value, (int, float)):
+        return boolean(value)
+    raise TypeError('%s cannot be converted to a bool' % type(value))
+
+----------
+
+def test_check_type_bool():
+    test_cases = ((True, True), (False, False), ('1', True), ('on', True), (1, True), ('0', False), (0, False), ('n', False), ('f', False), ('false', False), ('true', True), ('y', True), ('t', True), ('yes', True), ('no', False), ('off', False))
+    for case in test_cases:
+        assert case[1] == check_type_bool(case[0])
+
+----------
+
+
+
+Test Class Name: default

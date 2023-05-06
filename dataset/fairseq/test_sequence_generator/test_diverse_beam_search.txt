@@ -1,0 +1,41 @@
+def forward(self, tokens, lprobs, bsz: int, beam_size: int, step: int):
+    """
+        Args:
+            tokens(Tensor): Input tokens(Bsz*beam, seq_len)
+            lprobs(Tensor): likelihood probability,
+            Expected to be updated in place.(Bsz*beam, vocab_size)
+            bsz(int): batch size
+            step(int): current step
+            beam_size(int): beam size
+            no_repeat_ngram_size(int): Ngram size
+        """
+    msg = f'expected {bsz * beam_size} got'
+    assert tokens.size(0) == bsz * beam_size, f'{msg} {tokens.size(0)}'
+    assert lprobs.size(0) == bsz * beam_size, f'{msg} {lprobs.size(0)}'
+    if self.use_extension:
+        return self.call_cuda_extension(tokens, lprobs, bsz, beam_size, step)
+    else:
+        return self._no_repeat_ngram(tokens, lprobs, bsz, beam_size, step)
+
+----------
+
+def test_diverse_beam_search(self):
+    search_strategy = search.DiverseBeamSearch(self.tgt_dict, num_groups=2, diversity_strength=0.0)
+    generator = SequenceGenerator([self.model], self.tgt_dict, beam_size=2, search_strategy=search_strategy)
+    sample = {'net_input': {'src_tokens': self.src_tokens, 'src_lengths': self.src_lengths}}
+    hypos = generator.forward(sample)
+    (eos, w1, w2) = (self.eos, self.w1, self.w2)
+    self.assertHypoTokens(hypos[0][0], [w1, w1, eos])
+    self.assertHypoScore(hypos[0][0], [0.9, 0.6, 1.0])
+    self.assertHypoTokens(hypos[0][1], [w1, w1, eos])
+    self.assertHypoScore(hypos[0][1], [0.9, 0.6, 1.0])
+    self.assertHypoTokens(hypos[1][0], [w1, w2, eos])
+    self.assertHypoScore(hypos[1][0], [0.7, 0.4, 0.9])
+    self.assertHypoTokens(hypos[1][1], [w1, w2, eos])
+    self.assertHypoScore(hypos[1][1], [0.7, 0.4, 0.9])
+
+----------
+
+
+
+Test Class Name: TestDiverseBeamSearch

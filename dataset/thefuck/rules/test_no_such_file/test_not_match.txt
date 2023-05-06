@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('mv foo bar/', ''), Command('mv foo bar/foo', 'mv: permission denied')])
+def test_not_match(command):
+    assert not match(command)
+
+----------
+
+
+
+Test Class Name: default

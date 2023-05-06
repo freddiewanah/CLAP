@@ -1,0 +1,55 @@
+def blueprint(self, blueprint: Union[Blueprint, Iterable[Blueprint], BlueprintGroup], **options: Any):
+    """Register a blueprint on the application.
+
+        :param blueprint: Blueprint object or (list, tuple) thereof
+        :param options: option dictionary with blueprint defaults
+        :return: Nothing
+        """
+    if isinstance(blueprint, (Iterable, BlueprintGroup)):
+        for item in blueprint:
+            params = {**options}
+            if isinstance(blueprint, BlueprintGroup):
+                merge_from = [options.get('url_prefix', ''), blueprint.url_prefix or '']
+                if not isinstance(item, BlueprintGroup):
+                    merge_from.append(item.url_prefix or '')
+                merged_prefix = '/'.join((u.strip('/') for u in merge_from if u)).rstrip('/')
+                params['url_prefix'] = f'/{merged_prefix}'
+                for _attr in ['version', 'strict_slashes']:
+                    if getattr(item, _attr) is None:
+                        params[_attr] = getattr(blueprint, _attr) or options.get(_attr)
+                if item.version_prefix == '/v':
+                    if blueprint.version_prefix == '/v':
+                        params['version_prefix'] = options.get('version_prefix')
+                    else:
+                        params['version_prefix'] = blueprint.version_prefix
+            self.blueprint(item, **params)
+        return
+    if blueprint.name in self.blueprints:
+        assert self.blueprints[blueprint.name] is blueprint, 'A blueprint with the name "%s" is already registered.  Blueprint names must be unique.' % (blueprint.name,)
+    else:
+        self.blueprints[blueprint.name] = blueprint
+        self._blueprint_order.append(blueprint)
+    if self.strict_slashes is not None and blueprint.strict_slashes is None:
+        blueprint.strict_slashes = self.strict_slashes
+    blueprint.register(self, options)
+
+----------
+
+@pytest.mark.parametrize('file_name', ['test.html'])
+def test_bp_static_content_type(app, file_name):
+    current_file = inspect.getfile(inspect.currentframe())
+    current_directory = os.path.dirname(os.path.abspath(current_file))
+    static_directory = os.path.join(current_directory, 'static')
+    blueprint = Blueprint('test_static')
+    blueprint.static('/testing.file', get_file_path(static_directory, file_name), content_type='text/html; charset=utf-8')
+    app.blueprint(blueprint)
+    (request, response) = app.test_client.get('/testing.file')
+    assert response.status == 200
+    assert response.body == get_file_content(static_directory, file_name)
+    assert response.headers['Content-Type'] == 'text/html; charset=utf-8'
+
+----------
+
+
+
+Test Class Name: Error

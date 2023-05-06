@@ -1,0 +1,34 @@
+def assign_cost_matrix_values(self, cost_matrix: np.ndarray, bbox_pairs: List) -> np.ndarray:
+    """
+        Based on IoU for each pair of bbox, assign the associated value in cost matrix
+
+        Args:
+            cost_matrix: np.ndarray, initialized 2D array with target dimensions
+            bbox_pairs: list of bbox pair, in each pair, iou value is stored
+        Return:
+            np.ndarray, cost_matrix with assigned values
+        """
+    for pair in bbox_pairs:
+        cost_matrix[pair['idx']][pair['prev_idx']] = -1
+    return cost_matrix
+
+----------
+
+def test_assign_cost_matrix_values(self):
+    cfg = {'_target_': 'detectron2.tracking.vanilla_hungarian_bbox_iou_tracker.VanillaHungarianBBoxIOUTracker', 'video_height': self._img_size[0], 'video_width': self._img_size[1], 'max_num_instances': self._max_num_instances, 'max_lost_frame_count': self._max_lost_frame_count, 'min_box_rel_dim': self._min_box_rel_dim, 'min_instance_period': self._min_instance_period, 'track_iou_threshold': self._track_iou_threshold}
+    tracker = instantiate(cfg)
+    pair1 = {'idx': 0, 'prev_idx': 1}
+    pair2 = {'idx': 1, 'prev_idx': 0}
+    bbox_pairs = [pair1, pair2]
+    cost_matrix = np.full((2, 2), np.inf)
+    target_matrix = copy.deepcopy(cost_matrix)
+    target_matrix[0, 1] = -1
+    target_matrix[1, 0] = -1
+    cost_matrix = tracker.assign_cost_matrix_values(cost_matrix, bbox_pairs)
+    self.assertTrue(np.allclose(cost_matrix, target_matrix))
+
+----------
+
+
+
+Test Class Name: TestVanillaHungarianBBoxIOUTracker

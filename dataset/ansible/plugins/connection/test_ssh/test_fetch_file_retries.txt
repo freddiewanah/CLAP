@@ -1,0 +1,31 @@
+def fetch_file(self, in_path, out_path):
+    """ fetch a file from local to local -- for compatibility """
+    super(Connection, self).fetch_file(in_path, out_path)
+    display.vvv(u'FETCH {0} TO {1}'.format(in_path, out_path), host=self._play_context.remote_addr)
+    self.put_file(in_path, out_path)
+
+----------
+
+def test_fetch_file_retries(self, monkeypatch):
+    self.conn.set_option('host_key_checking', False)
+    self.conn.set_option('reconnection_retries', 3)
+    monkeypatch.setattr('time.sleep', lambda x: None)
+    monkeypatch.setattr('ansible.plugins.connection.ssh.os.path.exists', lambda x: True)
+    self.mock_popen_res.stdout.read.side_effect = [b'', b'my_stdout\n', b'second_line']
+    self.mock_popen_res.stderr.read.side_effect = [b'', b'my_stderr']
+    type(self.mock_popen_res).returncode = PropertyMock(side_effect=[255] * 4 + [0] * 4)
+    self.mock_selector.select.side_effect = [[(SelectorKey(self.mock_popen_res.stdout, 1001, [EVENT_READ], None), EVENT_READ)], [(SelectorKey(self.mock_popen_res.stderr, 1002, [EVENT_READ], None), EVENT_READ)], [], [(SelectorKey(self.mock_popen_res.stdout, 1001, [EVENT_READ], None), EVENT_READ)], [(SelectorKey(self.mock_popen_res.stdout, 1001, [EVENT_READ], None), EVENT_READ)], [(SelectorKey(self.mock_popen_res.stderr, 1002, [EVENT_READ], None), EVENT_READ)], []]
+    self.mock_selector.get_map.side_effect = lambda : True
+    self.conn._build_command = MagicMock()
+    self.conn._build_command.return_value = 'sftp'
+    (return_code, b_stdout, b_stderr) = self.conn.fetch_file('/path/to/in/file', '/path/to/dest/file')
+    assert return_code == 0
+    assert b_stdout == b'my_stdout\nsecond_line'
+    assert b_stderr == b'my_stderr'
+    assert self.mock_popen.call_count == 2
+
+----------
+
+
+
+Test Class Name: TestSSHConnectionRetries

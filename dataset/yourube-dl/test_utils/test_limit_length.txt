@@ -1,0 +1,22 @@
+def limit_length(s, length):
+    """ Add ellipses to overly long strings """
+    if s is None:
+        return None
+    ELLIPSES = '...'
+    if len(s) > length:
+        return s[:length - len(ELLIPSES)] + ELLIPSES
+    return s
+
+----------
+
+def test_limit_length(self):
+    self.assertEqual(limit_length(None, 12), None)
+    self.assertEqual(limit_length('foo', 12), 'foo')
+    self.assertTrue(limit_length('foo bar baz asd', 12).startswith('foo bar'))
+    self.assertTrue('...' in limit_length('foo bar baz asd', 12))
+
+----------
+
+
+
+Test Class Name: TestUtil

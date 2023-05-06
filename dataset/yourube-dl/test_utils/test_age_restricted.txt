@@ -1,0 +1,22 @@
+def age_restricted(content_limit, age_limit):
+    """ Returns True iff the content should be blocked """
+    if age_limit is None:
+        return False
+    if content_limit is None:
+        return False
+    return age_limit < content_limit
+
+----------
+
+def test_age_restricted(self):
+    self.assertFalse(age_restricted(None, 10))
+    self.assertFalse(age_restricted(1, None))
+    self.assertFalse(age_restricted(8, 10))
+    self.assertTrue(age_restricted(18, 14))
+    self.assertFalse(age_restricted(18, 18))
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('choco install logstitcher', package_not_found_error), Command('cinst logstitcher', package_not_found_error), Command('choco install logstitcher -y', package_not_found_error), Command('cinst logstitcher -y', package_not_found_error), Command('choco install logstitcher -y -n=test', package_not_found_error), Command('cinst logstitcher -y -n=test', package_not_found_error), Command('choco install logstitcher -y -n=test /env', package_not_found_error), Command('cinst logstitcher -y -n=test /env', package_not_found_error), Command('choco install chocolatey -y', package_not_found_error), Command('cinst chocolatey -y', package_not_found_error)])
+def test_match(command):
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

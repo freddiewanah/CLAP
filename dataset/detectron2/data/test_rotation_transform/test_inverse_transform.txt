@@ -1,0 +1,26 @@
+def inverse(self):
+    """
+        The inverse is to rotate it back with expand, and crop to get the original shape.
+        """
+    if not self.expand:
+        raise NotImplementedError()
+    rotation = RotationTransform(self.bound_h, self.bound_w, -self.angle, True, None, self.interp)
+    crop = CropTransform((rotation.bound_w - self.w) // 2, (rotation.bound_h - self.h) // 2, self.w, self.h)
+    return TransformList([rotation, crop])
+
+----------
+
+def test_inverse_transform(self):
+    (image, coords, h, w) = self.randomData(h=5, w=8)
+    rot = RotationTransform(h, w, 90, expand=True, center=None)
+    rot_image = rot.apply_image(image)
+    self.assertEqualsArrays(rot.inverse().apply_image(rot_image), image)
+    rot = RotationTransform(h, w, 65, expand=True, center=None)
+    rotated_coords = rot.apply_coords(coords)
+    self.assertEqualsArrays(rot.inverse().apply_coords(rotated_coords), coords)
+
+----------
+
+
+
+Test Class Name: TestRotationTransform

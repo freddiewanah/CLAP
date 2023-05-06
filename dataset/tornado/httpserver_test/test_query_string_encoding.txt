@@ -1,0 +1,19 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_query_string_encoding(self):
+    response = self.fetch('/echo?foo=%C3%A9')
+    data = json_decode(response.body)
+    self.assertEqual(data, {'foo': ['é']})
+
+----------
+
+
+
+Test Class Name: HTTPServerTest

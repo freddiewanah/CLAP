@@ -1,0 +1,13 @@
+def and_(self, *commands):
+    return u' -and '.join(('({0})'.format(c) for c in commands))
+
+----------
+
+def test_and_(self, shell):
+    assert shell.and_('ls', 'cd') == '(ls) -and (cd)'
+
+----------
+
+
+
+Test Class Name: TestPowershell

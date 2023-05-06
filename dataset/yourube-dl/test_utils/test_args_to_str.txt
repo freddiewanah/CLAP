@@ -1,0 +1,13 @@
+def args_to_str(args):
+    return ' '.join((compat_shlex_quote(a) for a in args))
+
+----------
+
+def test_args_to_str(self):
+    self.assertEqual(args_to_str(['foo', 'ba/r', '-baz', '2 be', '']), "foo ba/r -baz '2 be' ''" if compat_os_name != 'nt' else 'foo ba/r -baz "2 be" ""')
+
+----------
+
+
+
+Test Class Name: TestUtil

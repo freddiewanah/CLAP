@@ -1,0 +1,20 @@
+def airplane(self) -> str:
+    """Generate a dummy airplane model.
+
+        :return: Airplane model.
+
+        :Example:
+            Boeing 727.
+        """
+    return self.random.choice(AIRPLANES)
+
+----------
+
+def test_generic_transport(self, g1, g2):
+    assert g1.transport.airplane() == g2.transport.airplane()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

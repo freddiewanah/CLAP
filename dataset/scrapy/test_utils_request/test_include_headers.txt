@@ -1,0 +1,24 @@
+def fingerprint(self, request: Request):
+    return self._fingerprint(request)
+
+----------
+
+def test_include_headers(self):
+
+    class RequestFingerprinter:
+
+        def fingerprint(self, request):
+            return fingerprint(request, include_headers=['X-ID'])
+    settings = {'REQUEST_FINGERPRINTER_CLASS': RequestFingerprinter}
+    crawler = get_crawler(settings_dict=settings)
+    r1 = Request('http://www.example.com', headers={'X-ID': '1'})
+    fp1 = crawler.request_fingerprinter.fingerprint(r1)
+    r2 = Request('http://www.example.com', headers={'X-ID': '2'})
+    fp2 = crawler.request_fingerprinter.fingerprint(r2)
+    self.assertNotEqual(fp1, fp2)
+
+----------
+
+
+
+Test Class Name: CustomRequestFingerprinterTestCase

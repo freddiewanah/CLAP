@@ -1,0 +1,22 @@
+def color(self) -> str:
+    """Get a random name of color.
+
+        :return: Color name.
+
+        :Example:
+            Red.
+        """
+    colors: t.List[str] = self.extract(['color'])
+    return self.random.choice(colors)
+
+----------
+
+def test_color(self, text):
+    result = text.color()
+    assert result in text._data['color']
+
+----------
+
+
+
+Test Class Name: TestText

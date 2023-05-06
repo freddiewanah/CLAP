@@ -1,0 +1,32 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_integration_downloader_aware_priority_queue(self):
+    with MockServer() as mockserver:
+        url = mockserver.url('/status?n=200', is_secure=False)
+        start_urls = [url] * 6
+        yield self.crawler.crawl(start_urls)
+        self.assertEqual(self.crawler.stats.get_value('downloader/response_count'), len(start_urls))
+
+----------
+
+
+
+Test Class Name: TestIntegrationWithDownloaderAwareInMemory

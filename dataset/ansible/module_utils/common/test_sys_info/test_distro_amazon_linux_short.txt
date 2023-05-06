@@ -1,0 +1,32 @@
+def get_distribution():
+    """
+    Return the name of the distribution the module is running on.
+
+    :rtype: NativeString or None
+    :returns: Name of the distribution the module is running on
+
+    This function attempts to determine what distribution the code is running
+    on and return a string representing that value. If the platform is Linux
+    and the distribution cannot be determined, it returns ``OtherLinux``.
+    """
+    distribution = distro.id().capitalize()
+    if platform.system() == 'Linux':
+        if distribution == 'Amzn':
+            distribution = 'Amazon'
+        elif distribution == 'Rhel':
+            distribution = 'Redhat'
+        elif not distribution:
+            distribution = 'OtherLinux'
+    return distribution
+
+----------
+
+def test_distro_amazon_linux_short(self):
+    with patch('ansible.module_utils.distro.id', return_value='amzn'):
+        assert get_distribution() == 'Amazon'
+
+----------
+
+
+
+Test Class Name: TestGetDistribution

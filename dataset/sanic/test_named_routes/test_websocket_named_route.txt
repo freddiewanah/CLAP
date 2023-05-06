@@ -1,0 +1,137 @@
+def url_for(self, view_name: str, **kwargs):
+    """Build a URL based on a view name and the values provided.
+
+        In order to build a URL, all request parameters must be supplied as
+        keyword arguments, and each parameter must pass the test for the
+        specified parameter type. If these conditions are not met, a
+        `URLBuildError` will be thrown.
+
+        Keyword arguments that are not request parameters will be included in
+        the output URL's query string.
+
+        There are several _special_ keyword arguments that will alter how the
+        URL will be returned:
+
+        1. **_anchor**: ``str`` - Adds an ``#anchor`` to the end
+        2. **_scheme**: ``str`` - Should be either ``"http"`` or ``"https"``,
+           default is ``"http"``
+        3. **_external**: ``bool`` - Whether to return the path or a full URL
+           with scheme and host
+        4. **_host**: ``str`` - Used when one or more hosts are defined for a
+           route to tell Sanic which to use
+           (only applies with ``_external=True``)
+        5. **_server**: ``str`` - If not using ``_host``, this will be used
+           for defining the hostname of the URL
+           (only applies with ``_external=True``),
+           defaults to ``app.config.SERVER_NAME``
+
+        If you want the PORT to appear in your URL, you should set it in:
+
+        .. code-block::
+
+            app.config.SERVER_NAME = "myserver:7777"
+
+        `See user guide re: routing
+        <https://sanicframework.org/guide/basics/routing.html#generating-a-url>`__
+
+        :param view_name: string referencing the view name
+        :param kwargs: keys and values that are used to build request
+            parameters and query string arguments.
+
+        :return: the built URL
+
+        Raises:
+            URLBuildError
+        """
+    kw: Dict[str, str] = {}
+    if '.' not in view_name:
+        view_name = f'{self.name}.{view_name}'
+    if view_name.endswith('.static'):
+        name = kwargs.pop('name', None)
+        if name:
+            view_name = view_name.replace('static', name)
+        kw.update(name=view_name)
+    route = self.router.find_route_by_view_name(view_name, **kw)
+    if not route:
+        raise URLBuildError(f'Endpoint with name `{view_name}` was not found')
+    uri = route.path
+    if getattr(route.extra, 'static', None):
+        filename = kwargs.pop('filename', '')
+        if '__file_uri__' in uri:
+            folder_ = uri.split('<__file_uri__:', 1)[0]
+            if folder_.endswith('/'):
+                folder_ = folder_[:-1]
+            if filename.startswith('/'):
+                filename = filename[1:]
+            kwargs['__file_uri__'] = filename
+    if uri != '/' and uri.endswith('/') and (not route.strict) and (not route.raw_path[:-1]):
+        uri = uri[:-1]
+    if not uri.startswith('/'):
+        uri = f'/{uri}'
+    out = uri
+    kwargs.pop('_method', None)
+    anchor = kwargs.pop('_anchor', '')
+    host = kwargs.pop('_host', None)
+    external = kwargs.pop('_external', False) or bool(host)
+    scheme = kwargs.pop('_scheme', '')
+    if route.extra.hosts and external:
+        if not host and len(route.extra.hosts) > 1:
+            raise ValueError(f"Host is ambiguous: {', '.join(route.extra.hosts)}")
+        elif host and host not in route.extra.hosts:
+            raise ValueError(f'Requested host ({host}) is not available for this route: {route.extra.hosts}')
+        elif not host:
+            host = list(route.extra.hosts)[0]
+    if scheme and (not external):
+        raise ValueError('When specifying _scheme, _external must be True')
+    netloc = kwargs.pop('_server', None)
+    if netloc is None and external:
+        netloc = host or self.config.get('SERVER_NAME', '')
+    if external:
+        if not scheme:
+            if ':' in netloc[:8]:
+                scheme = netloc[:8].split(':', 1)[0]
+            else:
+                scheme = 'http'
+        if '://' in netloc[:8]:
+            netloc = netloc.split('://', 1)[-1]
+    route.finalize()
+    for param_info in route.params.values():
+        try:
+            supplied_param = str(kwargs.pop(param_info.name))
+        except KeyError:
+            raise URLBuildError(f'Required parameter `{param_info.name}` was not passed to url_for')
+        if param_info.pattern:
+            pattern = param_info.pattern[1] if isinstance(param_info.pattern, tuple) else param_info.pattern
+            passes_pattern = pattern.match(supplied_param)
+            if not passes_pattern:
+                if param_info.cast != str:
+                    msg = f'Value "{supplied_param}" for parameter `{param_info.name}` does not match pattern for type `{param_info.cast.__name__}`: {pattern.pattern}'
+                else:
+                    msg = f'Value "{supplied_param}" for parameter `{param_info.name}` does not satisfy pattern {pattern.pattern}'
+                raise URLBuildError(msg)
+        replacement_regex = f'(<{param_info.name}.*?>)'
+        out = re.sub(replacement_regex, supplied_param, out)
+    query_string = urlencode(kwargs, doseq=True) if kwargs else ''
+    out = urlunparse((scheme, netloc, out, '', query_string, anchor))
+    return out
+
+----------
+
+def test_websocket_named_route():
+    app = Sanic('app')
+    ev = asyncio.Event()
+
+    @app.websocket('/ws', name='route_ws')
+    async def handler(request, ws):
+        assert ws.subprotocol is None
+        ev.set()
+    assert app.router.routes_all['ws',].name == 'app.route_ws'
+    assert app.url_for('route_ws') == '/ws'
+    with pytest.raises(URLBuildError):
+        app.url_for('handler')
+
+----------
+
+
+
+Test Class Name: default

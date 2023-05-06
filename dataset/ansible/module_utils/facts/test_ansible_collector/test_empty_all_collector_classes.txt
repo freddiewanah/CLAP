@@ -1,0 +1,33 @@
+def collect(self, module=None, collected_facts=None):
+    collected_facts = collected_facts or {}
+    facts_dict = {}
+    for collector_obj in self.collectors:
+        info_dict = {}
+        try:
+            info_dict = collector_obj.collect_with_namespace(module=module, collected_facts=collected_facts)
+        except Exception as e:
+            sys.stderr.write(repr(e))
+            sys.stderr.write('\n')
+        collected_facts.update(info_dict.copy())
+        facts_dict.update(self._filter(info_dict, self.filter_spec))
+    return facts_dict
+
+----------
+
+def test_empty_all_collector_classes(self):
+    mock_module = self._mock_module()
+    all_collector_classes = []
+    collectors = self._collectors(mock_module, all_collector_classes=all_collector_classes)
+    fact_collector = ansible_collector.AnsibleFactCollector(collectors=collectors, namespace=ns)
+    res = fact_collector.collect()
+    self.assertIsInstance(res, dict)
+    self.assertLess(len(res), 3)
+
+----------
+
+def _mock_module(self, gather_subset=None):
+    return mock_module(gather_subset=gather_subset)
+def _collectors(self, module, all_collector_classes=None, minimal_gather_subset=None):
+    return _collectors(module=module, all_collector_classes=all_collector_classes, minimal_gather_subset=minimal_gather_subset)
+
+Test Class Name: TestInPlace

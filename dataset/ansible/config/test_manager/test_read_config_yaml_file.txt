@@ -1,0 +1,13 @@
+def join(self, seq):
+    return self.data.join(seq)
+
+----------
+
+def test_read_config_yaml_file(self):
+    assert isinstance(self.manager._read_config_yaml_file(os.path.join(curdir, 'test.yml')), dict)
+
+----------
+
+
+
+Test Class Name: TestConfigManager

@@ -1,0 +1,16 @@
+def pop(self, key, *args):
+    return dict.pop(self, self.normkey(key), *args)
+
+----------
+
+def test_pop(self):
+    d = CaselessDict()
+    d['a'] = 1
+    self.assertEqual(d.pop('A'), 1)
+    self.assertRaises(KeyError, d.pop, 'A')
+
+----------
+
+
+
+Test Class Name: MyMutableMapping

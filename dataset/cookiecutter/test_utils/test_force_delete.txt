@@ -1,0 +1,25 @@
+def rmtree(path):
+    """Remove a directory and all its contents. Like rm -rf on Unix.
+
+    :param path: A directory path.
+    """
+    shutil.rmtree(path, onerror=force_delete)
+
+----------
+
+def test_force_delete(mocker, tmp_path):
+    """Verify `utils.force_delete` makes files writable."""
+    ro_file = Path(tmp_path, 'bar')
+    ro_file.write_text('Test data')
+    make_readonly(ro_file)
+    rmtree = mocker.Mock()
+    utils.force_delete(rmtree, ro_file, sys.exc_info())
+    assert ro_file.stat().st_mode & stat.S_IWRITE == stat.S_IWRITE
+    rmtree.assert_called_once_with(ro_file)
+    utils.rmtree(tmp_path)
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,20 @@
+@gen.coroutine
+def add_one_async(self, x):
+    yield gen.moment
+    raise gen.Return(x + 1)
+
+----------
+
+def test_multi_dict(self):
+
+    @gen.coroutine
+    def f():
+        results = (yield dict(foo=self.add_one_async(1), bar=self.add_one_async(2)))
+        self.assertEqual(results, dict(foo=2, bar=3))
+    self.io_loop.run_sync(f)
+
+----------
+
+
+
+Test Class Name: GenBasicTest

@@ -1,0 +1,43 @@
+def generate_search_index(self) -> str:
+    """python to json conversion"""
+    page_dicts = {'docs': self._entries, 'config': self.config}
+    data = json.dumps(page_dicts, sort_keys=True, separators=(',', ':'), default=str)
+    if self.config['prebuild_index'] in (True, 'node'):
+        try:
+            script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'prebuild-index.js')
+            p = subprocess.Popen(['node', script_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
+            (idx, err) = p.communicate(data)
+            if not err:
+                page_dicts['index'] = json.loads(idx)
+                data = json.dumps(page_dicts, sort_keys=True, separators=(',', ':'))
+                log.debug('Pre-built search index created successfully.')
+            else:
+                log.warning(f'Failed to pre-build search index. Error: {err}')
+        except (OSError, ValueError) as e:
+            log.warning(f'Failed to pre-build search index. Error: {e}')
+    elif self.config['prebuild_index'] == 'python':
+        if haslunrpy:
+            lunr_idx = lunr(ref='location', fields=('title', 'text'), documents=self._entries, languages=self.config['lang'])
+            page_dicts['index'] = lunr_idx.serialize()
+            data = json.dumps(page_dicts, sort_keys=True, separators=(',', ':'))
+        else:
+            log.warning("Failed to pre-build search index. The 'python' method was specified; however, the 'lunr.py' library does not appear to be installed. Try installing it with 'pip install lunr'. If you are using any language other than English you will also need to install 'lunr[languages]'.")
+    return data
+
+----------
+
+@unittest.skipUnless(search_index.haslunrpy, 'lunr.py is not installed')
+@mock.patch('mkdocs.contrib.search.search_index.lunr', autospec=True)
+def test_prebuild_index_python(self, mock_lunr):
+    mock_lunr.return_value.serialize.return_value = {'mock': 'index'}
+    index = search_index.SearchIndex(prebuild_index='python', lang='en')
+    expected = {'docs': [], 'config': {'prebuild_index': 'python', 'lang': 'en'}, 'index': {'mock': 'index'}}
+    result = json.loads(index.generate_search_index())
+    self.assertEqual(mock_lunr.call_count, 1)
+    self.assertEqual(result, expected)
+
+----------
+
+
+
+Test Class Name: SearchIndexTests

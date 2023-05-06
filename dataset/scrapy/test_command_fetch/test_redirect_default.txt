@@ -1,0 +1,15 @@
+def url(self, path):
+    return urljoin(self.baseurl, path)
+
+----------
+
+@defer.inlineCallbacks
+def test_redirect_default(self):
+    (_, out, _) = (yield self.execute([self.url('/redirect')]))
+    self.assertEqual(out.strip(), b'Redirected here')
+
+----------
+
+
+
+Test Class Name: FetchTest

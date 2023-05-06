@@ -1,0 +1,28 @@
+@contextlib.contextmanager
+def work_in(dirname=None):
+    """Context manager version of os.chdir.
+
+    When exited, returns to the working directory prior to entering.
+    """
+    curdir = os.getcwd()
+    try:
+        if dirname is not None:
+            os.chdir(dirname)
+        yield
+    finally:
+        os.chdir(curdir)
+
+----------
+
+def test_work_in_without_path():
+    """Folder is not changed if no path provided."""
+    cwd = Path.cwd()
+    with utils.work_in():
+        assert cwd == Path.cwd()
+    assert cwd == Path.cwd()
+
+----------
+
+
+
+Test Class Name: default

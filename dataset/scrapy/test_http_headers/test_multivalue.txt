@@ -1,0 +1,23 @@
+def getlist(self, key, def_val=None):
+    try:
+        return super().__getitem__(key)
+    except KeyError:
+        if def_val is not None:
+            return self.normvalue(def_val)
+        return []
+
+----------
+
+def test_multivalue(self):
+    h = Headers()
+    h['X-Forwarded-For'] = hlist = ['ip1', 'ip2']
+    self.assertEqual(h['X-Forwarded-For'], b'ip2')
+    self.assertEqual(h.get('X-Forwarded-For'), b'ip2')
+    self.assertEqual(h.getlist('X-Forwarded-For'), [b'ip1', b'ip2'])
+    assert h.getlist('X-Forwarded-For') is not hlist
+
+----------
+
+
+
+Test Class Name: HeadersTest

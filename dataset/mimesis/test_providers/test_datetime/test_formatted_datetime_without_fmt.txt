@@ -1,0 +1,25 @@
+def formatted_date(self, fmt: str='', **kwargs: t.Any) -> str:
+    """Generate random date as string.
+
+        :param fmt: The format of date, if None then use standard
+            accepted in the current locale.
+        :param kwargs: Keyword arguments for :meth:`~Datetime.date()`
+        :return: Formatted date.
+        """
+    date_obj = self.date(**kwargs)
+    if not fmt:
+        fmt = self.extract(['formats', 'date'])
+    return date_obj.strftime(fmt)
+
+----------
+
+@pytest.mark.parametrize('fmt', [None])
+def test_formatted_datetime_without_fmt(self, dt, fmt):
+    dt_str = dt.formatted_date(fmt=fmt, start=2010, end=2030)
+    assert isinstance(dt_str, str)
+
+----------
+
+
+
+Test Class Name: TestDatetime

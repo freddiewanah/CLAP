@@ -1,0 +1,24 @@
+@staticmethod
+def is_valid_collection_name(collection_name):
+    """
+        Validates if the given string is a well-formed collection name (does not look up the collection itself)
+        :param collection_name: candidate collection name to validate (a valid name is of the form 'ns.collname')
+        :return: True if the collection name passed is well-formed, False otherwise
+        """
+    collection_name = to_text(collection_name)
+    if collection_name.count(u'.') != 1:
+        return False
+    return all((not iskeyword(ns_or_name) and is_python_identifier(ns_or_name) for ns_or_name in collection_name.split(u'.')))
+
+----------
+
+@pytest.mark.parametrize(('fqcn', 'expected'), (('ns1.coll2', True), ('ns1#coll2', False), ('def.coll3', False), ('ns4.return', False), ('assert.this', False), ('import.that', False), ('.that', False), ('this.', False), ('.', False), ('', False)))
+def test_fqcn_validation(fqcn, expected):
+    """Vefiry that is_valid_collection_name validates FQCN correctly."""
+    assert AnsibleCollectionRef.is_valid_collection_name(fqcn) is expected
+
+----------
+
+
+
+Test Class Name: default

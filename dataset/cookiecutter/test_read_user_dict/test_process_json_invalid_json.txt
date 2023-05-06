@@ -1,0 +1,28 @@
+def process_json(user_value, default_value=None):
+    """Load user-supplied value as a JSON dict.
+
+    :param str user_value: User-supplied value to load as a JSON dict
+    """
+    if user_value == DEFAULT_DISPLAY:
+        return default_value
+    try:
+        user_dict = json.loads(user_value, object_pairs_hook=OrderedDict)
+    except Exception as error:
+        raise click.UsageError('Unable to decode to JSON.') from error
+    if not isinstance(user_dict, dict):
+        raise click.UsageError('Requires JSON dict.')
+    return user_dict
+
+----------
+
+def test_process_json_invalid_json():
+    """Test `process_json` for correct error on malformed input."""
+    with pytest.raises(click.UsageError) as exc_info:
+        process_json('nope]')
+    assert str(exc_info.value) == 'Unable to decode to JSON.'
+
+----------
+
+
+
+Test Class Name: default

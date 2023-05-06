@@ -1,0 +1,62 @@
+@contextmanager
+def patch_builtin_len(modules=()):
+    """
+    Patch the builtin len() function of a few detectron2 modules
+    to use __len__ instead, because __len__ does not convert values to
+    integers and therefore is friendly to tracing.
+
+    Args:
+        modules (list[stsr]): names of extra modules to patch len(), in
+            addition to those in detectron2.
+    """
+
+    def _new_len(obj):
+        return obj.__len__()
+    with ExitStack() as stack:
+        MODULES = ['detectron2.modeling.roi_heads.fast_rcnn', 'detectron2.modeling.roi_heads.mask_head', 'detectron2.modeling.roi_heads.keypoint_head'] + list(modules)
+        ctxs = [stack.enter_context(mock.patch(mod + '.len')) for mod in MODULES]
+        for m in ctxs:
+            m.side_effect = _new_len
+        yield
+
+----------
+
+def test_PointRend_mask_head_tracing(self):
+    cfg = model_zoo.get_config('COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_1x.yaml')
+    point_rend.add_pointrend_config(cfg)
+    cfg.MODEL.ROI_HEADS.IN_FEATURES = ['p2', 'p3']
+    cfg.MODEL.ROI_MASK_HEAD.NAME = 'PointRendMaskHead'
+    cfg.MODEL.ROI_MASK_HEAD.POOLER_TYPE = ''
+    cfg.MODEL.ROI_MASK_HEAD.POINT_HEAD_ON = True
+    chan = 256
+    head = point_rend.PointRendMaskHead(cfg, {'p2': ShapeSpec(channels=chan, stride=4), 'p3': ShapeSpec(channels=chan, stride=8)})
+
+    def gen_inputs(h, w, N):
+        p2 = torch.rand(1, chan, h, w)
+        p3 = torch.rand(1, chan, h // 2, w // 2)
+        boxes = random_boxes(N, max_coord=h)
+        return (p2, p3, boxes)
+
+    class Wrap(nn.ModuleDict):
+
+        def forward(self, p2, p3, boxes):
+            features = {'p2': p2, 'p3': p3}
+            inst = Instances((p2.shape[2] * 4, p2.shape[3] * 4))
+            inst.pred_boxes = Boxes(boxes)
+            inst.pred_classes = torch.zeros(inst.__len__(), dtype=torch.long)
+            out = self.head(features, [inst])[0]
+            return out.pred_masks
+    model = Wrap({'head': head})
+    model.eval()
+    with torch.no_grad(), patch_builtin_len():
+        traced = torch.jit.trace(model, gen_inputs(302, 208, 20))
+        inputs = gen_inputs(100, 120, 30)
+        out_eager = model(*inputs)
+        out_trace = traced(*inputs)
+        self.assertTrue(torch.allclose(out_eager, out_trace))
+
+----------
+
+
+
+Test Class Name: ROIHeadsTest

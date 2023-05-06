@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('tsuru log', 'tsuru: "tchururu" is not a tsuru command. See "tsuru help".\n\nDid you mean?\n\tapp-log\n\tlogin\n\tlogout\n'), Command('tsuru app-l', 'tsuru: "tchururu" is not a tsuru command. See "tsuru help".\n\nDid you mean?\n\tapp-list\n\tapp-log\n'), Command('tsuru user-list', 'tsuru: "tchururu" is not a tsuru command. See "tsuru help".\n\nDid you mean?\n\tteam-user-list\n'), Command('tsuru targetlist', 'tsuru: "tchururu" is not a tsuru command. See "tsuru help".\n\nDid you mean?\n\ttarget-list\n')])
+def test_match(command):
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

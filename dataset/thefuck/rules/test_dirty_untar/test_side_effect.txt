@@ -1,0 +1,25 @@
+def side_effect(old_cmd, command):
+    offending_pattern = re.compile('(?:Offending (?:key for IP|\\S+ key)|Matching host key) in ([^:]+):(\\d+)', re.MULTILINE)
+    offending = offending_pattern.findall(old_cmd.output)
+    for (filepath, lineno) in offending:
+        with open(filepath, 'r') as fh:
+            lines = fh.readlines()
+            del lines[int(lineno) - 1]
+        with open(filepath, 'w') as fh:
+            fh.writelines(lines)
+
+----------
+
+@parametrize_extensions
+@parametrize_filename
+@parametrize_script
+def test_side_effect(ext, tar_error, filename, unquoted, quoted, script, fixed):
+    tar_error(unquoted.format(ext))
+    side_effect(Command(script.format(filename.format(ext)), ''), None)
+    assert set(os.listdir('.')) == {unquoted.format(ext), 'd'}
+
+----------
+
+
+
+Test Class Name: default

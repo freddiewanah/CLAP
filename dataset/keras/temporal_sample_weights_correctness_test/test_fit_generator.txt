@@ -1,0 +1,33 @@
+def run_with_different_sample_weight_mode_inputs(fn, partial_sw=True):
+    """Executes the given function with different sample weight mode inputs.
+
+    Args:
+      fn: Training or eval function to execute.
+      partial_sw: Boolean flag to indicate whether temporal sample weight mode
+        should be set partially just for one output.
+    """
+    model = get_compiled_multi_io_model_temporal(sample_weight_mode='temporal')
+    fn(model)
+    model = get_compiled_multi_io_model_temporal(sample_weight_mode=['temporal', 'temporal'])
+    fn(model)
+    model = get_compiled_multi_io_model_temporal(sample_weight_mode={'output_1': 'temporal', 'output_2': 'temporal'})
+    fn(model)
+    if partial_sw:
+        model = get_compiled_multi_io_model_temporal(sample_weight_mode=[None, 'temporal'])
+        fn(model)
+
+----------
+
+def test_fit_generator(self):
+
+    def _train_and_assert(model):
+        history = model.fit_generator(self.custom_generator_multi_io_temporal(), steps_per_epoch=1, epochs=2)
+        for (key, value) in self.expected_fit_result.items():
+            self.assertAllClose(history.history[key], value, 0.001)
+    run_with_different_sample_weight_mode_inputs(_train_and_assert)
+
+----------
+
+
+
+Test Class Name: TestMetricsCorrectnessMultiIOTemporal

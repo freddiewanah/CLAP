@@ -1,0 +1,22 @@
+def state(self, abbr: bool=False) -> str:
+    """Get a random administrative district of country.
+
+        :param abbr: Return ISO 3166-2 code.
+        :return: Administrative district.
+        """
+    key = 'abbr' if abbr else 'name'
+    states: t.List[str] = self.extract(['state', key])
+    return self.random.choice(states)
+
+----------
+
+@pytest.mark.parametrize('abbr, key', [(False, 'name'), (True, 'abbr')])
+def test_state(self, address, abbr, key):
+    result = address.state(abbr=abbr)
+    assert result in address._data['state'][key]
+
+----------
+
+
+
+Test Class Name: TestAddress

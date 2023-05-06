@@ -1,0 +1,25 @@
+def country_code(self, code: t.Optional[CountryCode]=CountryCode.A2) -> str:
+    """Get a random code of country.
+
+        Default format is :attr:`~enums.CountryCode.A2` (ISO 3166-1-alpha2),
+        you can change it by passing parameter ``fmt`` with enum object
+        :class:`~enums.CountryCode`.
+
+        :param code: Enum object CountryCode.
+        :return: Country code in selected format.
+        :raises KeyError: if fmt is not supported.
+        """
+    key = self.validate_enum(code, CountryCode)
+    return self.random.choice(COUNTRY_CODES[key])
+
+----------
+
+def test_country_iso(self, a1, a2):
+    assert a1.country_code() == a2.country_code()
+    assert a1.country_code(code=CountryCode.A3) == a2.country_code(code=CountryCode.A3)
+
+----------
+
+
+
+Test Class Name: TestSeededAddress

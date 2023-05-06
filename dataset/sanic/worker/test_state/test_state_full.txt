@@ -1,0 +1,14 @@
+def full(self) -> Dict[str, Any]:
+    return dict(self._state)
+
+----------
+
+def test_state_full():
+    state = gen_state(one=1)
+    assert state.full() == {'foo': {'one': 1}}
+
+----------
+
+
+
+Test Class Name: default

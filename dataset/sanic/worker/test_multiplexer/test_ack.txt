@@ -1,0 +1,16 @@
+def ack(self):
+    if hasattr(self, 'multiplexer'):
+        self.multiplexer.ack()
+
+----------
+
+def test_ack(worker_state: Dict[str, Any], m: WorkerMultiplexer):
+    worker_state['Test'] = {'foo': 'bar'}
+    m.ack()
+    assert worker_state['Test'] == {'foo': 'bar', 'state': 'ACKED'}
+
+----------
+
+
+
+Test Class Name: default

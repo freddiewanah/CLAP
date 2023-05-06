@@ -1,0 +1,48 @@
+def build_model(cfg: FairseqDataclass, task, from_checkpoint=False):
+    model = None
+    model_type = getattr(cfg, '_name', None) or getattr(cfg, 'arch', None)
+    if not model_type and len(cfg) == 1:
+        model_type = next(iter(cfg))
+        if model_type in MODEL_DATACLASS_REGISTRY:
+            cfg = cfg[model_type]
+        else:
+            raise Exception('Could not infer model type from directory. Please add _name field to indicate model type. Available models: ' + str(MODEL_DATACLASS_REGISTRY.keys()) + ' Requested model type: ' + model_type)
+    if model_type in ARCH_MODEL_REGISTRY:
+        model = ARCH_MODEL_REGISTRY[model_type]
+    elif model_type in MODEL_DATACLASS_REGISTRY:
+        model = MODEL_REGISTRY[model_type]
+    if model_type in MODEL_DATACLASS_REGISTRY:
+        dc = MODEL_DATACLASS_REGISTRY[model_type]
+        if isinstance(cfg, argparse.Namespace):
+            cfg = dc.from_namespace(cfg)
+        else:
+            cfg = merge_with_parent(dc(), cfg, from_checkpoint)
+    elif model_type in ARCH_CONFIG_REGISTRY:
+        with open_dict(cfg) if OmegaConf.is_config(cfg) else ExitStack():
+            ARCH_CONFIG_REGISTRY[model_type](cfg)
+    assert model is not None, f'Could not infer model type from {cfg}. Available models: {{}}'.format(MODEL_DATACLASS_REGISTRY.keys()) + f' Requested model type: {model_type}'
+    return model.build_model(cfg, task)
+
+----------
+
+def test_padding(self):
+    self.args.label_smoothing = 0.1
+    crit = LabelSmoothedCrossEntropyCriterion.build_criterion(self.args, self.task)
+    (loss, _, logging_output) = crit(self.model, self.sample)
+
+    def get_one_no_padding(idx):
+        sample1 = next(test_utils.dummy_dataloader([self.data[idx]]))
+        args1 = copy.copy(self.args)
+        args1.probs = args1.probs[idx, :, :].unsqueeze(0)
+        model1 = self.task.build_model(args1)
+        (loss1, _, _) = crit(model1, sample1)
+        return loss1
+    loss1 = get_one_no_padding(0)
+    loss2 = get_one_no_padding(1)
+    self.assertAlmostEqual(loss, loss1 + loss2)
+
+----------
+
+
+
+Test Class Name: TestLabelSmoothing

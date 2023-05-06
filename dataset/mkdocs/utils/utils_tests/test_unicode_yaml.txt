@@ -1,0 +1,16 @@
+def dedent(text):
+    return textwrap.dedent(text).strip()
+
+----------
+
+def test_unicode_yaml(self):
+    yaml_src = dedent('\n            key: value\n            key2:\n              - value\n            ').encode('utf-8')
+    config = utils.yaml_load(yaml_src)
+    self.assertTrue(isinstance(config['key'], str))
+    self.assertTrue(isinstance(config['key2'][0], str))
+
+----------
+
+
+
+Test Class Name: UtilsTests

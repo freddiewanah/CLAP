@@ -1,0 +1,26 @@
+def peek(self):
+    """Returns the next object to be returned by :meth:`pop`,
+        but without removing it from the queue.
+
+        Raises :exc:`NotImplementedError` if the underlying queue class does
+        not implement a ``peek`` method, which is optional for queues.
+        """
+    if self.curprio is None:
+        return None
+    queue = self.queues[self.curprio]
+    return queue.peek()
+
+----------
+
+def test_no_peek_raises(self):
+    if hasattr(queuelib.queue.FifoMemoryQueue, 'peek'):
+        raise unittest.SkipTest('queuelib.queue.FifoMemoryQueue.peek is defined')
+    self.queue.push(Request('https://example.org'))
+    with self.assertRaises(NotImplementedError, msg="The underlying queue class does not implement 'peek'"):
+        self.queue.peek()
+
+----------
+
+
+
+Test Class Name: DownloaderAwarePriorityQueueTest

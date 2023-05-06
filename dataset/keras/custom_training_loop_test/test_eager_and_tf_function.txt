@@ -1,0 +1,24 @@
+def train_step(x, y, w=None):
+    with tf.GradientTape() as tape:
+        if w is not None:
+            model([x, y, w])
+        else:
+            model([x, y])
+        loss = tf.reduce_sum(model.losses)
+    gradients = tape.gradient(loss, model.trainable_weights)
+    optimizer.apply_gradients(zip(gradients, model.trainable_weights))
+    return loss
+
+----------
+
+@parameterized.named_parameters(('add_loss_step', add_loss_step), ('add_metric_step', add_metric_step), ('batch_norm_step', batch_norm_step))
+def test_eager_and_tf_function(self, train_step):
+    eager_result = train_step(defun=False)
+    fn_result = train_step(defun=True)
+    self.assertAllClose(eager_result, fn_result)
+
+----------
+
+
+
+Test Class Name: CustomTrainingLoopTest

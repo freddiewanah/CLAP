@@ -1,0 +1,27 @@
+def generate(self, **kwargs: Any) -> bytes:
+    """Generate this template with the given arguments."""
+    namespace = {'escape': escape.xhtml_escape, 'xhtml_escape': escape.xhtml_escape, 'url_escape': escape.url_escape, 'json_encode': escape.json_encode, 'squeeze': escape.squeeze, 'linkify': escape.linkify, 'datetime': datetime, '_tt_utf8': escape.utf8, '_tt_string_types': (unicode_type, bytes), '__name__': self.name.replace('.', '_'), '__loader__': ObjectDict(get_source=lambda name: self.code)}
+    namespace.update(self.namespace)
+    namespace.update(kwargs)
+    exec_in(self.compiled, namespace)
+    execute = typing.cast(Callable[[], bytes], namespace['_tt_execute'])
+    linecache.clearcache()
+    return execute()
+
+----------
+
+def test_extended_block(self):
+    loader = DictLoader(self.templates)
+
+    def render(name):
+        return loader.load(name).generate(name='<script>')
+    self.assertEqual(render('escaped_extends_unescaped.html'), b'base: <script>')
+    self.assertEqual(render('escaped_overrides_unescaped.html'), b'extended: &lt;script&gt;')
+    self.assertEqual(render('unescaped_extends_escaped.html'), b'base: &lt;script&gt;')
+    self.assertEqual(render('unescaped_overrides_escaped.html'), b'extended: <script>')
+
+----------
+
+
+
+Test Class Name: AutoEscapeTest

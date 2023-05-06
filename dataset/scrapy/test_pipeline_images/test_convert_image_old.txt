@@ -1,0 +1,60 @@
+def convert_image(self, image, size=None, response_body=None):
+    if response_body is None:
+        warnings.warn(f'{self.__class__.__name__}.convert_image() method called in a deprecated way, method called without response_body argument.', category=ScrapyDeprecationWarning, stacklevel=2)
+    if image.format in ('PNG', 'WEBP') and image.mode == 'RGBA':
+        background = self._Image.new('RGBA', image.size, (255, 255, 255))
+        background.paste(image, image)
+        image = background.convert('RGB')
+    elif image.mode == 'P':
+        image = image.convert('RGBA')
+        background = self._Image.new('RGBA', image.size, (255, 255, 255))
+        background.paste(image, image)
+        image = background.convert('RGB')
+    elif image.mode != 'RGB':
+        image = image.convert('RGB')
+    if size:
+        image = image.copy()
+        try:
+            resampling_filter = self._Image.Resampling.LANCZOS
+        except AttributeError:
+            resampling_filter = self._Image.ANTIALIAS
+        image.thumbnail(size, resampling_filter)
+    elif response_body is not None and image.format == 'JPEG':
+        return (image, response_body)
+    buf = BytesIO()
+    image.save(buf, 'JPEG')
+    return (image, buf)
+
+----------
+
+def test_convert_image_old(self):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        SIZE = (100, 100)
+        COLOUR = (0, 127, 255)
+        (im, _) = _create_image('JPEG', 'RGB', SIZE, COLOUR)
+        (converted, _) = self.pipeline.convert_image(im)
+        self.assertEqual(converted.mode, 'RGB')
+        self.assertEqual(converted.getcolors(), [(10000, COLOUR)])
+        (thumbnail, _) = self.pipeline.convert_image(converted, size=(10, 25))
+        self.assertEqual(thumbnail.mode, 'RGB')
+        self.assertEqual(thumbnail.size, (10, 10))
+        COLOUR = (0, 127, 255, 50)
+        (im, _) = _create_image('PNG', 'RGBA', SIZE, COLOUR)
+        (converted, _) = self.pipeline.convert_image(im)
+        self.assertEqual(converted.mode, 'RGB')
+        self.assertEqual(converted.getcolors(), [(10000, (205, 230, 255))])
+        COLOUR = (0, 127, 255, 50)
+        (im, _) = _create_image('PNG', 'RGBA', SIZE, COLOUR)
+        im = im.convert('P')
+        (converted, _) = self.pipeline.convert_image(im)
+        self.assertEqual(converted.mode, 'RGB')
+        self.assertEqual(converted.getcolors(), [(10000, (205, 230, 255))])
+        expected_warning_msg = '.convert_image() method called in a deprecated way'
+        self.assertTrue(len([warning for warning in w if expected_warning_msg in str(warning.message)]) == 4)
+
+----------
+
+
+
+Test Class Name: CustomImagesPipeline

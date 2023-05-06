@@ -1,0 +1,56 @@
+def backtranslate_sample(self, smp, orig_lang, other_lang) -> None:
+    """
+        * WARNING: smp is modified in place.
+        * At the start of this function, `smp` has the same input and target:
+          |--------------------------------------------------------|
+          | smp['net_input']['src_tokens'] |  smp['target']        |
+          | (from data) __en__ hello world |  __en__ hello world   |
+          |--------------------------------------------------------|
+
+        * We call generator.generate(smp, bos_token = token("ro")),
+        and copy the result as input
+        * At the end, `smp` has the translation to other language.
+          |--------------------------------------------------------|
+          | smp['net_input']['src_tokens'] |  smp['target']        |
+          | (generated) __ro__ salut lume  |  __en__ hello world   |
+          |--------------------------------------------------------|
+
+        """
+    bos_token = _lang_token_index(self.dictionary, other_lang)
+    generated = self.sequence_generators[orig_lang].generate(models=[], sample=smp, bos_token=bos_token)
+    max_lngth = max([gn[0]['tokens'].size(0) for gn in generated])
+    net_input = smp['net_input']
+    n_src_tokens = torch.empty(size=(len(generated), max_lngth + 1), dtype=net_input['src_tokens'].dtype)
+    n_src_lengths = torch.empty(len(generated), dtype=net_input['src_lengths'].dtype)
+    for (i, gn) in enumerate(generated):
+        tokens = gn[0]['tokens']
+        tokens_size = tokens.size(0)
+        padding_needed = max_lngth - tokens_size
+        tokens = torch.cat([tokens.new([bos_token]), tokens])
+        tokens = F.pad(tokens, (0, padding_needed), value=self.dictionary.pad())
+        n_src_tokens[i] = tokens
+        n_src_lengths[i] = tokens_size + 1
+    device = net_input['src_tokens'].device
+    del net_input['src_tokens']
+    del net_input['src_lengths']
+    net_input['src_tokens'] = n_src_tokens.to(device)
+    net_input['src_lengths'] = n_src_lengths.to(device)
+
+----------
+
+def test_backtranslate_sample(self):
+    (task, model) = self.obt_task(['en', 'ro', 'zh'])
+    en_bos = obt._lang_token_index(task.common_dict, 'en')
+    zh_bos = obt._lang_token_index(task.common_dict, 'zh')
+    sample = mk_sample([zh_bos, 16, 14, 12, 10])
+    task.backtranslate_sample(sample, 'zh', 'en')
+    target_zh = list(sample['target'][0])
+    assert target_zh == [16, 14, 12, 10]
+    generated_en = sample['net_input']['src_tokens'][0]
+    assert generated_en[0] == en_bos
+
+----------
+
+
+
+Test Class Name: OnlineBacktranslationTest

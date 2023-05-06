@@ -1,0 +1,35 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_access_log_client_ip_remote_addr(monkeypatch):
+    access = Mock()
+    monkeypatch.setattr(sanic.http.http1, 'access_logger', access)
+    app = Sanic('test_logging')
+    app.config.ACCESS_LOG = True
+    app.config.PROXIES_COUNT = 2
+
+    @app.route('/')
+    async def handler(request):
+        return text(request.remote_addr)
+    headers = {'X-Forwarded-For': '1.1.1.1, 2.2.2.2'}
+    (request, response) = app.test_client.get('/', headers=headers)
+    assert request.remote_addr == '1.1.1.1'
+    access.info.assert_called_with('', extra={'status': 200, 'byte': len(response.content), 'host': f'{request.remote_addr}:{request.port}', 'request': f'GET {request.scheme}://{request.host}/'})
+
+----------
+
+
+
+Test Class Name: default

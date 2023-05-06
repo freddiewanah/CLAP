@@ -1,0 +1,24 @@
+@classmethod
+def from_crawler(cls, crawler, *args, **kwargs):
+    spider = super().from_crawler(crawler, *args, **kwargs)
+    spider._follow_links = crawler.settings.getbool('CRAWLSPIDER_FOLLOW_LINKS', True)
+    return spider
+
+----------
+
+def test_follow_links_attribute_population(self):
+    crawler = get_crawler()
+    spider = self.spider_class.from_crawler(crawler, 'example.com')
+    self.assertTrue(hasattr(spider, '_follow_links'))
+    self.assertTrue(spider._follow_links)
+    settings_dict = {'CRAWLSPIDER_FOLLOW_LINKS': False}
+    crawler = get_crawler(settings_dict=settings_dict)
+    spider = self.spider_class.from_crawler(crawler, 'example.com')
+    self.assertTrue(hasattr(spider, '_follow_links'))
+    self.assertFalse(spider._follow_links)
+
+----------
+
+
+
+Test Class Name: _CrawlSpider

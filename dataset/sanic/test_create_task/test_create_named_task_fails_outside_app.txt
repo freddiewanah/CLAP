@@ -1,0 +1,28 @@
+def get_task(self, name: str, *, raise_exception: bool=True) -> Optional[Task]:
+    try:
+        return self._task_registry[name]
+    except KeyError:
+        if raise_exception:
+            raise SanicException(f'Registered task named "{name}" not found.')
+        return None
+
+----------
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason='Not supported in 3.7')
+def test_create_named_task_fails_outside_app(app):
+
+    async def dummy():
+        ...
+    message = 'Cannot name task outside of a running application'
+    with pytest.raises(RuntimeError, match=message):
+        app.add_task(dummy, name='dummy_task')
+    assert not app._task_registry
+    message = 'Registered task named "dummy_task" not found.'
+    with pytest.raises(SanicException, match=message):
+        app.get_task('dummy_task')
+
+----------
+
+
+
+Test Class Name: default

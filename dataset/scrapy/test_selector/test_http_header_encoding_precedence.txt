@@ -1,0 +1,23 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_http_header_encoding_precedence(self):
+    meta = '<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">'
+    head = '<head>' + meta + '</head>'
+    body_content = '<span id="blank">£</span>'
+    body = '<body>' + body_content + '</body>'
+    html = '<html>' + head + body + '</html>'
+    encoding = 'utf-8'
+    html_utf8 = html.encode(encoding)
+    headers = {'Content-Type': ['text/html; charset=utf-8']}
+    response = HtmlResponse(url='http://example.com', headers=headers, body=html_utf8)
+    x = Selector(response)
+    self.assertEqual(x.xpath("//span[@id='blank']/text()").getall(), ['£'])
+
+----------
+
+
+
+Test Class Name: SelectorTestCase

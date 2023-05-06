@@ -1,0 +1,22 @@
+def generation(self) -> str:
+    """Get a random generation.
+
+        :return: Generation of something.
+
+        :Example:
+             6th Generation.
+        """
+    return self.random.choice(GENERATION)
+
+----------
+
+def test_generation(self, hard):
+    result = hard.generation()
+    assert result in GENERATION
+    assert isinstance(result, str)
+
+----------
+
+
+
+Test Class Name: TestHardware

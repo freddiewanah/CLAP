@@ -1,0 +1,13 @@
+def get_aliases(self):
+    return {}
+
+----------
+
+def test_get_aliases(self, shell):
+    assert shell.get_aliases() == {}
+
+----------
+
+
+
+Test Class Name: TestGeneric

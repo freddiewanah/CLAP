@@ -1,0 +1,40 @@
+@staticmethod
+def group(*blueprints: Union[Blueprint, BlueprintGroup], url_prefix: Optional[str]=None, version: Optional[Union[int, str, float]]=None, strict_slashes: Optional[bool]=None, version_prefix: str='/v') -> BlueprintGroup:
+    """
+        Create a list of blueprints, optionally grouping them under a
+        general URL prefix.
+
+        :param blueprints: blueprints to be registered as a group
+        :param url_prefix: URL route to be prepended to all sub-prefixes
+        :param version: API Version to be used for Blueprint group
+        :param strict_slashes: Indicate strict slash termination behavior
+            for URL
+        """
+
+    def chain(nested) -> Iterable[Blueprint]:
+        """itertools.chain() but leaves strings untouched"""
+        for i in nested:
+            if isinstance(i, (list, tuple)):
+                yield from chain(i)
+            else:
+                yield i
+    bps = BlueprintGroup(url_prefix=url_prefix, version=version, strict_slashes=strict_slashes, version_prefix=version_prefix)
+    for bp in chain(blueprints):
+        bps.append(bp)
+    return bps
+
+----------
+
+def test_bp_group(app, handler):
+    bp = Blueprint('Test')
+    bp.route('/')(handler)
+    group = Blueprint.group(bp, version=1)
+    app.blueprint(group)
+    (_, response) = app.test_client.get('/v1')
+    assert response.status == 200
+
+----------
+
+
+
+Test Class Name: default

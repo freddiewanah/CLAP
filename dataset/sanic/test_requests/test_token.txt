@@ -1,0 +1,33 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.parametrize(('auth_type', 'token'), [(None, 'a1d895e0-553a-421a-8e22-5ff8ecb48cbf'), ('Token', 'a1d895e0-553a-421a-8e22-5ff8ecb48cbf'), ('Bearer', 'a1d895e0-553a-421a-8e22-5ff8ecb48cbf'), (None, None)])
+def test_token(app, auth_type, token):
+
+    @app.route('/')
+    async def handler(request):
+        return text('OK')
+    if token:
+        headers = {'content-type': 'application/json', 'Authorization': f'{auth_type} {token}' if auth_type else f'{token}'}
+    else:
+        headers = {'content-type': 'application/json'}
+    (request, response) = app.test_client.get('/', headers=headers)
+    assert request.token == token
+
+----------
+
+
+
+Test Class Name: Bar

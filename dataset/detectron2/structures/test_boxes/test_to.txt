@@ -1,0 +1,14 @@
+def to(self, device: torch.device):
+    return Boxes(self.tensor.to(device=device))
+
+----------
+
+def test_to(self):
+    x = Boxes(torch.rand(3, 4))
+    self.assertEqual(x.to(device='cpu').tensor.device.type, 'cpu')
+
+----------
+
+
+
+Test Class Name: TestBoxes

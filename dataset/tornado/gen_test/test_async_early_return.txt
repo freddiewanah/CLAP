@@ -1,0 +1,24 @@
+@gen.coroutine
+def f():
+    yield gen.moment
+    raise gen.Return((1, 2))
+
+----------
+
+@gen_test
+def test_async_early_return(self):
+
+    @gen.coroutine
+    def f():
+        if True:
+            return 42
+        yield gen.Task(self.io_loop.add_callback)
+    result = (yield f())
+    self.assertEqual(result, 42)
+    self.finished = True
+
+----------
+
+
+
+Test Class Name: GenCoroutineTest

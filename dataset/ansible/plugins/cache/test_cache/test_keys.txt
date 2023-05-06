@@ -1,0 +1,20 @@
+def keys(self):
+    return self._plugin.keys()
+
+----------
+
+def test_keys(self):
+    self.cache._plugin._dump('no prefix', os.path.join(self.cache_dir, 'no_prefix'))
+    self.cache._plugin._dump('special cache', os.path.join(self.cache_dir, 'special_test'))
+    assert sorted(self.cache._plugin.keys()) == ['no_prefix', 'special_test']
+    assert 'no_prefix' in self.cache
+    assert 'special_test' in self.cache
+    assert 'test' not in self.cache
+    assert self.cache['no_prefix'] == 'no prefix'
+    assert self.cache['special_test'] == 'special cache'
+
+----------
+
+
+
+Test Class Name: TestJsonFileCache

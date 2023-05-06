@@ -1,0 +1,21 @@
+def text(self, quantity: int=5) -> str:
+    """Generate the text.
+
+        :param quantity: Quantity of sentences.
+        :return: Text.
+        """
+    text = self.extract(['text'])
+    return ' '.join(self.random.choices(text, k=quantity))
+
+----------
+
+def test_text(self, text):
+    result = text.text(quantity=4)
+    assert len(result) >= 4
+    assert isinstance(result, str)
+
+----------
+
+
+
+Test Class Name: TestText

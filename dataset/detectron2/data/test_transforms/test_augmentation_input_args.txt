@@ -1,0 +1,49 @@
+def apply_augmentations(augmentations: List[Union[Transform, Augmentation]], inputs):
+    """
+    Use ``T.AugmentationList(augmentations)(inputs)`` instead.
+    """
+    if isinstance(inputs, np.ndarray):
+        image_only = True
+        inputs = AugInput(inputs)
+    else:
+        image_only = False
+    tfms = inputs.apply_augmentations(augmentations)
+    return (inputs.image if image_only else inputs, tfms)
+
+----------
+
+def test_augmentation_input_args(self):
+    input_shape = (100, 100)
+    output_shape = (50, 50)
+
+    class TG1(T.Augmentation):
+
+        def get_transform(self, image, sem_seg):
+            return T.ResizeTransform(input_shape[0], input_shape[1], output_shape[0], output_shape[1])
+
+    class TG2(T.Augmentation):
+
+        def get_transform(self, image):
+            assert image.shape[:2] == output_shape
+            return T.HFlipTransform(output_shape[1])
+    image = np.random.rand(*input_shape).astype('float32')
+    sem_seg = (np.random.rand(*input_shape) < 0.5).astype('uint8')
+    inputs = T.AugInput(image, sem_seg=sem_seg)
+    tfms = inputs.apply_augmentations([TG1(), TG2()])
+    self.assertIsInstance(tfms[0], T.ResizeTransform)
+    self.assertIsInstance(tfms[1], T.HFlipTransform)
+    self.assertTrue(inputs.image.shape[:2] == output_shape)
+    self.assertTrue(inputs.sem_seg.shape[:2] == output_shape)
+
+    class TG3(T.Augmentation):
+
+        def get_transform(self, image, nonexist):
+            pass
+    with self.assertRaises(AttributeError):
+        inputs.apply_augmentations([TG3()])
+
+----------
+
+
+
+Test Class Name: TestTransforms

@@ -1,0 +1,25 @@
+def credit_card_owner(self, gender: t.Optional[Gender]=None) -> t.Dict[str, str]:
+    """Generate credit card owner.
+
+        :param gender: Gender of credit card owner.
+        :type gender: Gender's enum object.
+        :return:
+        """
+    owner = {'credit_card': self.credit_card_number(), 'expiration_date': self.credit_card_expiration_date(), 'owner': self._person.full_name(gender=gender).upper()}
+    return owner
+
+----------
+
+@pytest.mark.parametrize('gender', [Gender.MALE, Gender.FEMALE])
+def test_credit_card_owner(self, payment, gender):
+    result = payment.credit_card_owner(gender=gender)
+    assert isinstance(result, dict)
+    assert 'owner' in result
+    assert 'credit_card' in result
+    assert 'expiration_date' in result
+
+----------
+
+
+
+Test Class Name: TestPayment

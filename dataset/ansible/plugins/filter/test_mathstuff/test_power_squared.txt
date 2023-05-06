@@ -1,0 +1,16 @@
+def power(x, y):
+    try:
+        return math.pow(x, y)
+    except TypeError as e:
+        raise AnsibleFilterTypeError('pow() can only be used on numbers: %s' % to_native(e))
+
+----------
+
+def test_power_squared(self):
+    assert ms.power(10, 2) == 100
+
+----------
+
+
+
+Test Class Name: TestPower

@@ -1,0 +1,40 @@
+def request_seen(self, request: Request) -> bool:
+    fp = self.request_fingerprint(request)
+    if fp in self.fingerprints:
+        return True
+    self.fingerprints.add(fp)
+    if self.file:
+        self.file.write(fp + '\n')
+    return False
+
+----------
+
+def test_request_fingerprint(self):
+    """Test if customization of request_fingerprint method will change
+        output of request_seen.
+
+        """
+    dupefilter = _get_dupefilter()
+    r1 = Request('http://scrapytest.org/index.html')
+    r2 = Request('http://scrapytest.org/INDEX.html')
+    assert not dupefilter.request_seen(r1)
+    assert not dupefilter.request_seen(r2)
+    dupefilter.close('finished')
+
+    class RequestFingerprinter:
+
+        def fingerprint(self, request):
+            fp = hashlib.sha1()
+            fp.update(to_bytes(request.url.lower()))
+            return fp.digest()
+    settings = {'REQUEST_FINGERPRINTER_CLASS': RequestFingerprinter}
+    case_insensitive_dupefilter = _get_dupefilter(settings=settings)
+    assert not case_insensitive_dupefilter.request_seen(r1)
+    assert case_insensitive_dupefilter.request_seen(r2)
+    case_insensitive_dupefilter.close('finished')
+
+----------
+
+
+
+Test Class Name: RFPDupeFilterTest

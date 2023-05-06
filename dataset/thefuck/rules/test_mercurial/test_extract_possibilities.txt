@@ -1,0 +1,20 @@
+def extract_possibilities(command):
+    possib = re.findall('\\n\\(did you mean one of ([^\\?]+)\\?\\)', command.output)
+    if possib:
+        return possib[0].split(', ')
+    possib = re.findall('\\n    ([^$]+)$', command.output)
+    if possib:
+        return possib[0].split(' ')
+    return possib
+
+----------
+
+@pytest.mark.parametrize('command, possibilities', [(Command('hg base', "hg: unknown command 'base'\n(did you mean one of blame, phase, rebase?)"), ['blame', 'phase', 'rebase']), (Command('hg branchch', "hg: unknown command 'branchch'\n(did you mean one of branch, branches?)"), ['branch', 'branches']), (Command('hg vert', "hg: unknown command 'vert'\n(did you mean one of revert?)"), ['revert']), (Command('hg lgo -r tip', "hg: command 're' is ambiguous:\n(did you mean one of log?)"), ['log']), (Command('hg rerere', "hg: unknown command 'rerere'\n(did you mean one of revert?)"), ['revert']), (Command('hg re', "hg: command 're' is ambiguous:\n    rebase recover remove rename resolve revert"), ['rebase', 'recover', 'remove', 'rename', 'resolve', 'revert']), (Command('hg re re', "hg: command 're' is ambiguous:\n    rebase recover remove rename resolve revert"), ['rebase', 'recover', 'remove', 'rename', 'resolve', 'revert'])])
+def test_extract_possibilities(command, possibilities):
+    assert extract_possibilities(command) == possibilities
+
+----------
+
+
+
+Test Class Name: default

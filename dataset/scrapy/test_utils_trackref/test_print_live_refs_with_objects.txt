@@ -1,0 +1,17 @@
+def print_live_refs(*a, **kw):
+    """Print tracked objects"""
+    print(format_live_refs(*a, **kw))
+
+----------
+
+@mock.patch('sys.stdout', new_callable=StringIO)
+def test_print_live_refs_with_objects(self, stdout):
+    o1 = Foo()
+    trackref.print_live_refs()
+    self.assertEqual(stdout.getvalue(), 'Live References\n\nFoo                                 1   oldest: 0s ago\n\n')
+
+----------
+
+
+
+Test Class Name: TrackrefTestCase

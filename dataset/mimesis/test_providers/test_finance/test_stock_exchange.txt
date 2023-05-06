@@ -1,0 +1,18 @@
+def stock_exchange(self) -> str:
+    """Returns stock exchange name.
+
+        :return: Returns exchange name.
+        """
+    return self.random.choice(STOCK_EXCHANGES)
+
+----------
+
+def test_stock_exchange(self, finance):
+    result = finance.stock_exchange()
+    assert result in STOCK_EXCHANGES
+
+----------
+
+
+
+Test Class Name: TestFinance

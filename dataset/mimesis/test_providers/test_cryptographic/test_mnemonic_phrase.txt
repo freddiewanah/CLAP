@@ -1,0 +1,22 @@
+def mnemonic_phrase(self) -> str:
+    """Generate BIP-39-compatible mnemonic phrase.
+
+        :return: Mnemonic phrase.
+        """
+    length = self.random.choice([12, 24])
+    phrases = self.random.choices(WORDLIST, k=length)
+    return ' '.join(phrases)
+
+----------
+
+def test_mnemonic_phrase(self, crypto):
+    result = crypto.mnemonic_phrase()
+    assert isinstance(result, str)
+    phrase_len = len(result.split(' '))
+    assert phrase_len == 12 or phrase_len == 24
+
+----------
+
+
+
+Test Class Name: TestCryptographic

@@ -1,0 +1,16 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('vim', 'nix-env -iA nixos.vim')])
+def test_match(mocker, command):
+    mocker.patch('thefuck.rules.nixos_cmd_not_found', return_value=None)
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

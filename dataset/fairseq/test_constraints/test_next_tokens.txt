@@ -1,0 +1,26 @@
+def next_tokens(self) -> Set[int]:
+    """The set of child labels."""
+    return set(self.children.keys())
+
+----------
+
+def test_next_tokens(self):
+    """
+        Tests that the set of next tokens is correct.
+        """
+    for example in self.examples:
+        (constraints, expected, gold_counts) = example
+        root = ConstraintNode.create(constraints)
+        root_tokens = set(root.children.keys())
+        for sequence in constraints:
+            state = UnorderedConstraintState(root)
+            for token in sequence:
+                all_tokens = root_tokens.union(state.node.children.keys())
+                assert all_tokens == state.next_tokens(), f'ALL {all_tokens} NEXT {state.next_tokens()}'
+                state = state.advance(token)
+
+----------
+
+
+
+Test Class Name: TestUnorderedConstraintState

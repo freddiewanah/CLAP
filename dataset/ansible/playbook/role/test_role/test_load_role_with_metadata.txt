@@ -1,0 +1,35 @@
+def get_parents(self):
+    return self._parents
+
+----------
+
+@patch('ansible.playbook.role.definition.unfrackpath', mock_unfrackpath_noop)
+def test_load_role_with_metadata(self):
+    fake_loader = DictDataLoader({'/etc/ansible/roles/foo_metadata/meta/main.yml': '\n                allow_duplicates: true\n                dependencies:\n                  - bar_metadata\n                galaxy_info:\n                  a: 1\n                  b: 2\n                  c: 3\n            ', '/etc/ansible/roles/bar_metadata/meta/main.yml': '\n                dependencies:\n                  - baz_metadata\n            ', '/etc/ansible/roles/baz_metadata/meta/main.yml': '\n                dependencies:\n                  - bam_metadata\n            ', '/etc/ansible/roles/bam_metadata/meta/main.yml': '\n                dependencies: []\n            ', '/etc/ansible/roles/bad1_metadata/meta/main.yml': '\n                1\n            ', '/etc/ansible/roles/bad2_metadata/meta/main.yml': '\n                foo: bar\n            ', '/etc/ansible/roles/recursive1_metadata/meta/main.yml': "\n                dependencies: ['recursive2_metadata']\n            ", '/etc/ansible/roles/recursive2_metadata/meta/main.yml': "\n                dependencies: ['recursive1_metadata']\n            "})
+    mock_play = MagicMock()
+    mock_play.collections = None
+    mock_play.role_cache = {}
+    i = RoleInclude.load('foo_metadata', play=mock_play, loader=fake_loader)
+    r = Role.load(i, play=mock_play)
+    role_deps = r.get_direct_dependencies()
+    self.assertEqual(len(role_deps), 1)
+    self.assertEqual(type(role_deps[0]), Role)
+    self.assertEqual(len(role_deps[0].get_parents()), 1)
+    self.assertEqual(role_deps[0].get_parents()[0], r)
+    self.assertEqual(r._metadata.allow_duplicates, True)
+    self.assertEqual(r._metadata.galaxy_info, dict(a=1, b=2, c=3))
+    all_deps = r.get_all_dependencies()
+    self.assertEqual(len(all_deps), 3)
+    self.assertEqual(all_deps[0].get_name(), 'bam_metadata')
+    self.assertEqual(all_deps[1].get_name(), 'baz_metadata')
+    self.assertEqual(all_deps[2].get_name(), 'bar_metadata')
+    i = RoleInclude.load('bad1_metadata', play=mock_play, loader=fake_loader)
+    self.assertRaises(AnsibleParserError, Role.load, i, play=mock_play)
+    i = RoleInclude.load('bad2_metadata', play=mock_play, loader=fake_loader)
+    self.assertRaises(AnsibleParserError, Role.load, i, play=mock_play)
+
+----------
+
+
+
+Test Class Name: TestRole

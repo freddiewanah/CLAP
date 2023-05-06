@@ -1,0 +1,48 @@
+def wait(self, timeout: Optional[Union[float, datetime.timedelta]]=None) -> Awaitable[bool]:
+    """Wait for `.notify`.
+
+        Returns a `.Future` that resolves ``True`` if the condition is notified,
+        or ``False`` after a timeout.
+        """
+    waiter = Future()
+    self._waiters.append(waiter)
+    if timeout:
+
+        def on_timeout() -> None:
+            if not waiter.done():
+                future_set_result_unless_cancelled(waiter, False)
+            self._garbage_collect()
+        io_loop = ioloop.IOLoop.current()
+        timeout_handle = io_loop.add_timeout(timeout, on_timeout)
+        waiter.add_done_callback(lambda _: io_loop.remove_timeout(timeout_handle))
+    return waiter
+
+----------
+
+@gen_test
+def test_future_close_callback(self: typing.Any):
+    (rs, ws) = (yield self.make_iostream_pair())
+    closed = [False]
+    cond = Condition()
+
+    def close_callback():
+        closed[0] = True
+        cond.notify()
+    rs.set_close_callback(close_callback)
+    try:
+        ws.write(b'a')
+        res = (yield rs.read_bytes(1))
+        self.assertEqual(res, b'a')
+        self.assertFalse(closed[0])
+        ws.close()
+        yield cond.wait()
+        self.assertTrue(closed[0])
+    finally:
+        rs.close()
+        ws.close()
+
+----------
+
+
+
+Test Class Name: IOStreamPairContext

@@ -1,0 +1,24 @@
+def continent(self, code: bool=False) -> str:
+    """Get a random continent name or continent code.
+
+        :param code: Return code of continent.
+        :return: Continent name.
+        """
+    codes: t.List[str] = self.extract(['continent'])
+    if code:
+        codes = CONTINENT_CODES
+    return self.random.choice(codes)
+
+----------
+
+def test_continent(self, address):
+    result = address.continent()
+    assert result in address._data['continent']
+    result = address.continent(code=True)
+    assert result in CONTINENT_CODES
+
+----------
+
+
+
+Test Class Name: TestAddress

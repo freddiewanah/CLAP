@@ -1,0 +1,37 @@
+def load_dataset(self, split, epoch=1, combine=False, **kwargs):
+    """Load a given dataset split.
+
+        Args:
+            split (str): name of the split (e.g., train, valid, test)
+        """
+    paths = utils.split_paths(self.cfg.data)
+    assert len(paths) > 0
+    if split != self.cfg.train_subset:
+        paths = paths[:1]
+    data_path = paths[(epoch - 1) % len(paths)]
+    (src, tgt) = (self.cfg.source_lang, self.cfg.target_lang)
+    self.datasets[split] = load_langpair_dataset(data_path, split, src, self.src_dict, tgt, self.tgt_dict, combine=combine, dataset_impl=self.cfg.dataset_impl, upsample_primary=self.cfg.upsample_primary, left_pad_source=self.cfg.left_pad_source, left_pad_target=self.cfg.left_pad_target, max_source_positions=self.cfg.max_source_positions, max_target_positions=self.cfg.max_target_positions, load_alignments=self.cfg.load_alignments, truncate_source=self.cfg.truncate_source, num_buckets=self.cfg.num_batch_buckets, shuffle=split != 'test', pad_to_multiple=self.cfg.required_seq_len_multiple)
+
+----------
+
+def test_valid_dataset(self):
+    data = self.tmp_path('test_valid_dataset')
+    mk_dataset(10, 21, data / 'valid.en-zh.en.bin')
+    mk_dataset(10, 21, data / 'valid.en-zh.zh.bin')
+    (task, model) = self.obt_task(['en', 'zh'], data)
+    valid = task.load_dataset('valid')
+    en_bos = obt._lang_token_index(task.common_dict, 'en')
+    assert valid is not None
+    valid.prefetch(range(10))
+    sample_0 = valid[0]
+    sample_9 = valid[9]
+    self.assertEqual(sample_0['id'], 0)
+    self.assertEqual(sample_9['id'], 9)
+    self.assertEqual(sample_0['source'][0], en_bos)
+    self.assertEqual(sample_9['source'][0], en_bos)
+
+----------
+
+
+
+Test Class Name: OnlineBacktranslationTest

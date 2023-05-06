@@ -1,0 +1,21 @@
+def get_normalized_probs(self, net_output: Tuple[Tensor, Optional[Dict[str, List[Optional[Tensor]]]]], log_probs: bool, sample: Optional[Dict[str, Tensor]]=None):
+    """Get normalized probabilities (or log probs) from a net's output."""
+    return self.get_normalized_probs_scriptable(net_output, log_probs, sample)
+
+----------
+
+def test_get_normalized_probs(self):
+    if self.model and self.forward_input:
+        forward_output = self.model.forward(**self.forward_input)
+        logprob = self.model.get_normalized_probs(forward_output, log_probs=True)
+        prob = self.model.get_normalized_probs(forward_output, log_probs=False)
+        self.assertTrue(hasattr(logprob, 'batch_first'))
+        self.assertTrue(hasattr(prob, 'batch_first'))
+        self.assertTrue(torch.is_tensor(logprob))
+        self.assertTrue(torch.is_tensor(prob))
+
+----------
+
+
+
+Test Class Name: TestFairseqEncoderDecoderModelBase

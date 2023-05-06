@@ -1,0 +1,30 @@
+def apply_overwrites_to_context(context, overwrite_context):
+    """Modify the given context in place based on the overwrite_context."""
+    for (variable, overwrite) in overwrite_context.items():
+        if variable not in context:
+            continue
+        context_value = context[variable]
+        if isinstance(context_value, list):
+            if overwrite in context_value:
+                context_value.remove(overwrite)
+                context_value.insert(0, overwrite)
+            else:
+                raise ValueError(f'{overwrite} provided for choice variable {variable}, but the choices are {context_value}.')
+        elif isinstance(context_value, dict) and isinstance(overwrite, dict):
+            apply_overwrites_to_context(context_value, overwrite)
+            context[variable] = context_value
+        else:
+            context[variable] = overwrite
+
+----------
+
+def test_apply_overwrites_sets_non_list_value(template_context):
+    """Verify `apply_overwrites_to_context` work with string variables."""
+    generate.apply_overwrites_to_context(context=template_context, overwrite_context={'repo_name': 'foobar'})
+    assert template_context['repo_name'] == 'foobar'
+
+----------
+
+
+
+Test Class Name: default

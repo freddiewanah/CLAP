@@ -1,0 +1,35 @@
+def create_signed_value(self, name: str, value: Union[str, bytes], version: Optional[int]=None) -> bytes:
+    """Signs and timestamps a string so it cannot be forged.
+
+        Normally used via set_signed_cookie, but provided as a separate
+        method for non-cookie uses.  To decode a value not stored
+        as a cookie use the optional value argument to get_signed_cookie.
+
+        .. versionchanged:: 3.2.1
+
+           Added the ``version`` argument.  Introduced cookie version 2
+           and made it the default.
+        """
+    self.require_setting('cookie_secret', 'secure cookies')
+    secret = self.application.settings['cookie_secret']
+    key_version = None
+    if isinstance(secret, dict):
+        if self.application.settings.get('key_version') is None:
+            raise Exception('key_version setting must be used for secret_key dicts')
+        key_version = self.application.settings['key_version']
+    return create_signed_value(secret, name, value, version=version, key_version=key_version)
+
+----------
+
+def test_types(self):
+    cookie_value = to_unicode(create_signed_value(self.COOKIE_SECRET, 'asdf', 'qwer'))
+    response = self.fetch('/typecheck/asdf?foo=bar', headers={'Cookie': 'asdf=' + cookie_value})
+    data = json_decode(response.body)
+    self.assertEqual(data, {})
+    response = self.fetch('/typecheck/asdf?foo=bar', method='POST', headers={'Cookie': 'asdf=' + cookie_value}, body='foo=bar')
+
+----------
+
+
+
+Test Class Name: WSGISafeWebTest

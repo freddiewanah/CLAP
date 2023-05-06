@@ -1,0 +1,24 @@
+def get_event_loop(self) -> asyncio.AbstractEventLoop:
+    try:
+        return super().get_event_loop()
+    except (RuntimeError, AssertionError):
+        loop = self.new_event_loop()
+        self.set_event_loop(loop)
+        return loop
+
+----------
+
+def test_tornado_accessor(self):
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', DeprecationWarning)
+        self.assertIsInstance(self.executor.submit(IOLoop.current).result(), IOLoop)
+        self.executor.submit(lambda : asyncio.get_event_loop().close()).result()
+        asyncio.set_event_loop_policy(AnyThreadEventLoopPolicy())
+        self.assertIsInstance(self.executor.submit(IOLoop.current).result(), IOLoop)
+        self.executor.submit(lambda : asyncio.get_event_loop().close()).result()
+
+----------
+
+
+
+Test Class Name: AnyThreadEventLoopPolicyTest

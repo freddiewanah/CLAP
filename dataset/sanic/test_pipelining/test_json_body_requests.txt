@@ -1,0 +1,32 @@
+def json(body: Any, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='application/json', dumps: Optional[Callable[..., str]]=None, **kwargs: Any) -> JSONResponse:
+    """
+    Returns response object with body in json format.
+
+    :param body: Response data to be serialized.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param kwargs: Remaining arguments that are passed to the json encoder.
+    """
+    return JSONResponse(body, status=status, headers=headers, content_type=content_type, dumps=dumps, **kwargs)
+
+----------
+
+def test_json_body_requests(app):
+
+    @app.post('/')
+    async def handler(request):
+        return json({'request_id': str(request.id), 'connection_id': id(request.conn_info), 'foo': request.json.get('foo')})
+    client = ReusableClient(app, port=1234)
+    with client:
+        (_, response1) = client.post('/', json={'foo': True})
+        (_, response2) = client.post('/', json={'foo': True})
+    assert response1.status == response2.status == 200
+    assert response1.json['foo'] is response2.json['foo'] is True
+    assert response1.json['request_id'] != response2.json['request_id']
+    assert response1.json['connection_id'] == response2.json['connection_id']
+
+----------
+
+
+
+Test Class Name: default

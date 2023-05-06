@@ -1,0 +1,24 @@
+def check_type_bytes(value):
+    """Convert a human-readable string value to bytes
+
+    Raises :class:`TypeError` if unable to covert the value
+    """
+    try:
+        return human_to_bytes(value)
+    except ValueError:
+        raise TypeError('%s cannot be converted to a Byte value' % type(value))
+
+----------
+
+def test_check_type_bytes_fail():
+    test_cases = ('foo', '2kb', '2Kb', '1mb', '1Mb', '1gb', '1Gb')
+    for case in test_cases:
+        with pytest.raises(TypeError) as e:
+            check_type_bytes(case)
+        assert 'cannot be converted to a Byte value' in to_native(e.value)
+
+----------
+
+
+
+Test Class Name: default

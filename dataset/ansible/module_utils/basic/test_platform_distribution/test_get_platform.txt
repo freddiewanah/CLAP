@@ -1,0 +1,22 @@
+def get_platform():
+    """
+    **Deprecated** Use :py:func:`platform.system` directly.
+
+    :returns: Name of the platform the module is running on in a native string
+
+    Returns a native string that labels the platform ("Linux", "Solaris", etc). Currently, this is
+    the result of calling :py:func:`platform.system`.
+    """
+    return platform.system()
+
+----------
+
+def test_get_platform():
+    with patch('platform.system', return_value='foo'):
+        assert get_platform() == 'foo'
+
+----------
+
+
+
+Test Class Name: default

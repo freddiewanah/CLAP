@@ -1,0 +1,19 @@
+def uuid(self) -> str:
+    """Generate UUID4 string.
+
+        :return: UUID4 as string.
+        """
+    return str(self.uuid_object())
+
+----------
+
+def test_uuid(self, crypto):
+    uuid_result = crypto.uuid()
+    assert isinstance(uuid_result, str)
+    assert re.match(patterns.UUID_REGEX, uuid_result)
+
+----------
+
+
+
+Test Class Name: TestCryptographic

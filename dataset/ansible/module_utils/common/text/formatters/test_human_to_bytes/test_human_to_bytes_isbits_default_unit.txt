@@ -1,0 +1,21 @@
+def human_to_bytes(size, default_unit=None, isbits=False):
+    """ Return bytes count from a human readable string """
+    try:
+        return formatters.human_to_bytes(size, default_unit, isbits)
+    except TypeError as e:
+        raise AnsibleFilterTypeError('human_to_bytes() failed on bad input: %s' % to_native(e))
+    except Exception:
+        raise AnsibleFilterError("human_to_bytes() can't interpret following string: %s" % size)
+
+----------
+
+@pytest.mark.parametrize('input_data,unit', [(1024, 'b'), (1024, 'B'), (1, u'K'), (1, u'Kb'), (u'1', u'M'), (u'1', u'Mb'), (1, u'G'), (1, u'Gb'), (1, u'T'), (1, u'Tb'), (u'1', u'P'), (u'1', u'Pb'), (u'1', u'E'), (u'1', u'Eb'), (u'1', u'Z'), (u'1', u'Zb'), (u'1', u'Y'), (u'1', u'Yb')])
+def test_human_to_bytes_isbits_default_unit(input_data, unit):
+    """Test of human_to_bytes function, isbits = True and default_unit args are passed."""
+    assert human_to_bytes(input_data, default_unit=unit, isbits=True) == NUM_IN_METRIC.get(unit[0], 1024)
+
+----------
+
+
+
+Test Class Name: default

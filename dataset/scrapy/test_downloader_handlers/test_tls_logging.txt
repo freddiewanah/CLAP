@@ -1,0 +1,34 @@
+def close(self):
+    from twisted.internet import reactor
+    d = self._pool.closeCachedConnections()
+    delayed_call = reactor.callLater(self._disconnect_timeout, d.callback, [])
+
+    def cancel_delayed_call(result):
+        if delayed_call.active():
+            delayed_call.cancel()
+        return result
+    d.addBoth(cancel_delayed_call)
+    return d
+
+----------
+
+@defer.inlineCallbacks
+def test_tls_logging(self):
+    crawler = get_crawler(settings_dict={'DOWNLOADER_CLIENT_TLS_VERBOSE_LOGGING': True})
+    download_handler = create_instance(self.download_handler_cls, None, crawler)
+    try:
+        with LogCapture() as log_capture:
+            request = Request(self.getURL('file'))
+            d = download_handler.download_request(request, Spider('foo'))
+            d.addCallback(lambda r: r.body)
+            d.addCallback(self.assertEqual, b'0123456789')
+            yield d
+            log_capture.check_present(('scrapy.core.downloader.tls', 'DEBUG', self.tls_log_message))
+    finally:
+        yield download_handler.close()
+
+----------
+
+
+
+Test Class Name: Https11TestCase

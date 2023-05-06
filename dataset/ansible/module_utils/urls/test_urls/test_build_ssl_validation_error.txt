@@ -1,0 +1,49 @@
+def build_ssl_validation_error(hostname, port, paths, exc=None):
+    """Inteligently build out the SSLValidationError based on what support
+    you have installed
+    """
+    msg = ['Failed to validate the SSL certificate for %s:%s. Make sure your managed systems have a valid CA certificate installed.']
+    if not HAS_SSLCONTEXT:
+        msg.append('If the website serving the url uses SNI you need python >= 2.7.9 on your managed machine')
+        msg.append(' (the python executable used (%s) is version: %s)' % (sys.executable, ''.join(sys.version.splitlines())))
+        if not HAS_URLLIB3_PYOPENSSLCONTEXT and (not HAS_URLLIB3_SSL_WRAP_SOCKET):
+            msg.append('or you can install the `urllib3`, `pyOpenSSL`, `ndg-httpsclient`, and `pyasn1` python modules')
+        msg.append('to perform SNI verification in python >= 2.6.')
+    msg.append('You can use validate_certs=False if you do not need to confirm the servers identity but this is unsafe and not recommended. Paths checked for this platform: %s.')
+    if exc:
+        msg.append('The exception msg was: %s.' % to_native(exc))
+    raise SSLValidationError(' '.join(msg) % (hostname, port, ', '.join(paths)))
+
+----------
+
+def test_build_ssl_validation_error(mocker):
+    mocker.patch.object(urls, 'HAS_SSLCONTEXT', new=False)
+    mocker.patch.object(urls, 'HAS_URLLIB3_PYOPENSSLCONTEXT', new=False)
+    mocker.patch.object(urls, 'HAS_URLLIB3_SSL_WRAP_SOCKET', new=False)
+    with pytest.raises(urls.SSLValidationError) as excinfo:
+        urls.build_ssl_validation_error('hostname', 'port', 'paths', exc=None)
+    assert 'python >= 2.7.9' in to_native(excinfo.value)
+    assert 'the python executable used' in to_native(excinfo.value)
+    assert 'urllib3' in to_native(excinfo.value)
+    assert 'python >= 2.6' in to_native(excinfo.value)
+    assert 'validate_certs=False' in to_native(excinfo.value)
+    mocker.patch.object(urls, 'HAS_SSLCONTEXT', new=True)
+    with pytest.raises(urls.SSLValidationError) as excinfo:
+        urls.build_ssl_validation_error('hostname', 'port', 'paths', exc=None)
+    assert 'validate_certs=False' in to_native(excinfo.value)
+    mocker.patch.object(urls, 'HAS_SSLCONTEXT', new=False)
+    mocker.patch.object(urls, 'HAS_URLLIB3_PYOPENSSLCONTEXT', new=True)
+    mocker.patch.object(urls, 'HAS_URLLIB3_SSL_WRAP_SOCKET', new=True)
+    mocker.patch.object(urls, 'HAS_SSLCONTEXT', new=True)
+    with pytest.raises(urls.SSLValidationError) as excinfo:
+        urls.build_ssl_validation_error('hostname', 'port', 'paths', exc=None)
+    assert 'urllib3' not in to_native(excinfo.value)
+    with pytest.raises(urls.SSLValidationError) as excinfo:
+        urls.build_ssl_validation_error('hostname', 'port', 'paths', exc='BOOM')
+    assert 'BOOM' in to_native(excinfo.value)
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,19 @@
+def do_encrypt(result, encrypt, salt_size=None, salt=None, ident=None):
+    return passlib_or_crypt(result, encrypt, salt_size=salt_size, salt=salt, ident=ident)
+
+----------
+
+@pytest.mark.skipif(not encrypt.PASSLIB_AVAILABLE, reason='passlib must be installed to run this test')
+def test_do_encrypt_passlib():
+    with pytest.raises(AnsibleError):
+        encrypt.do_encrypt('123', 'sha257_crypt', salt='12345678')
+    assert encrypt.do_encrypt('123', 'sha256_crypt', salt='12345678') == '$5$rounds=535000$12345678$uy3TurUPaY71aioJi58HvUY8jkbhSQU8HepbyaNngv.'
+    assert encrypt.do_encrypt('123', 'md5_crypt', salt='12345678') == '$1$12345678$tRy4cXc3kmcfRZVj4iFXr/'
+    assert encrypt.do_encrypt('123', 'crypt16', salt='12') == '12pELHK2ME3McUFlHxel6uMM'
+    assert encrypt.do_encrypt('123', 'bcrypt', salt='1234567890123456789012', ident='2a') == '$2a$12$123456789012345678901ugbM1PeTfRQ0t6dCJu5lQA8hwrZOYgDu'
+
+----------
+
+
+
+Test Class Name: passlib_off

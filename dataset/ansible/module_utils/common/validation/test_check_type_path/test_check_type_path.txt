@@ -1,0 +1,21 @@
+def check_type_path(value):
+    """Verify the provided value is a string or convert it to a string,
+    then return the expanded path
+    """
+    value = check_type_str(value)
+    return os.path.expanduser(os.path.expandvars(value))
+
+----------
+
+def test_check_type_path(monkeypatch):
+    monkeypatch.setattr(os.path, 'expandvars', mock_expand)
+    monkeypatch.setattr(os.path, 'expanduser', mock_expand)
+    test_cases = (('~/foo', '/home/testuser/foo'), ('$HOME/foo', '/home/testuser/foo'), ('/home/jane', '/home/jane'), (u'/home/jané', u'/home/jané'))
+    for case in test_cases:
+        assert case[1] == check_type_path(case[0])
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,18 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('test', tests)
+@pytest.mark.usefixtures('no_memoize')
+def test_match(mocker, monkeypatch, test):
+    mocker.patch('os.path.isfile', return_value=True)
+    monkeypatch.setenv('EDITOR', 'dummy_editor')
+    assert match(Command('', test.output))
+
+----------
+
+
+
+Test Class Name: default

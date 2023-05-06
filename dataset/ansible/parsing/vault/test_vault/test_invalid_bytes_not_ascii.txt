@@ -1,0 +1,27 @@
+def is_encrypted(data):
+    """ Test if this is vault encrypted data blob
+
+    :arg data: a byte or text string to test whether it is recognized as vault
+        encrypted data
+    :returns: True if it is recognized.  Otherwise, False.
+    """
+    try:
+        b_data = to_bytes(to_text(data, encoding='ascii', errors='strict', nonstring='strict'), encoding='ascii', errors='strict')
+    except (UnicodeError, TypeError):
+        return False
+    if b_data.startswith(b_HEADER):
+        return True
+    return False
+
+----------
+
+def test_invalid_bytes_not_ascii(self):
+    data = u'$ANSIBLE_VAULT;9.9;TEST\n%s' % u'ァ ア ィ イ ゥ ウ ェ エ ォ オ カ ガ キ ギ ク グ ケ '
+    b_data = to_bytes(data, encoding='utf-8')
+    self.assertFalse(vault.is_encrypted(b_data))
+
+----------
+
+
+
+Test Class Name: TestVaultIsEncrypted

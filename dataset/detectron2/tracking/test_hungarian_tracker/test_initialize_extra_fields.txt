@@ -1,0 +1,22 @@
+def has(self, name: str) -> bool:
+    """
+        Returns:
+            bool: whether the field called `name` exists.
+        """
+    return name in self._fields
+
+----------
+
+def test_initialize_extra_fields(self):
+    cfg = {'_target_': 'detectron2.tracking.hungarian_tracker.BaseHungarianTracker', 'video_height': self._img_size[0], 'video_width': self._img_size[1], 'max_num_instances': self._max_num_instances, 'max_lost_frame_count': self._max_lost_frame_count, 'min_box_rel_dim': self._min_box_rel_dim, 'min_instance_period': self._min_instance_period, 'track_iou_threshold': self._track_iou_threshold}
+    tracker = instantiate(cfg)
+    instances = tracker._initialize_extra_fields(self._curr_instances)
+    self.assertTrue(instances.has('ID'))
+    self.assertTrue(instances.has('ID_period'))
+    self.assertTrue(instances.has('lost_frame_count'))
+
+----------
+
+
+
+Test Class Name: TestBaseHungarianTracker

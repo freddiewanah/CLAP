@@ -1,0 +1,20 @@
+def encode(v):
+    from .utils import get_filesystem_encoding
+    return v.encode(get_filesystem_encoding()) if isinstance(v, compat_str) else v
+
+----------
+
+def test_compat_etree_fromstring(self):
+    xml = '\n            <root foo="bar" spam="中文">\n                <normal>foo</normal>\n                <chinese>中文</chinese>\n                <foo><bar>spam</bar></foo>\n            </root>\n        '
+    doc = compat_etree_fromstring(xml.encode('utf-8'))
+    self.assertTrue(isinstance(doc.attrib['foo'], compat_str))
+    self.assertTrue(isinstance(doc.attrib['spam'], compat_str))
+    self.assertTrue(isinstance(doc.find('normal').text, compat_str))
+    self.assertTrue(isinstance(doc.find('chinese').text, compat_str))
+    self.assertTrue(isinstance(doc.find('foo/bar').text, compat_str))
+
+----------
+
+
+
+Test Class Name: TestCompat

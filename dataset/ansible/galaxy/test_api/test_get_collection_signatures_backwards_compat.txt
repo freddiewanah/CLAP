@@ -1,0 +1,48 @@
+@g_connect(['v2', 'v3'])
+def get_collection_signatures(self, namespace, name, version):
+    """
+        Gets the collection signatures from the Galaxy server about a specific Collection version.
+
+        :param namespace: The collection namespace.
+        :param name: The collection name.
+        :param version: Version of the collection to get the information for.
+        :return: A list of signature strings.
+        """
+    api_path = self.available_api_versions.get('v3', self.available_api_versions.get('v2'))
+    url_paths = [self.api_server, api_path, 'collections', namespace, name, 'versions', version, '/']
+    n_collection_url = _urljoin(*url_paths)
+    error_context_msg = 'Error when getting collection version metadata for %s.%s:%s from %s (%s)' % (namespace, name, version, self.name, self.api_server)
+    data = self._call_galaxy(n_collection_url, error_context_msg=error_context_msg, cache=True)
+    self._set_cache()
+    try:
+        signatures = data['signatures']
+    except KeyError:
+        display.vvvvvv(f'Server {self.api_server} has not signed {namespace}.{name}:{version}')
+        return []
+    else:
+        return [signature_info['signature'] for signature_info in signatures]
+
+----------
+
+@pytest.mark.parametrize('api_version, token_type, token_ins, version', [('v2', None, None, '2.1.13'), ('v3', 'Bearer', KeycloakToken(auth_url='https://api.test/api/automation-hub/'), '1.0.0')])
+def test_get_collection_signatures_backwards_compat(api_version, token_type, token_ins, version, monkeypatch):
+    api = get_test_galaxy_api('https://galaxy.server.com/api/', api_version, token_ins=token_ins)
+    if token_ins:
+        mock_token_get = MagicMock()
+        mock_token_get.return_value = 'my token'
+        monkeypatch.setattr(token_ins, 'get', mock_token_get)
+    mock_open = MagicMock()
+    mock_open.side_effect = [StringIO('{}')]
+    monkeypatch.setattr(galaxy_api, 'open_url', mock_open)
+    actual = api.get_collection_signatures('namespace', 'collection', version)
+    assert actual == []
+    assert mock_open.call_count == 1
+    assert mock_open.mock_calls[0][1][0] == '%s%s/collections/namespace/collection/versions/%s/' % (api.api_server, api_version, version)
+    if token_type:
+        assert mock_open.mock_calls[0][2]['headers']['Authorization'] == '%s my token' % token_type
+
+----------
+
+
+
+Test Class Name: default

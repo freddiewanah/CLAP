@@ -1,0 +1,16 @@
+def to_dict(self, encode_json=False) -> Dict[str, Json]:
+    return _asdict(self, encode_json=encode_json)
+
+----------
+
+def test_exclude():
+    dclass = EncodeExclude(public_field='public', private_field='private')
+    encoded = dclass.to_dict()
+    assert 'public_field' in encoded
+    assert 'private_field' not in encoded
+
+----------
+
+
+
+Test Class Name: EncodeCustom

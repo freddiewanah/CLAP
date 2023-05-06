@@ -1,0 +1,38 @@
+def backward(self, loss):
+    """Computes the sum of gradients of the given tensor w.r.t. graph leaves.
+
+        Compared to :func:`fairseq.optim.FairseqOptimizer.backward`, this
+        function additionally dynamically scales the loss to avoid gradient
+        underflow.
+        """
+    if self.scaler is not None:
+        loss = self.scaler.scale(loss)
+    loss.backward()
+    self._needs_sync = True
+
+----------
+
+def test_convtbc(self):
+    conv_tbc = ConvTBC(4, 5, kernel_size=3, padding=1)
+    conv1d = nn.Conv1d(4, 5, kernel_size=3, padding=1)
+    conv_tbc.weight.data.copy_(conv1d.weight.data.transpose(0, 2))
+    conv_tbc.bias.data.copy_(conv1d.bias.data)
+    input_tbc = torch.randn(7, 2, 4, requires_grad=True)
+    input1d = input_tbc.data.transpose(0, 1).transpose(1, 2)
+    input1d.requires_grad = True
+    output_tbc = conv_tbc(input_tbc)
+    output1d = conv1d(input1d)
+    self.assertAlmostEqual(output_tbc.data.transpose(0, 1).transpose(1, 2), output1d.data)
+    grad_tbc = torch.randn(output_tbc.size())
+    grad1d = grad_tbc.transpose(0, 1).transpose(1, 2).contiguous()
+    output_tbc.backward(grad_tbc)
+    output1d.backward(grad1d)
+    self.assertAlmostEqual(conv_tbc.weight.grad.data.transpose(0, 2), conv1d.weight.grad.data)
+    self.assertAlmostEqual(conv_tbc.bias.grad.data, conv1d.bias.grad.data)
+    self.assertAlmostEqual(input_tbc.grad.data.transpose(0, 1).transpose(1, 2), input1d.grad.data)
+
+----------
+
+
+
+Test Class Name: TestConvTBC

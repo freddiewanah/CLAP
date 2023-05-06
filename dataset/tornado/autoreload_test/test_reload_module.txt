@@ -1,0 +1,24 @@
+def close(self):
+    self.stream.close()
+    del self.stream
+
+----------
+
+def test_reload_module(self):
+    main = "import os\nimport sys\n\nfrom tornado import autoreload\n\n# This import will fail if path is not set up correctly\nimport testapp\n\nprint('Starting')\nif 'TESTAPP_STARTED' not in os.environ:\n    os.environ['TESTAPP_STARTED'] = '1'\n    sys.stdout.flush()\n    autoreload._reload()\n"
+    os.mkdir(os.path.join(self.path, 'testapp'))
+    open(os.path.join(self.path, 'testapp/__init__.py'), 'w').close()
+    with open(os.path.join(self.path, 'testapp/__main__.py'), 'w') as f:
+        f.write(main)
+    pythonpath = os.getcwd()
+    if 'PYTHONPATH' in os.environ:
+        pythonpath += os.pathsep + os.environ['PYTHONPATH']
+    p = Popen([sys.executable, '-m', 'testapp'], stdout=subprocess.PIPE, cwd=self.path, env=dict(os.environ, PYTHONPATH=pythonpath), universal_newlines=True)
+    out = p.communicate()[0]
+    self.assertEqual(out, 'Starting\nStarting\n')
+
+----------
+
+
+
+Test Class Name: AutoreloadTest

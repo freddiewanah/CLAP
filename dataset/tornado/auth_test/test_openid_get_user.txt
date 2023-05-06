@@ -1,0 +1,20 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_openid_get_user(self):
+    response = self.fetch('/openid/client/login?openid.mode=blah&openid.ns.ax=http://openid.net/srv/ax/1.0&openid.ax.type.email=http://axschema.org/contact/email&openid.ax.value.email=foo@example.com')
+    response.rethrow()
+    parsed = json_decode(response.body)
+    self.assertEqual(parsed['email'], 'foo@example.com')
+
+----------
+
+
+
+Test Class Name: AuthTest

@@ -1,0 +1,18 @@
+def ip_v4(self) -> str:
+    """Generate a random IPv4 address as string.
+
+        :Example:
+            19.121.223.58
+        """
+    return str(self.ip_v4_object())
+
+----------
+
+def test_ip_v4(self, net):
+    assert re.match(patterns.IP_V4_REGEX, net.ip_v4())
+
+----------
+
+
+
+Test Class Name: TestInternet

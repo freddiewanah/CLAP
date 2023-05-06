@@ -1,0 +1,36 @@
+def json(body: Any, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='application/json', dumps: Optional[Callable[..., str]]=None, **kwargs: Any) -> JSONResponse:
+    """
+    Returns response object with body in json format.
+
+    :param body: Response data to be serialized.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param kwargs: Remaining arguments that are passed to the json encoder.
+    """
+    return JSONResponse(body, status=status, headers=headers, content_type=content_type, dumps=dumps, **kwargs)
+
+----------
+
+@pytest.mark.parametrize('expected,priorities', PRIORITY_TEST_CASES)
+def test_request_middleware_order_priority(app: Sanic, expected, priorities):
+    order = []
+
+    def add_ident(request, ident):
+        order.append(ident)
+
+    @app.get('/')
+    def handler(request):
+        return json(None)
+    for (ident, priority) in enumerate(priorities):
+        kwargs = {}
+        if priority is not None:
+            kwargs['priority'] = priority
+        app.on_request(partial(add_ident, ident=ident), **kwargs)
+    app.test_client.get('/')
+    assert order == expected
+
+----------
+
+
+
+Test Class Name: default

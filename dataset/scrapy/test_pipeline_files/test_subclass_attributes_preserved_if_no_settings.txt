@@ -1,0 +1,39 @@
+@classmethod
+def from_settings(cls, settings):
+    s3store = cls.STORE_SCHEMES['s3']
+    s3store.AWS_ACCESS_KEY_ID = settings['AWS_ACCESS_KEY_ID']
+    s3store.AWS_SECRET_ACCESS_KEY = settings['AWS_SECRET_ACCESS_KEY']
+    s3store.AWS_SESSION_TOKEN = settings['AWS_SESSION_TOKEN']
+    s3store.AWS_ENDPOINT_URL = settings['AWS_ENDPOINT_URL']
+    s3store.AWS_REGION_NAME = settings['AWS_REGION_NAME']
+    s3store.AWS_USE_SSL = settings['AWS_USE_SSL']
+    s3store.AWS_VERIFY = settings['AWS_VERIFY']
+    s3store.POLICY = settings['FILES_STORE_S3_ACL']
+    gcs_store = cls.STORE_SCHEMES['gs']
+    gcs_store.GCS_PROJECT_ID = settings['GCS_PROJECT_ID']
+    gcs_store.POLICY = settings['FILES_STORE_GCS_ACL'] or None
+    ftp_store = cls.STORE_SCHEMES['ftp']
+    ftp_store.FTP_USERNAME = settings['FTP_USER']
+    ftp_store.FTP_PASSWORD = settings['FTP_PASSWORD']
+    ftp_store.USE_ACTIVE_MODE = settings.getbool('FEED_STORAGE_FTP_ACTIVE')
+    store_uri = settings['FILES_STORE']
+    return cls(store_uri, settings=settings)
+
+----------
+
+def test_subclass_attributes_preserved_if_no_settings(self):
+    """
+        If subclasses override class attributes and there are no special settings those values should be kept.
+        """
+    pipe_cls = self._generate_fake_pipeline()
+    pipe = pipe_cls.from_settings(Settings({'FILES_STORE': self.tempdir}))
+    for (pipe_attr, settings_attr, pipe_ins_attr) in self.file_cls_attr_settings_map:
+        custom_value = getattr(pipe, pipe_ins_attr)
+        self.assertNotEqual(custom_value, self.default_cls_settings[pipe_attr])
+        self.assertEqual(getattr(pipe, pipe_ins_attr), getattr(pipe, pipe_attr))
+
+----------
+
+
+
+Test Class Name: UserDefinedFilePipeline

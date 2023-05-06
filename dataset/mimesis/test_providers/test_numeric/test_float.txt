@@ -1,0 +1,24 @@
+def float_number(self, start: float=-1000.0, end: float=1000.0, precision: int=15) -> float:
+    """Generate random float number in range [start, end].
+
+        :param start: Start range.
+        :param end:  End range.
+        :param precision: Round a number to a given
+            precision in decimal digits, default is 15.
+        :return: Float.
+        """
+    return self.random.uniform(start, end, precision)
+
+----------
+
+def test_float(self, numeric):
+    result = numeric.float_number(-100, 100, precision=15)
+    assert isinstance(result, float)
+    assert -100 <= result <= 100
+    assert len(str(result).split('.')[1]) <= 15
+
+----------
+
+
+
+Test Class Name: TestNumbers

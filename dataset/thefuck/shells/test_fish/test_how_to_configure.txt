@@ -1,0 +1,14 @@
+def how_to_configure(self):
+    return self._create_shell_configuration(content=u'thefuck --alias | source', path='~/.config/fish/config.fish', reload='fish')
+
+----------
+
+def test_how_to_configure(self, shell, config_exists):
+    config_exists.return_value = True
+    assert shell.how_to_configure().can_configure_automatically
+
+----------
+
+
+
+Test Class Name: TestFish

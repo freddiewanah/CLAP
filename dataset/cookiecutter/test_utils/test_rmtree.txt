@@ -1,0 +1,22 @@
+def rmtree(path):
+    """Remove a directory and all its contents. Like rm -rf on Unix.
+
+    :param path: A directory path.
+    """
+    shutil.rmtree(path, onerror=force_delete)
+
+----------
+
+def test_rmtree(tmp_path):
+    """Verify `utils.rmtree` remove files marked as read-only."""
+    file_path = Path(tmp_path, 'bar')
+    file_path.write_text('Test data')
+    make_readonly(file_path)
+    utils.rmtree(tmp_path)
+    assert not Path(tmp_path).exists()
+
+----------
+
+
+
+Test Class Name: default

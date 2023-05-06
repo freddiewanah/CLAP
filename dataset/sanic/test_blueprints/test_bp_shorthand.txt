@@ -1,0 +1,88 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_bp_shorthand(app: Sanic):
+    blueprint = Blueprint('test_shorhand_routes')
+    ev = asyncio.Event()
+
+    @blueprint.get('/get')
+    def handler(request):
+        return text('OK')
+
+    @blueprint.put('/put')
+    def put_handler(request):
+        return text('OK')
+
+    @blueprint.post('/post')
+    def post_handler(request):
+        return text('OK')
+
+    @blueprint.head('/head')
+    def head_handler(request):
+        return text('OK')
+
+    @blueprint.options('/options')
+    def options_handler(request):
+        return text('OK')
+
+    @blueprint.patch('/patch')
+    def patch_handler(request):
+        return text('OK')
+
+    @blueprint.delete('/delete')
+    def delete_handler(request):
+        return text('OK')
+
+    @blueprint.websocket('/ws/', strict_slashes=True)
+    async def websocket_handler(request, ws):
+        ev.set()
+    app.blueprint(blueprint)
+    (request, response) = app.test_client.get('/get')
+    assert response.body == b'OK'
+    (request, response) = app.test_client.post('/get')
+    assert response.status == 405
+    (request, response) = app.test_client.put('/put')
+    assert response.body == b'OK'
+    (request, response) = app.test_client.get('/post')
+    assert response.status == 405
+    (request, response) = app.test_client.post('/post')
+    assert response.body == b'OK'
+    (request, response) = app.test_client.get('/post')
+    assert response.status == 405
+    (request, response) = app.test_client.head('/head')
+    assert response.status == 200
+    (request, response) = app.test_client.get('/head')
+    assert response.status == 405
+    (request, response) = app.test_client.options('/options')
+    assert response.body == b'OK'
+    (request, response) = app.test_client.get('/options')
+    assert response.status == 405
+    (request, response) = app.test_client.patch('/patch')
+    assert response.body == b'OK'
+    (request, response) = app.test_client.get('/patch')
+    assert response.status == 405
+    (request, response) = app.test_client.delete('/delete')
+    assert response.body == b'OK'
+    (request, response) = app.test_client.get('/delete')
+    assert response.status == 405
+    (request, response) = app.test_client.websocket('/ws/')
+    assert response.opened is True
+    assert ev.is_set()
+
+----------
+
+
+
+Test Class Name: Error

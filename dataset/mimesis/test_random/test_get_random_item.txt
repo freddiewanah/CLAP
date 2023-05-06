@@ -1,0 +1,26 @@
+def get_random_item(enum: t.Any, rnd: t.Optional[Random]=None) -> t.Any:
+    """Get random item of enum object.
+
+    :param enum: Enum object.
+    :param rnd: Custom random object.
+    :return: Random item of enum.
+    """
+    if rnd and isinstance(rnd, Random):
+        return rnd.choice(list(enum))
+    return random_module.choice(list(enum))
+
+----------
+
+def test_get_random_item(random):
+    result = get_random_item(Gender)
+    assert result in Gender
+    random.seed(15)
+    result_1 = get_random_item(Gender, rnd=random)
+    result_2 = get_random_item(Gender, rnd=random)
+    assert result_1 == result_2
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,31 @@
+def validate_enum(self, item: t.Any, enum: t.Any) -> t.Any:
+    """Validate enum parameter of method in subclasses of BaseProvider.
+
+        :param item: Item of enum object.
+        :param enum: Enum object.
+        :return: Value of item.
+        :raises NonEnumerableError: if ``item`` not in ``enum``.
+        """
+    if item is None:
+        result = get_random_item(enum, self.random)
+    elif item and isinstance(item, enum):
+        result = item
+    else:
+        raise NonEnumerableError(enum)
+    return result.value
+
+----------
+
+@pytest.mark.parametrize('gender, excepted', [(Gender.MALE, 'male'), (Gender.FEMALE, 'female'), (None, ['female', 'male'])])
+def test_validate_enum(self, base_data_provider, gender, excepted):
+    result = base_data_provider.validate_enum(gender, Gender)
+    assert result == excepted or result in excepted
+    assert result in [item.value for item in Gender]
+    with pytest.raises(NonEnumerableError):
+        base_data_provider.validate_enum('', '')
+
+----------
+
+
+
+Test Class Name: TestBase

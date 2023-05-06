@@ -1,0 +1,14 @@
+def css(self, query):
+    return self.selector.css(query)
+
+----------
+
+def test_follow_selector_list(self):
+    resp = self._links_response()
+    self.assertRaisesRegex(ValueError, 'SelectorList', resp.follow, resp.css('a'))
+
+----------
+
+
+
+Test Class Name: TextResponseTest

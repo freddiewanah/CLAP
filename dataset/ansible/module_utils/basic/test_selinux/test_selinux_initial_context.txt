@@ -1,0 +1,19 @@
+def selinux_initial_context(self):
+    if self._selinux_initial_context is None:
+        self._selinux_initial_context = [None, None, None]
+        if self.selinux_mls_enabled():
+            self._selinux_initial_context.append(None)
+    return self._selinux_initial_context
+
+----------
+
+def test_selinux_initial_context(self):
+    assert no_args_module(selinux_enabled=False, selinux_mls_enabled=False).selinux_initial_context() == [None, None, None]
+    assert no_args_module(selinux_enabled=True, selinux_mls_enabled=False).selinux_initial_context() == [None, None, None]
+    assert no_args_module(selinux_enabled=True, selinux_mls_enabled=True).selinux_initial_context() == [None, None, None, None]
+
+----------
+
+
+
+Test Class Name: TestSELinuxMU

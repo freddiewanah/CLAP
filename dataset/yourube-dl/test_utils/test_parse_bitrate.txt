@@ -1,0 +1,21 @@
+def parse_bitrate(s):
+    if not isinstance(s, compat_str):
+        return
+    mobj = re.search('\\b(\\d+)\\s*kbps', s)
+    if mobj:
+        return int(mobj.group(1))
+
+----------
+
+def test_parse_bitrate(self):
+    self.assertEqual(parse_bitrate(None), None)
+    self.assertEqual(parse_bitrate(''), None)
+    self.assertEqual(parse_bitrate('300kbps'), 300)
+    self.assertEqual(parse_bitrate('1500kbps'), 1500)
+    self.assertEqual(parse_bitrate('300 kbps'), 300)
+
+----------
+
+
+
+Test Class Name: TestUtil

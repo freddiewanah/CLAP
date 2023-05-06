@@ -1,0 +1,33 @@
+def get(self, url, **kwargs):
+    """Sends a GET request. Returns :class:`HTTPResponse` object.
+
+        :arg url: URL to request
+        :kwarg \\*\\*kwargs: Optional arguments that ``open`` takes.
+        :returns: HTTPResponse
+        """
+    return self.open('GET', url, **kwargs)
+
+----------
+
+def test_Request_open_netrc(urlopen_mock, install_opener_mock, monkeypatch):
+    here = os.path.dirname(__file__)
+    monkeypatch.setenv('NETRC', os.path.join(here, 'fixtures/netrc'))
+    r = Request().open('GET', 'http://ansible.com/')
+    args = urlopen_mock.call_args[0]
+    req = args[0]
+    assert req.headers.get('Authorization') == b'Basic dXNlcjpwYXNzd2Q='
+    r = Request().open('GET', 'http://foo.ansible.com/')
+    args = urlopen_mock.call_args[0]
+    req = args[0]
+    assert 'Authorization' not in req.headers
+    monkeypatch.setenv('NETRC', os.path.join(here, 'fixtures/netrc.nonexistant'))
+    r = Request().open('GET', 'http://ansible.com/')
+    args = urlopen_mock.call_args[0]
+    req = args[0]
+    assert 'Authorization' not in req.headers
+
+----------
+
+
+
+Test Class Name: default

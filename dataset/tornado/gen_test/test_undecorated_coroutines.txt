@@ -1,0 +1,51 @@
+def fetch(self, path: str, raise_error: bool=False, **kwargs: Any) -> HTTPResponse:
+    """Convenience method to synchronously fetch a URL.
+
+        The given path will be appended to the local server's host and
+        port.  Any additional keyword arguments will be passed directly to
+        `.AsyncHTTPClient.fetch` (and so could be used to pass
+        ``method="POST"``, ``body="..."``, etc).
+
+        If the path begins with http:// or https://, it will be treated as a
+        full URL and will be fetched as-is.
+
+        If ``raise_error`` is ``True``, a `tornado.httpclient.HTTPError` will
+        be raised if the response code is not 200. This is the same behavior
+        as the ``raise_error`` argument to `.AsyncHTTPClient.fetch`, but
+        the default is ``False`` here (it's ``True`` in `.AsyncHTTPClient`)
+        because tests often need to deal with non-200 response codes.
+
+        .. versionchanged:: 5.0
+           Added support for absolute URLs.
+
+        .. versionchanged:: 5.1
+
+           Added the ``raise_error`` argument.
+
+        .. deprecated:: 5.1
+
+           This method currently turns any exception into an
+           `.HTTPResponse` with status code 599. In Tornado 6.0,
+           errors other than `tornado.httpclient.HTTPError` will be
+           passed through, and ``raise_error=False`` will only
+           suppress errors that would be raised due to non-200
+           response codes.
+
+        """
+    if path.lower().startswith(('http://', 'https://')):
+        url = path
+    else:
+        url = self.get_url(path)
+    return self.io_loop.run_sync(lambda : self.http_client.fetch(url, raise_error=raise_error, **kwargs), timeout=get_async_test_timeout())
+
+----------
+
+def test_undecorated_coroutines(self):
+    response = self.fetch('/undecorated_coroutine')
+    self.assertEqual(response.body, b'123')
+
+----------
+
+
+
+Test Class Name: GenWebTest

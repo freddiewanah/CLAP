@@ -1,0 +1,30 @@
+def get(self, url, **kwargs):
+    """Sends a GET request. Returns :class:`HTTPResponse` object.
+
+        :arg url: URL to request
+        :kwarg \\*\\*kwargs: Optional arguments that ``open`` takes.
+        :returns: HTTPResponse
+        """
+    return self.open('GET', url, **kwargs)
+
+----------
+
+def test_Request_open_username_force_basic(urlopen_mock, install_opener_mock):
+    r = Request().open('GET', 'http://ansible.com/', url_username='user', url_password='passwd', force_basic_auth=True)
+    opener = install_opener_mock.call_args[0][0]
+    handlers = opener.handlers
+    expected_handlers = (urllib_request.HTTPBasicAuthHandler, urllib_request.HTTPDigestAuthHandler)
+    found_handlers = []
+    for handler in handlers:
+        if isinstance(handler, expected_handlers):
+            found_handlers.append(handler)
+    assert len(found_handlers) == 0
+    args = urlopen_mock.call_args[0]
+    req = args[0]
+    assert req.headers.get('Authorization') == b'Basic dXNlcjpwYXNzd2Q='
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,47 @@
+def load_config(config_file: Optional[Union[str, IO]]=None, **kwargs) -> MkDocsConfig:
+    """
+    Load the configuration for a given file object or name
+
+    The config_file can either be a file object, string or None. If it is None
+    the default `mkdocs.yml` filename will loaded.
+
+    Extra kwargs are passed to the configuration to replace any default values
+    unless they themselves are None.
+    """
+    options = kwargs.copy()
+    for (key, value) in options.copy().items():
+        if value is None:
+            options.pop(key)
+    with _open_config_file(config_file) as fd:
+        from mkdocs.config.defaults import MkDocsConfig
+        cfg = MkDocsConfig(config_file_path=getattr(fd, 'name', ''))
+        cfg.load_file(fd)
+    cfg.load_dict(options)
+    (errors, warnings) = cfg.validate()
+    for (config_name, warning) in warnings:
+        log.warning(f"Config value '{config_name}': {warning}")
+    for (config_name, error) in errors:
+        log.error(f"Config value '{config_name}': {error}")
+    for (key, value) in cfg.items():
+        log.debug(f"Config value '{key}' = {value!r}")
+    if len(errors) > 0:
+        raise exceptions.Abort(f'Aborted with {len(errors)} Configuration Errors!')
+    elif cfg['strict'] and len(warnings) > 0:
+        raise exceptions.Abort(f"Aborted with {len(warnings)} Configuration Warnings in 'strict' mode!")
+    return cfg
+
+----------
+
+def test_plugin_config_lang(self):
+    expected = {'lang': ['es'], 'separator': '[\\s\\-]+', 'min_search_length': 3, 'prebuild_index': False, 'indexing': 'full'}
+    plugin = search.SearchPlugin()
+    (errors, warnings) = plugin.load_config({'lang': 'es'})
+    self.assertEqual(plugin.config, expected)
+    self.assertEqual(errors, [])
+    self.assertEqual(warnings, [])
+
+----------
+
+
+
+Test Class Name: SearchPluginTests

@@ -1,0 +1,42 @@
+def utf8(value: Union[None, str, bytes]) -> Optional[bytes]:
+    """Converts a string argument to a byte string.
+
+    If the argument is already a byte string or None, it is returned unchanged.
+    Otherwise it must be a unicode string and is encoded as utf8.
+    """
+    if isinstance(value, _UTF8_TYPES):
+        return value
+    if not isinstance(value, unicode_type):
+        raise TypeError('Expected bytes, unicode, or None; got %r' % type(value))
+    return value.encode('utf-8')
+
+----------
+
+def test_method_after_redirect(self):
+    for status in [301, 302, 303]:
+        url = '/redirect?url=/all_methods&status=%d' % status
+        resp = self.fetch(url, method='POST', body=b'')
+        self.assertEqual(b'GET', resp.body)
+        for method in ['GET', 'OPTIONS', 'PUT', 'DELETE']:
+            resp = self.fetch(url, method=method, allow_nonstandard_methods=True)
+            if status in [301, 302]:
+                self.assertEqual(utf8(method), resp.body)
+            else:
+                self.assertIn(resp.body, [utf8(method), b'GET'])
+        resp = self.fetch(url, method='HEAD')
+        self.assertEqual(200, resp.code)
+        self.assertEqual(b'', resp.body)
+    for status in [307, 308]:
+        url = '/redirect?url=/all_methods&status=307'
+        for method in ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE']:
+            resp = self.fetch(url, method=method, allow_nonstandard_methods=True)
+            self.assertEqual(method, to_unicode(resp.body))
+        resp = self.fetch(url, method='HEAD')
+        self.assertEqual(200, resp.code)
+        self.assertEqual(b'', resp.body)
+
+----------
+
+
+
+Test Class Name: HTTPClientCommonTestCase

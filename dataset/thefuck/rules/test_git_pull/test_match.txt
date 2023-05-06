@@ -1,0 +1,16 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_match(output):
+    assert match(Command('git pull', output))
+    assert not match(Command('git pull', ''))
+    assert not match(Command('ls', output))
+
+----------
+
+
+
+Test Class Name: default

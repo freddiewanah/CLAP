@@ -1,0 +1,25 @@
+def get_smoothed_values(name: str) -> Dict[str, float]:
+    """Get smoothed values aggregated under a given *name*.
+
+    Raises:
+        KeyError: if no metrics have been logged under *name*.
+    """
+    return _aggregators[name].get_smoothed_values()
+
+----------
+
+def test_named(self):
+    name = str(uuid.uuid4())
+    metrics.reset_meters(name)
+    with metrics.aggregate(name):
+        metrics.log_scalar('loss', 1)
+    metrics.log_scalar('loss', 3)
+    with metrics.aggregate(name):
+        metrics.log_scalar('loss', 2)
+    self.assertEqual(metrics.get_smoothed_values(name)['loss'], 1.5)
+
+----------
+
+
+
+Test Class Name: TestMetrics

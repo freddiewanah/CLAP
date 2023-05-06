@@ -1,0 +1,46 @@
+def loop(self) -> t.Iterator[JSON]:
+    """Fulfills a schema **infinitely** in a lazy way.
+
+        This method can be useful when you have some dynamic
+        conditions in depend on which the generation must be interrupted.
+
+        Since data `mimesis` provides are limited, frequent calls of
+        this method can cause data duplication.
+
+        Before using this method, ask yourself: **Do I really need this**?
+        In most cases, the answer is: Nah, :meth:`iterator` is enough.
+
+        **Do not use** this method without **interrupt conditions**, otherwise,
+        you're risking running out of memory.
+
+        If you're accepting all risks below and want to suppress
+        the warnings then use :py:class:`warnings.catch_warnings`
+
+        .. warning::
+
+            **Never** (seriously) call :py:class:`list`, :py:class:`tuple`, :py:class:`set`
+            or any other callable which tries to evaluate the whole lazy object on this
+            method \u2014 **infinite** called infinite for a reason.
+
+        :return: An infinite iterator with fulfilled schemas.
+        """
+    warnings.warn("You're iterating over the infinite object! The schema.loop() can cause a serious memory leak.Please, see: https://mimesis.name/en/latest/api.html#mimesis.schema.Schema.loop")
+    while True:
+        yield self._schema()
+
+----------
+
+def test_schema_loop(schema):
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        infinite = schema.loop()
+        result_1 = next(infinite)
+        result_2 = next(infinite)
+        assert result_1['timestamp'] != result_2['timestamp']
+        assert result_1['owner']['creator'] != result_2['owner']['creator']
+
+----------
+
+
+
+Test Class Name: default

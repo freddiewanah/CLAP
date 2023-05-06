@@ -1,0 +1,34 @@
+def get_url(self, path: str) -> str:
+    """Returns an absolute url for the given path on the test server."""
+    return '%s://127.0.0.1:%s%s' % (self.get_protocol(), self.get_http_port(), path)
+
+----------
+
+def test_connection_limit(self: typing.Any):
+    with closing(self.create_client(max_clients=2)) as client:
+        self.assertEqual(client.max_clients, 2)
+        seen = []
+        for i in range(4):
+
+            def cb(fut, i=i):
+                seen.append(i)
+                self.stop()
+            client.fetch(self.get_url('/trigger')).add_done_callback(cb)
+        self.wait(condition=lambda : len(self.triggers) == 2)
+        self.assertEqual(len(client.queue), 2)
+        self.triggers.popleft()()
+        self.triggers.popleft()()
+        self.wait(condition=lambda : len(self.triggers) == 2 and len(seen) == 2)
+        self.assertEqual(set(seen), set([0, 1]))
+        self.assertEqual(len(client.queue), 0)
+        self.triggers.popleft()()
+        self.triggers.popleft()()
+        self.wait(condition=lambda : len(seen) == 4)
+        self.assertEqual(set(seen), set([0, 1, 2, 3]))
+        self.assertEqual(len(self.triggers), 0)
+
+----------
+
+
+
+Test Class Name: SimpleHTTPClientTestMixin

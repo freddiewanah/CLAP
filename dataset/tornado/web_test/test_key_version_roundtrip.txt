@@ -1,0 +1,39 @@
+def get_signed_cookie(self, name: str, value: Optional[str]=None, max_age_days: float=31, min_version: Optional[int]=None) -> Optional[bytes]:
+    """Returns the given signed cookie if it validates, or None.
+
+        The decoded cookie value is returned as a byte string (unlike
+        `get_cookie`).
+
+        Similar to `get_cookie`, this method only returns cookies that
+        were present in the request. It does not see outgoing cookies set by
+        `set_signed_cookie` in this handler.
+
+        .. versionchanged:: 3.2.1
+
+           Added the ``min_version`` argument.  Introduced cookie version 2;
+           both versions 1 and 2 are accepted by default.
+
+         .. versionchanged:: 6.3
+
+           Renamed from ``get_secure_cookie`` to ``get_signed_cookie`` to
+           avoid confusion with other uses of "secure" in cookie attributes
+           and prefixes. The old name remains as an alias.
+
+        """
+    self.require_setting('cookie_secret', 'secure cookies')
+    if value is None:
+        value = self.get_cookie(name)
+    return decode_signed_value(self.application.settings['cookie_secret'], name, value, max_age_days=max_age_days, min_version=min_version)
+
+----------
+
+def test_key_version_roundtrip(self):
+    handler = CookieTestRequestHandler(cookie_secret=self.KEY_VERSIONS, key_version=0)
+    handler.set_signed_cookie('foo', b'bar')
+    self.assertEqual(handler.get_signed_cookie('foo'), b'bar')
+
+----------
+
+
+
+Test Class Name: SecureCookieV2Test

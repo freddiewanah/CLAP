@@ -1,0 +1,21 @@
+def content_type(self, mime_type: t.Optional[MimeType]=None) -> str:
+    """Get a random HTTP content type.
+
+        :return: Content type.
+
+        :Example:
+            Content-Type: application/json
+        """
+    fmt = self._file.mime_type(type_=mime_type)
+    return f'Content-Type: {fmt}'
+
+----------
+
+def test_generic_internet(self, g1, g2):
+    assert g1.internet.content_type() == g2.internet.content_type()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

@@ -1,0 +1,18 @@
+def export_item(self, item):
+    raise NotImplementedError
+
+----------
+
+def test_export_binary(self):
+    with catch_warnings():
+        filterwarnings('ignore', category=ScrapyDeprecationWarning)
+        exporter = PythonItemExporter(binary=True)
+        value = self.item_class(name='John£', age='22')
+        expected = {b'name': b'John\xc2\xa3', b'age': b'22'}
+        self.assertEqual(expected, exporter.export_item(value))
+
+----------
+
+
+
+Test Class Name: PythonItemExporterTest

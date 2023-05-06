@@ -1,0 +1,24 @@
+def mime_type(self, type_: t.Optional[MimeType]=None) -> str:
+    """Get a random mime type from list.
+
+        :param type_: Enum object MimeType.
+        :return: Mime type.
+        """
+    key = self.validate_enum(item=type_, enum=MimeType)
+    types = MIME_TYPES[key]
+    return self.random.choice(types)
+
+----------
+
+@pytest.mark.parametrize('type_', [MimeType.APPLICATION, MimeType.AUDIO, MimeType.IMAGE, MimeType.MESSAGE, MimeType.TEXT, MimeType.VIDEO])
+def test_mime_type(self, file, type_):
+    result = file.mime_type(type_=type_)
+    assert result in MIME_TYPES[type_.value]
+    with pytest.raises(NonEnumerableError):
+        file.mime_type(type_='nil')
+
+----------
+
+
+
+Test Class Name: TestFile

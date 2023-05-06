@@ -1,0 +1,19 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_double_slash(self):
+    response = self.fetch('//doubleslash')
+    self.assertEqual(200, response.code)
+    self.assertEqual(json_decode(response.body), {})
+
+----------
+
+
+
+Test Class Name: HTTPServerTest

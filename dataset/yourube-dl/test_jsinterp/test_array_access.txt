@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_array_access(self):
+    jsi = JSInterpreter('function f(){var x = [1,2,3]; x[0] = 4; x[0] = 5; x[2.0] = 7; return x;}')
+    self.assertEqual(jsi.call_function('f'), [5, 2, 7])
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

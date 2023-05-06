@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('test', [Command('python hello_world.py', 'Hello World'), Command('./hello_world.py', 'Traceback (most recent call last):\n  File "hello_world.py", line 1, in <module>\n    pritn("Hello World")\nNameError: name \'pritn\' is not defined')])
+def test_not_match(test):
+    assert not match(test)
+
+----------
+
+
+
+Test Class Name: default

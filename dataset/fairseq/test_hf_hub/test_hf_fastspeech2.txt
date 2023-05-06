@@ -1,0 +1,25 @@
+def load_model_ensemble_and_task_from_hf_hub(model_id, cache_dir: Optional[str]=None, arg_overrides: Optional[Dict[str, Any]]=None, **kwargs: Any):
+    try:
+        from huggingface_hub import snapshot_download
+    except ImportError:
+        raise ImportError('You need to install huggingface_hub to use `load_from_hf_hub`. See https://pypi.org/project/huggingface-hub/ for installation.')
+    library_name = 'fairseq'
+    cache_dir = cache_dir or (Path.home() / '.cache' / library_name).as_posix()
+    cache_dir = snapshot_download(model_id, cache_dir=cache_dir, library_name=library_name, **kwargs)
+    _arg_overrides = arg_overrides or {}
+    _arg_overrides['data'] = cache_dir
+    return load_model_ensemble_and_task([p.as_posix() for p in Path(cache_dir).glob('*.pt')], arg_overrides=_arg_overrides)
+
+----------
+
+@torch.no_grad()
+def test_hf_fastspeech2(self):
+    hf_model_id = 'facebook/fastspeech2-en-ljspeech'
+    (models, cfg, task) = load_model_ensemble_and_task_from_hf_hub(hf_model_id)
+    self.assertTrue(len(models) > 0)
+
+----------
+
+
+
+Test Class Name: TestHuggingFaceHub

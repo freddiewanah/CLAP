@@ -1,0 +1,14 @@
+def get_header(self, name, default=None):
+    return to_unicode(self.request.headers.get(name, default), errors='replace')
+
+----------
+
+def test_get_header(self):
+    self.assertEqual(self.wrapped.get_header('content-type'), 'text/html')
+    self.assertEqual(self.wrapped.get_header('xxxxx', 'def'), 'def')
+
+----------
+
+
+
+Test Class Name: WrappedRequestTest

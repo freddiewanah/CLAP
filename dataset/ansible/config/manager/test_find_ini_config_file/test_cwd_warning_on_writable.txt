@@ -1,0 +1,65 @@
+def find_ini_config_file(warnings=None):
+    """ Load INI Config File order(first found is used): ENV, CWD, HOME, /etc/ansible """
+    if warnings is None:
+        warnings = set()
+    SENTINEL = object
+    potential_paths = []
+    path_from_env = os.getenv('ANSIBLE_CONFIG', SENTINEL)
+    if path_from_env is not SENTINEL:
+        path_from_env = unfrackpath(path_from_env, follow=False)
+        if os.path.isdir(to_bytes(path_from_env)):
+            path_from_env = os.path.join(path_from_env, 'ansible.cfg')
+        potential_paths.append(path_from_env)
+    warn_cmd_public = False
+    try:
+        cwd = os.getcwd()
+        perms = os.stat(cwd)
+        cwd_cfg = os.path.join(cwd, 'ansible.cfg')
+        if perms.st_mode & stat.S_IWOTH:
+            if os.path.exists(cwd_cfg):
+                warn_cmd_public = True
+        else:
+            potential_paths.append(to_text(cwd_cfg, errors='surrogate_or_strict'))
+    except OSError:
+        pass
+    potential_paths.append(unfrackpath('~/.ansible.cfg', follow=False))
+    potential_paths.append('/etc/ansible/ansible.cfg')
+    for path in potential_paths:
+        b_path = to_bytes(path)
+        if os.path.exists(b_path) and os.access(b_path, os.R_OK):
+            break
+    else:
+        path = None
+    if path_from_env != path and warn_cmd_public:
+        warnings.add(u'Ansible is being run in a world writable directory (%s), ignoring it as an ansible.cfg source. For more information see https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir' % to_text(cwd))
+    return path
+
+----------
+
+@pytest.mark.parametrize('setup_env', [[None]], indirect=['setup_env'])
+@pytest.mark.parametrize('setup_existing_files', [[('/etc/ansible/ansible.cfg', cfg_in_homedir, cfg_in_cwd, cfg_file, alt_cfg_file)]], indirect=['setup_existing_files'])
+def test_cwd_warning_on_writable(self, setup_env, setup_existing_files, monkeypatch):
+    """If the cwd is writable, warn and skip it """
+    real_stat = os.stat
+
+    def _os_stat(path):
+        if path == working_dir:
+            from posix import stat_result
+            stat_info = list(real_stat(path))
+            stat_info[stat.ST_MODE] |= stat.S_IWOTH
+            return stat_result(stat_info)
+        else:
+            return real_stat(path)
+    monkeypatch.setattr('os.stat', _os_stat)
+    warnings = set()
+    assert find_ini_config_file(warnings) == cfg_in_homedir
+    assert len(warnings) == 1
+    warning = warnings.pop()
+    assert u'Ansible is being run in a world writable directory' in warning
+    assert u'ignoring it as an ansible.cfg source' in warning
+
+----------
+
+
+
+Test Class Name: TestFindIniFile

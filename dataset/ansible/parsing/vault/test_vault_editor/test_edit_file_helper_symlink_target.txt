@@ -1,0 +1,135 @@
+def to_bytes(obj, encoding='utf-8', errors=None, nonstring='simplerepr'):
+    """Make sure that a string is a byte string
+
+    :arg obj: An object to make sure is a byte string.  In most cases this
+        will be either a text string or a byte string.  However, with
+        ``nonstring='simplerepr'``, this can be used as a traceback-free
+        version of ``str(obj)``.
+    :kwarg encoding: The encoding to use to transform from a text string to
+        a byte string.  Defaults to using 'utf-8'.
+    :kwarg errors: The error handler to use if the text string is not
+        encodable using the specified encoding.  Any valid `codecs error
+        handler <https://docs.python.org/3/library/codecs.html#codec-base-classes>`_
+        may be specified. There are three additional error strategies
+        specifically aimed at helping people to port code.  The first two are:
+
+            :surrogate_or_strict: Will use ``surrogateescape`` if it is a valid
+                handler, otherwise it will use ``strict``
+            :surrogate_or_replace: Will use ``surrogateescape`` if it is a valid
+                handler, otherwise it will use ``replace``.
+
+        Because ``surrogateescape`` was added in Python3 this usually means that
+        Python3 will use ``surrogateescape`` and Python2 will use the fallback
+        error handler. Note that the code checks for ``surrogateescape`` when the
+        module is imported.  If you have a backport of ``surrogateescape`` for
+        Python2, be sure to register the error handler prior to importing this
+        module.
+
+        The last error handler is:
+
+            :surrogate_then_replace: Will use ``surrogateescape`` if it is a valid
+                handler.  If encoding with ``surrogateescape`` would traceback,
+                surrogates are first replaced with a replacement characters
+                and then the string is encoded using ``replace`` (which replaces
+                the rest of the nonencodable bytes).  If ``surrogateescape`` is
+                not present it will simply use ``replace``.  (Added in Ansible 2.3)
+                This strategy is designed to never traceback when it attempts
+                to encode a string.
+
+        The default until Ansible-2.2 was ``surrogate_or_replace``
+        From Ansible-2.3 onwards, the default is ``surrogate_then_replace``.
+
+    :kwarg nonstring: The strategy to use if a nonstring is specified in
+        ``obj``.  Default is 'simplerepr'.  Valid values are:
+
+        :simplerepr: The default.  This takes the ``str`` of the object and
+            then returns the bytes version of that string.
+        :empty: Return an empty byte string
+        :passthru: Return the object passed in
+        :strict: Raise a :exc:`TypeError`
+
+    :returns: Typically this returns a byte string.  If a nonstring object is
+        passed in this may be a different type depending on the strategy
+        specified by nonstring.  This will never return a text string.
+
+    .. note:: If passed a byte string, this function does not check that the
+        string is valid in the specified encoding.  If it's important that the
+        byte string is in the specified encoding do::
+
+            encoded_string = to_bytes(to_text(input_string, 'latin-1'), 'utf-8')
+
+    .. version_changed:: 2.3
+
+        Added the ``surrogate_then_replace`` error handler and made it the default error handler.
+    """
+    if isinstance(obj, binary_type):
+        return obj
+    original_errors = errors
+    if errors in _COMPOSED_ERROR_HANDLERS:
+        if HAS_SURROGATEESCAPE:
+            errors = 'surrogateescape'
+        elif errors == 'surrogate_or_strict':
+            errors = 'strict'
+        else:
+            errors = 'replace'
+    if isinstance(obj, text_type):
+        try:
+            return obj.encode(encoding, errors)
+        except UnicodeEncodeError:
+            if original_errors in (None, 'surrogate_then_replace'):
+                return_string = obj.encode('utf-8', 'surrogateescape')
+                return_string = return_string.decode('utf-8', 'replace')
+                return return_string.encode(encoding, 'replace')
+            raise
+    if nonstring == 'simplerepr':
+        try:
+            value = str(obj)
+        except UnicodeError:
+            try:
+                value = repr(obj)
+            except UnicodeError:
+                return to_bytes('')
+    elif nonstring == 'passthru':
+        return obj
+    elif nonstring == 'empty':
+        return to_bytes('')
+    elif nonstring == 'strict':
+        raise TypeError('obj must be a string type')
+    else:
+        raise TypeError("Invalid value %s for to_bytes' nonstring parameter" % nonstring)
+    return to_bytes(value, encoding, errors)
+
+----------
+
+@patch('ansible.parsing.vault.subprocess.call')
+def test_edit_file_helper_symlink_target(self, mock_sp_call):
+    self._test_dir = self._create_test_dir()
+    src_file_contents = to_bytes('some info in a file\nyup.')
+    src_file_path = self._create_file(self._test_dir, 'src_file', content=src_file_contents)
+    src_file_link_path = os.path.join(self._test_dir, 'a_link_to_dest_file')
+    os.symlink(src_file_path, src_file_link_path)
+    mock_sp_call.side_effect = self._faux_command
+    ve = self._vault_editor()
+    b_ciphertext = ve._edit_file_helper(src_file_link_path, self.vault_secret)
+    self.assertNotEqual(src_file_contents, b_ciphertext, 'b_ciphertext should be encrypted and not equal to src_contents')
+
+----------
+
+def _create_test_dir(self):
+    suffix = '_ansible_unit_test_%s_' % self.__class__.__name__
+    return tempfile.mkdtemp(suffix=suffix)
+def _create_file(self, test_dir, name, content=None, symlink=False):
+    file_path = os.path.join(test_dir, name)
+    opened_file = open(file_path, 'wb')
+    if content:
+        opened_file.write(content)
+    opened_file.close()
+    return file_path
+def _vault_editor(self, vault_secrets=None):
+    if vault_secrets is None:
+        vault_secrets = self._secrets(self.vault_password)
+    return VaultEditor(VaultLib(vault_secrets))
+def _faux_command(self, tmp_path):
+    pass
+
+Test Class Name: TestVaultEditor

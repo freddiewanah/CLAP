@@ -1,0 +1,34 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_response_ssl_certificate(self):
+    crawler = get_crawler(SingleRequestSpider)
+    url = self.mockserver.url('/echo?body=test', is_secure=True)
+    yield crawler.crawl(seed=url, mockserver=self.mockserver)
+    cert = crawler.spider.meta['responses'][0].certificate
+    self.assertIsInstance(cert, Certificate)
+    self.assertEqual(cert.getSubject().commonName, b'localhost')
+    self.assertEqual(cert.getIssuer().commonName, b'localhost')
+
+----------
+
+
+
+Test Class Name: CrawlSpiderTestCase

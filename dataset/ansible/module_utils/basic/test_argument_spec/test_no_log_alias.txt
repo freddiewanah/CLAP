@@ -1,0 +1,20 @@
+def get_warning_messages():
+    """Return a tuple of warning messages accumulated over this run"""
+    return tuple(_global_warnings)
+
+----------
+
+@pytest.mark.parametrize('stdin', [{'pass': 'testing'}], indirect=['stdin'])
+def test_no_log_alias(stdin, capfd):
+    """Given module parameters that use an alias for a parameter that matches
+    PASSWORD_MATCH and has no_log=True set, a warning should not be issued.
+    """
+    arg_spec = {'other_pass': {'no_log': True, 'aliases': ['pass']}}
+    am = basic.AnsibleModule(arg_spec)
+    assert len(get_warning_messages()) == 0
+
+----------
+
+
+
+Test Class Name: TestLoadFileCommonArguments

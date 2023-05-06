@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command(u'pat-get', 'command not found: pat-get'), Command(u'ls', 'command not found: ls'), Command(u'агсл', 'command not found: агсл'), Command(u'фзе-пуе', 'some info'), Command(u'שפא-עקא', 'some info'), Command(u'녀애 ㅣㄴ', 'some info')])
+def test_not_match(command):
+    assert not switch_lang.match(command)
+
+----------
+
+
+
+Test Class Name: default

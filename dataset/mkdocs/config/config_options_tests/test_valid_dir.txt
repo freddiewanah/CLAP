@@ -1,0 +1,21 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_valid_dir(self) -> None:
+    for cls in (c.Dir, c.FilesystemObject):
+        with self.subTest(cls):
+            d = os.path.dirname(__file__)
+
+            class Schema(Config):
+                option = cls(exists=True)
+            conf = self.get_config(Schema, {'option': d})
+            assert_type(conf.option, str)
+            self.assertEqual(conf.option, d)
+
+----------
+
+
+
+Test Class Name: FilesystemObjectTest

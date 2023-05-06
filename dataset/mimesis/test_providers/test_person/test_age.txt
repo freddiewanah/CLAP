@@ -1,0 +1,26 @@
+def age(self, minimum: int=16, maximum: int=66) -> int:
+    """Get a random integer value.
+
+        :param maximum: Maximum value of age.
+        :param minimum: Minimum value of age.
+        :return: Random integer.
+
+        :Example:
+            23.
+        """
+    age = self.random.randint(minimum, maximum)
+    self._store['age'] = age
+    return age
+
+----------
+
+@pytest.mark.parametrize('minimum, maximum', [(16, 18), (18, 21), (22, 28)])
+def test_age(self, _person, minimum, maximum):
+    result = _person.age(minimum, maximum)
+    assert result >= minimum and result <= maximum
+
+----------
+
+
+
+Test Class Name: TestPerson

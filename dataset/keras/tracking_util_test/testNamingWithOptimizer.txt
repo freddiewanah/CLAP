@@ -1,0 +1,76 @@
+@tf.__internal__.tracking.no_automatic_dependency_tracking
+@traceback_utils.filter_traceback
+def pop(self):
+    """Removes the last layer in the model.
+
+        Raises:
+            TypeError: if there are no layers in the model.
+        """
+    if not self.layers:
+        raise TypeError('There are no layers in the model.')
+    layer = self._self_tracked_trackables.pop()
+    self._layer_call_argspecs.pop(layer)
+    if not self.layers:
+        self.outputs = None
+        self.inputs = None
+        self.built = False
+        self._inferred_input_shape = None
+        self._has_explicit_input_shape = False
+        self._graph_initialized = False
+    elif self._graph_initialized:
+        self.layers[-1]._outbound_nodes = []
+        self.outputs = [self.layers[-1].output]
+        self._init_graph_network(self.inputs, self.outputs)
+        self.built = True
+
+----------
+
+@tf_test_utils.run_in_graph_and_eager_modes(assert_no_eager_garbage=True)
+def testNamingWithOptimizer(self):
+    input_value = tf.constant([[3.0]])
+    model = MyModel()
+    other_model = MyModel()
+    optimizer = adam.Adam(0.001)
+    step = tf.compat.v1.train.get_or_create_global_step()
+    root_trackable = tf.train.Checkpoint(optimizer=optimizer, model=model, step=step)
+    with tf.GradientTape() as tape:
+        loss = model(input_value)
+    variables = model.trainable_variables
+    gradients = tape.gradient(loss, variables)
+    train_op = tf.group(optimizer.apply_gradients(zip(gradients, variables)), step.assign_add(1))
+    with tf.GradientTape() as tape:
+        loss = other_model(input_value)
+    variables = other_model.trainable_variables
+    gradients = tape.gradient(loss, variables)
+    optimizer.apply_gradients(zip(gradients, variables))
+    self.evaluate(trackable_utils.gather_initializers(root_trackable))
+    self.evaluate(train_op)
+    (named_variables, serialized_graph, _) = tf.__internal__.tracking.ObjectGraphView(root_trackable).serialize_object_graph()
+    expected_slot_keys = ('model/_second/kernel/.OPTIMIZER_SLOT/optimizer/m', 'model/_second/kernel/.OPTIMIZER_SLOT/optimizer/v', 'model/_named_dense/kernel/.OPTIMIZER_SLOT/optimizer/m', 'model/_named_dense/kernel/.OPTIMIZER_SLOT/optimizer/v', 'model/_named_dense/bias/.OPTIMIZER_SLOT/optimizer/m', 'model/_named_dense/bias/.OPTIMIZER_SLOT/optimizer/v')
+    expected_checkpoint_names = ('step', 'model/_second/kernel', 'model/_named_dense/kernel', 'model/_named_dense/bias', 'model/_non_layer/a_variable', 'optimizer/learning_rate', 'optimizer/beta_1', 'optimizer/beta_2', 'optimizer/iter', 'optimizer/decay') + expected_slot_keys
+    suffix = '/.ATTRIBUTES/VARIABLE_VALUE'
+    expected_checkpoint_names = [name + suffix for name in expected_checkpoint_names]
+    named_variables = {v.name: v for v in named_variables}
+    self.assertEqual(len(expected_checkpoint_names), len(named_variables.keys()))
+    expected_names = {'step' + suffix: 'global_step', 'model/_second/kernel' + suffix: 'my_model/dense_1/kernel', 'model/_named_dense/kernel' + suffix: 'my_model/dense/kernel', 'optimizer/beta_1' + suffix: 'Adam/beta_1', 'optimizer/beta_2' + suffix: 'Adam/beta_2'}
+    for nodes in serialized_graph.nodes:
+        for attribute in nodes.attributes:
+            expected_name = expected_names.pop(attribute.checkpoint_key, None)
+            if expected_name is not None:
+                self.assertEqual(expected_name, attribute.full_name)
+    self.assertEmpty(expected_names)
+    self.assertEqual('optimizer', serialized_graph.nodes[0].children[1].local_name)
+    optimizer_node = serialized_graph.nodes[serialized_graph.nodes[0].children[1].node_id]
+    children = [node.local_name for node in optimizer_node.children]
+    self.assertEqual(len(['beta_1', 'beta_2', 'iter', 'decay', 'learning_rate']), len(children))
+    serialized_slot_keys = []
+    for slot in optimizer_node.slot_variables:
+        for attribute in serialized_graph.nodes[slot.slot_variable_node_id].attributes:
+            serialized_slot_keys.append(attribute.checkpoint_key)
+    self.assertEqual(len([key + suffix for key in expected_slot_keys]), len(serialized_slot_keys))
+
+----------
+
+
+
+Test Class Name: CheckpointingTests

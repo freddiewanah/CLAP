@@ -1,0 +1,41 @@
+def get_relative_url(url: str, other: str) -> str:
+    """
+    Return given url relative to other.
+
+    Both are operated as slash-separated paths, similarly to the 'path' part of a URL.
+    The last component of `other` is skipped if it contains a dot (considered a file).
+    Actual URLs (with schemas etc.) aren't supported. The leading slash is ignored.
+    Paths are normalized ('..' works as parent directory), but going higher than the
+    root has no effect ('foo/../../bar' ends up just as 'bar').
+    """
+    (dirname, _, basename) = other.rpartition('/')
+    if '.' in basename:
+        other = dirname
+    other_parts = _norm_parts(other)
+    dest_parts = _norm_parts(url)
+    common = 0
+    for (a, b) in zip(other_parts, dest_parts):
+        if a != b:
+            break
+        common += 1
+    rel_parts = ['..'] * (len(other_parts) - common) + dest_parts[common:]
+    relurl = '/'.join(rel_parts) or '.'
+    return relurl + '/' if url.endswith('/') else relurl
+
+----------
+
+def test_get_relative_url_empty(self):
+    for url in ['', '.', '/.']:
+        for other in ['', '.', '/', '/.']:
+            with self.subTest(url=url, other=other):
+                self.assertEqual(utils.get_relative_url(url, other), '.')
+    self.assertEqual(utils.get_relative_url('/', ''), './')
+    self.assertEqual(utils.get_relative_url('/', '/'), './')
+    self.assertEqual(utils.get_relative_url('/', '.'), './')
+    self.assertEqual(utils.get_relative_url('/', '/.'), './')
+
+----------
+
+
+
+Test Class Name: UtilsTests

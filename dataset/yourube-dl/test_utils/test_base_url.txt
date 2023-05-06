@@ -1,0 +1,17 @@
+def base_url(url):
+    return re.match('https?://[^?#&]+/', url).group()
+
+----------
+
+def test_base_url(self):
+    self.assertEqual(base_url('http://foo.de/'), 'http://foo.de/')
+    self.assertEqual(base_url('http://foo.de/bar'), 'http://foo.de/')
+    self.assertEqual(base_url('http://foo.de/bar/'), 'http://foo.de/bar/')
+    self.assertEqual(base_url('http://foo.de/bar/baz'), 'http://foo.de/bar/')
+    self.assertEqual(base_url('http://foo.de/bar/baz?x=z/x/c'), 'http://foo.de/bar/')
+
+----------
+
+
+
+Test Class Name: TestUtil

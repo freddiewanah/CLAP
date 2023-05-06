@@ -1,0 +1,22 @@
+def work_experience(self, working_start_age: int=22) -> int:
+    """Get a work experience.
+
+        :param working_start_age: Age then person start to work.
+        :return: Depend on previous generated age.
+        """
+    age = self._store['age']
+    if age == 0:
+        age = self.age()
+    return max(age - working_start_age, 0)
+
+----------
+
+def test_work_experience_extreme(self, _person):
+    result = _person.work_experience(working_start_age=100000)
+    assert result == 0
+
+----------
+
+
+
+Test Class Name: TestPerson

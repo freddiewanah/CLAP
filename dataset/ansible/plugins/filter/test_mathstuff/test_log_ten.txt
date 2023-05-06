@@ -1,0 +1,20 @@
+def logarithm(x, base=math.e):
+    try:
+        if base == 10:
+            return math.log10(x)
+        else:
+            return math.log(x, base)
+    except TypeError as e:
+        raise AnsibleFilterTypeError('log() can only be used on numbers: %s' % to_native(e))
+
+----------
+
+def test_log_ten(self):
+    assert ms.logarithm(10, 10) == 1.0
+    assert ms.logarithm(69, 10) * 1000 // 1 == 1838
+
+----------
+
+
+
+Test Class Name: TestLogarithm

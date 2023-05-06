@@ -1,0 +1,30 @@
+def check_type_float(value):
+    """Verify that value is a float or convert it to a float and return it
+
+    Raises :class:`TypeError` if unable to convert to a float
+
+    :arg value: float, int, str, or bytes to verify or convert and return.
+
+    :returns: float of given value.
+    """
+    if isinstance(value, float):
+        return value
+    if isinstance(value, (binary_type, text_type, int)):
+        try:
+            return float(value)
+        except ValueError:
+            pass
+    raise TypeError('%s cannot be converted to a float' % type(value))
+
+----------
+
+def test_check_type_float():
+    test_cases = (('1.5', 1.5), ('1.5', 1.5), (u'1.5', 1.5), (1002, 1002.0), (1.0, 1.0), (3.141592653589793, 3.141592653589793), ('3.141592653589793', 3.141592653589793), (b'3.141592653589793', 3.141592653589793))
+    for case in test_cases:
+        assert case[1] == check_type_float(case[0])
+
+----------
+
+
+
+Test Class Name: default

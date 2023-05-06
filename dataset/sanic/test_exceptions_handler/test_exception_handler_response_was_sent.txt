@@ -1,0 +1,46 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_exception_handler_response_was_sent(app: Sanic, caplog: LogCaptureFixture, message_in_records: Callable[[List[logging.LogRecord], str], bool]):
+    exception_handler_ran = False
+
+    @app.exception(ServerError)
+    async def exception_handler(request, exception):
+        nonlocal exception_handler_ran
+        exception_handler_ran = True
+        return text('Error')
+
+    @app.route('/1')
+    async def handler1(request: Request):
+        response = await request.respond()
+        await response.send('some text')
+        raise ServerError('Exception')
+
+    @app.route('/2')
+    async def handler2(request: Request):
+        await request.respond()
+        raise ServerError('Exception')
+    with caplog.at_level(logging.WARNING):
+        (_, response) = app.test_client.get('/1')
+        assert 'some text' in response.text
+    message_in_records(caplog.records, 'An error occurred while handling the request after at least some part of the response was sent to the client. Therefore, the response from your custom exception ')
+    (_, response) = app.test_client.get('/2')
+    assert 'Error' in response.text
+
+----------
+
+
+
+Test Class Name: ModuleNotFoundError

@@ -1,0 +1,22 @@
+def escape(text):
+    """
+    Minimal HTML escaping, not for attribute values (unlike html.escape).
+    """
+    return f'{text}'.replace('&', '&amp;').replace('<', '&lt;')
+
+----------
+
+def test_route_with_regex_named_group_invalid(app):
+
+    @app.route('/path/to/<ext:file\\.(?P<wrong>txt)>')
+    async def handler(request, ext):
+        return text(ext)
+    with pytest.raises(InvalidUsage) as e:
+        app.router.finalize()
+    assert e.match(re.escape('Named group (wrong) must match your named parameter (ext)'))
+
+----------
+
+
+
+Test Class Name: default

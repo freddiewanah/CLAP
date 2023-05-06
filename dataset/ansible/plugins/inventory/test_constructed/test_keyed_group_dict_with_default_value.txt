@@ -1,0 +1,23 @@
+def get_host(self, hostname):
+    """ fetch host object using name deal with implicit localhost """
+    matching_host = self.hosts.get(hostname, None)
+    if matching_host is None and hostname in C.LOCALHOST:
+        matching_host = self._create_implicit_localhost(hostname)
+    return matching_host
+
+----------
+
+def test_keyed_group_dict_with_default_value(inventory_module):
+    inventory_module.inventory.add_host('server0')
+    inventory_module.inventory.set_variable('server0', 'tags', {'environment': 'prod', 'status': ''})
+    host = inventory_module.inventory.get_host('server0')
+    keyed_groups = [{'prefix': 'tag', 'separator': '_', 'key': 'tags', 'default_value': 'running'}]
+    inventory_module._add_host_to_keyed_groups(keyed_groups, host.vars, host.name, strict=False)
+    for group_name in ('tag_environment_prod', 'tag_status_running'):
+        assert group_name in inventory_module.inventory.groups
+
+----------
+
+
+
+Test Class Name: default

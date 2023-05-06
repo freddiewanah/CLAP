@@ -1,0 +1,14 @@
+@classmethod
+def from_dict(cls: Type[A], kvs: Json, *, infer_missing=False) -> A:
+    return _decode_dataclass(cls, kvs, infer_missing)
+
+----------
+
+def test_undefined_parameters_raise_valid(valid_response):
+    assert valid_response == WellKnownAPIDump.from_dict(valid_response).to_dict()
+
+----------
+
+
+
+Test Class Name: UnknownAPIDumpCamelCase

@@ -1,0 +1,19 @@
+def century(self) -> str:
+    """Get a random century.
+
+        :return: Century.
+        """
+    return self.random.choice(ROMAN_NUMS)
+
+----------
+
+def test_century(self, _datetime):
+    result = _datetime.century()
+    assert result is not None
+    assert isinstance(result, str)
+
+----------
+
+
+
+Test Class Name: TestDatetime

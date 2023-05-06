@@ -1,0 +1,18 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@parametrize_extensions
+@parametrize_filename
+@parametrize_script
+def test_match(ext, tar_error, filename, unquoted, quoted, script, fixed):
+    tar_error(unquoted.format(ext))
+    assert match(Command(script.format(filename.format(ext)), ''))
+
+----------
+
+
+
+Test Class Name: default

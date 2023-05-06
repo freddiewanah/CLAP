@@ -1,0 +1,18 @@
+def sentence(self) -> str:
+    """Get a random sentence from text.
+
+        :return: Sentence.
+        """
+    return self.text(quantity=1)
+
+----------
+
+def test_sentence(self, text):
+    result = text.sentence().strip()
+    assert result in text._data['text']
+
+----------
+
+
+
+Test Class Name: TestText

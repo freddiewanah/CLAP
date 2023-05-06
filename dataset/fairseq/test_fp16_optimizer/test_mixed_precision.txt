@@ -1,0 +1,33 @@
+@classmethod
+def build_optimizer(cls, cfg: DictConfig, params, **kwargs):
+    """
+        Args:
+            cfg (omegaconf.DictConfig): fairseq args
+            params (iterable): iterable of parameters to optimize
+        """
+    flatten = not getattr(cfg.common, 'fp16_no_flatten_grads', False)
+    if getattr(cfg.common, 'bf16', False):
+        flatten = False
+    fp32_params = cls.build_fp32_params(cfg.optimizer, params, flatten=flatten)
+    if flatten:
+        fp32_optimizer = optim.build_optimizer(cfg.optimizer, [fp32_params])
+    else:
+        fp32_optimizer = optim.build_optimizer(cfg.optimizer, fp32_params)
+    if flatten and (not fp32_optimizer.supports_flat_params):
+        raise RuntimeError(f'chosen optimizer {fp32_optimizer.__class__.__name__} does not support flat params, please set --fp16-no-flatten-grads')
+    return cls(cfg, params, fp32_optimizer, fp32_params, **kwargs)
+
+----------
+
+def test_mixed_precision(self):
+    model = copy.deepcopy(self.model)
+    params = list(model.parameters())
+    optimizer = FP16Optimizer.build_optimizer(self.cfg_dls, params)
+    self.run_iter(model, params, optimizer)
+    self.assertTrue(all((torch.all(fp32_params.eq(torch.tensor([3.1, 5.1], device='cuda:0', requires_grad=True))) for fp32_params in optimizer.fp32_params.values())))
+
+----------
+
+
+
+Test Class Name: TestGradientScaling

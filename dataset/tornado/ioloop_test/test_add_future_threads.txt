@@ -1,0 +1,30 @@
+def stop(self) -> None:
+    """Stop the I/O loop.
+
+        If the event loop is not currently running, the next call to `start()`
+        will return immediately.
+
+        Note that even after `stop` has been called, the `IOLoop` is not
+        completely stopped until `IOLoop.start` has also returned.
+        Some work that was scheduled before the call to `stop` may still
+        be run before the `IOLoop` shuts down.
+        """
+    raise NotImplementedError()
+
+----------
+
+def test_add_future_threads(self):
+    with futures.ThreadPoolExecutor(1) as pool:
+
+        def dummy():
+            pass
+        self.io_loop.add_future(pool.submit(dummy), lambda future: self.stop(future))
+        future = self.wait()
+        self.assertTrue(future.done())
+        self.assertTrue(future.result() is None)
+
+----------
+
+
+
+Test Class Name: TestIOLoopFutures

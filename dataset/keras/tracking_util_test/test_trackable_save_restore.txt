@@ -1,0 +1,174 @@
+@traceback_utils.filter_traceback
+def evaluate(self, x=None, y=None, batch_size=None, verbose='auto', sample_weight=None, steps=None, callbacks=None, max_queue_size=10, workers=1, use_multiprocessing=False, return_dict=False, **kwargs):
+    """Returns the loss value & metrics values for the model in test mode.
+
+        Computation is done in batches (see the `batch_size` arg.)
+
+        Args:
+            x: Input data. It could be:
+              - A Numpy array (or array-like), or a list of arrays
+                (in case the model has multiple inputs).
+              - A TensorFlow tensor, or a list of tensors
+                (in case the model has multiple inputs).
+              - A dict mapping input names to the corresponding array/tensors,
+                if the model has named inputs.
+              - A `tf.data` dataset. Should return a tuple
+                of either `(inputs, targets)` or
+                `(inputs, targets, sample_weights)`.
+              - A generator or `keras.utils.Sequence` returning `(inputs,
+                targets)` or `(inputs, targets, sample_weights)`.
+              A more detailed description of unpacking behavior for iterator
+              types (Dataset, generator, Sequence) is given in the `Unpacking
+              behavior for iterator-like inputs` section of `Model.fit`.
+            y: Target data. Like the input data `x`, it could be either Numpy
+              array(s) or TensorFlow tensor(s). It should be consistent with `x`
+              (you cannot have Numpy inputs and tensor targets, or inversely).
+              If `x` is a dataset, generator or `keras.utils.Sequence` instance,
+              `y` should not be specified (since targets will be obtained from
+              the iterator/dataset).
+            batch_size: Integer or `None`. Number of samples per batch of
+              computation. If unspecified, `batch_size` will default to 32. Do
+              not specify the `batch_size` if your data is in the form of a
+              dataset, generators, or `keras.utils.Sequence` instances (since
+              they generate batches).
+            verbose: `"auto"`, 0, 1, or 2. Verbosity mode.
+                0 = silent, 1 = progress bar, 2 = single line.
+                `"auto"` defaults to 1 for most cases, and to 2 when used with
+                `ParameterServerStrategy`. Note that the progress bar is not
+                particularly useful when logged to a file, so `verbose=2` is
+                recommended when not running interactively (e.g. in a production
+                environment).
+            sample_weight: Optional Numpy array of weights for the test samples,
+              used for weighting the loss function. You can either pass a flat
+              (1D) Numpy array with the same length as the input samples
+                (1:1 mapping between weights and samples), or in the case of
+                  temporal data, you can pass a 2D array with shape `(samples,
+                  sequence_length)`, to apply a different weight to every
+                  timestep of every sample. This argument is not supported when
+                  `x` is a dataset, instead pass sample weights as the third
+                  element of `x`.
+            steps: Integer or `None`. Total number of steps (batches of samples)
+              before declaring the evaluation round finished. Ignored with the
+              default value of `None`. If x is a `tf.data` dataset and `steps`
+              is None, 'evaluate' will run until the dataset is exhausted. This
+              argument is not supported with array inputs.
+            callbacks: List of `keras.callbacks.Callback` instances. List of
+              callbacks to apply during evaluation. See
+              [callbacks](https://www.tensorflow.org/api_docs/python/tf/keras/callbacks).
+            max_queue_size: Integer. Used for generator or
+              `keras.utils.Sequence` input only. Maximum size for the generator
+              queue. If unspecified, `max_queue_size` will default to 10.
+            workers: Integer. Used for generator or `keras.utils.Sequence` input
+              only. Maximum number of processes to spin up when using
+              process-based threading. If unspecified, `workers` will default to
+              1.
+            use_multiprocessing: Boolean. Used for generator or
+              `keras.utils.Sequence` input only. If `True`, use process-based
+              threading. If unspecified, `use_multiprocessing` will default to
+              `False`. Note that because this implementation relies on
+              multiprocessing, you should not pass non-picklable arguments to
+              the generator as they can't be passed easily to children
+              processes.
+            return_dict: If `True`, loss and metric results are returned as a
+              dict, with each key being the name of the metric. If `False`, they
+              are returned as a list.
+            **kwargs: Unused at this time.
+
+        See the discussion of `Unpacking behavior for iterator-like inputs` for
+        `Model.fit`.
+
+        Returns:
+            Scalar test loss (if the model has a single output and no metrics)
+            or list of scalars (if the model has multiple outputs
+            and/or metrics). The attribute `model.metrics_names` will give you
+            the display labels for the scalar outputs.
+
+        Raises:
+            RuntimeError: If `model.evaluate` is wrapped in a `tf.function`.
+        """
+    base_layer.keras_api_gauge.get_cell('evaluate').set(True)
+    version_utils.disallow_legacy_graph('Model', 'evaluate')
+    self._assert_compile_was_called()
+    self._check_call_args('evaluate')
+    self._check_sample_weight_warning(x, sample_weight)
+    _disallow_inside_tf_function('evaluate')
+    use_cached_eval_dataset = kwargs.pop('_use_cached_eval_dataset', False)
+    if kwargs:
+        raise TypeError(f'Invalid keyword arguments: {list(kwargs.keys())}')
+    if self.distribute_strategy._should_use_with_coordinator:
+        self._cluster_coordinator = tf.distribute.experimental.coordinator.ClusterCoordinator(self.distribute_strategy)
+    verbose = _get_verbosity(verbose, self.distribute_strategy)
+    if self._pss_evaluation_shards:
+        self._disallow_exact_eval_with_add_metrics()
+    with self.distribute_strategy.scope():
+        if use_cached_eval_dataset and getattr(self, '_eval_data_handler', None) is not None:
+            data_handler = self._eval_data_handler
+        else:
+            data_handler = data_adapter.get_data_handler(x=x, y=y, sample_weight=sample_weight, batch_size=batch_size, steps_per_epoch=steps, initial_epoch=0, epochs=1, max_queue_size=max_queue_size, workers=workers, use_multiprocessing=use_multiprocessing, model=self, steps_per_execution=self._steps_per_execution, pss_evaluation_shards=self._pss_evaluation_shards)
+        if not isinstance(callbacks, callbacks_module.CallbackList):
+            callbacks = callbacks_module.CallbackList(callbacks, add_history=True, add_progbar=verbose != 0, model=self, verbose=verbose, epochs=1, steps=data_handler.inferred_steps)
+        logs = {}
+        test_function_runner = self._get_test_function_runner(callbacks)
+        self._test_counter.assign(0)
+        callbacks.on_test_begin()
+        for (_, dataset_or_iterator) in data_handler.enumerate_epochs():
+            self.reset_metrics()
+            with data_handler.catch_stop_iteration():
+                for step in data_handler.steps():
+                    with tf.profiler.experimental.Trace('test', step_num=step, _r=1):
+                        callbacks.on_test_batch_begin(step)
+                        logs = test_function_runner.run_step(dataset_or_iterator, data_handler, step, self._pss_evaluation_shards)
+        logs = tf_utils.sync_to_numpy_or_python_type(logs)
+        if self._pss_evaluation_shards:
+            logs = self._aggregate_exact_metrics(logs)
+        else:
+            logs = self._validate_and_get_metrics_result(logs)
+        callbacks.on_test_end(logs=logs)
+        if return_dict:
+            return logs
+        else:
+            return flatten_metrics_in_order(logs, self.metrics_names)
+
+----------
+
+def test_trackable_save_restore(self):
+    with self.test_session():
+
+        def _templated():
+            v = tf.compat.v1.get_variable('v', shape=[1], initializer=tf.compat.v1.zeros_initializer(), use_resource=True)
+            v2 = tf.compat.v1.get_variable('v2', shape=[1], initializer=tf.compat.v1.zeros_initializer(), use_resource=True)
+            manual = _ManualScope()
+            return (v, v + 1.0, v2, manual, manual())
+        save_template = tf.compat.v1.make_template('s1', _templated)
+        (v1_save, _, v2_save, manual_scope, manual_scope_v) = save_template()
+        self.assertEqual(set([id(v1_save), id(v2_save), id(manual_scope), id(manual_scope_v), id(save_template)]), set(map(id, trackable_utils.list_objects(save_template))))
+        self.assertDictEqual({'in_manual_scope': manual_scope_v}, manual_scope._trackable_children())
+        optimizer = adam.Adam(0.0)
+        save_root = tf.train.Checkpoint(my_template=save_template, optimizer=optimizer)
+        optimizer.minimize(v1_save.read_value, var_list=[v1_save])
+        self.evaluate([v.initializer for v in save_template.variables])
+        optimizer_variables = optimizer.variables() + list(optimizer._hyper.values())
+        self.evaluate([v.initializer for v in optimizer_variables])
+        self.evaluate(v1_save.assign([12.0]))
+        self.evaluate(v2_save.assign([14.0]))
+        checkpoint_directory = self.get_temp_dir()
+        checkpoint_prefix = os.path.join(checkpoint_directory, 'ckpt')
+        save_path = save_root.save(checkpoint_prefix)
+        load_template = tf.compat.v1.make_template('s2', _templated)
+        load_optimizer = adam.Adam(0.0)
+        load_root = tf.train.Checkpoint(my_template=load_template, optimizer=load_optimizer)
+        status = load_root.restore(save_path)
+        (var, var_plus_one, var2, _, _) = load_template()
+        load_optimizer.minimize(var.read_value, var_list=[var])
+        children = load_template._trackable_children()
+        self.assertEqual({'v', 'v2', 'ManualScope'}, children.keys())
+        status.assert_consumed().run_restore_ops()
+        self.assertAllEqual([12.0], self.evaluate(var))
+        self.assertAllEqual([13.0], self.evaluate(var_plus_one))
+        self.assertAllEqual([14.0], self.evaluate(var2))
+
+----------
+
+
+
+Test Class Name: TemplateTests

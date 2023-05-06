@@ -1,0 +1,19 @@
+def lock(self) -> None:
+    self._lock = True
+
+----------
+
+def test_lock():
+    ctx = SharedContext()
+    assert ctx.is_locked is False
+    ctx.lock()
+    assert ctx.is_locked is True
+    message = 'Cannot set item on locked SharedContext object'
+    with pytest.raises(RuntimeError, match=message):
+        ctx.item = 1
+
+----------
+
+
+
+Test Class Name: default

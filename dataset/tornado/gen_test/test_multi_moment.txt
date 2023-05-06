@@ -1,0 +1,64 @@
+def multi(children: Union[List[_Yieldable], Dict[Any, _Yieldable]], quiet_exceptions: 'Union[Type[Exception], Tuple[Type[Exception], ...]]'=()) -> 'Union[Future[List], Future[Dict]]':
+    """Runs multiple asynchronous operations in parallel.
+
+    ``children`` may either be a list or a dict whose values are
+    yieldable objects. ``multi()`` returns a new yieldable
+    object that resolves to a parallel structure containing their
+    results. If ``children`` is a list, the result is a list of
+    results in the same order; if it is a dict, the result is a dict
+    with the same keys.
+
+    That is, ``results = yield multi(list_of_futures)`` is equivalent
+    to::
+
+        results = []
+        for future in list_of_futures:
+            results.append(yield future)
+
+    If any children raise exceptions, ``multi()`` will raise the first
+    one. All others will be logged, unless they are of types
+    contained in the ``quiet_exceptions`` argument.
+
+    In a ``yield``-based coroutine, it is not normally necessary to
+    call this function directly, since the coroutine runner will
+    do it automatically when a list or dict is yielded. However,
+    it is necessary in ``await``-based coroutines, or to pass
+    the ``quiet_exceptions`` argument.
+
+    This function is available under the names ``multi()`` and ``Multi()``
+    for historical reasons.
+
+    Cancelling a `.Future` returned by ``multi()`` does not cancel its
+    children. `asyncio.gather` is similar to ``multi()``, but it does
+    cancel its children.
+
+    .. versionchanged:: 4.2
+       If multiple yieldables fail, any exceptions after the first
+       (which is raised) will be logged. Added the ``quiet_exceptions``
+       argument to suppress this logging for selected exception types.
+
+    .. versionchanged:: 4.3
+       Replaced the class ``Multi`` and the function ``multi_future``
+       with a unified function ``multi``. Added support for yieldables
+       other than ``YieldPoint`` and `.Future`.
+
+    """
+    return multi_future(children, quiet_exceptions=quiet_exceptions)
+
+----------
+
+def test_multi_moment(self):
+
+    @gen.coroutine
+    def wait_a_moment():
+        result = (yield gen.multi([gen.moment, gen.moment]))
+        raise gen.Return(result)
+    loop = self.get_new_ioloop()
+    result = loop.run_sync(wait_a_moment)
+    self.assertEqual(result, [None, None])
+
+----------
+
+
+
+Test Class Name: RunnerGCTest

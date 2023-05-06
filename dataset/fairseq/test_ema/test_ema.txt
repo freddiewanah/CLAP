@@ -1,0 +1,43 @@
+def state_dict():
+    return OrderedDict([(name, agg.state_dict()) for (name, agg) in _aggregators.items()])
+
+----------
+
+def test_ema(self):
+    model = DummyModule()
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+    state = deepcopy(model.state_dict())
+    config = EMAConfig()
+    ema = EMA(model, config)
+    ema._set_decay(config.ema_decay)
+    self.assertEqual(ema.get_decay(), config.ema_decay)
+    self.assertEqual(ema.get_model(), ema.model)
+    self.assertEqual(len(ema.fp32_params), 0)
+    x = torch.randn(32)
+    y = model(x)
+    loss = y.sum()
+    loss.backward()
+    optimizer.step()
+    ema.step(model)
+    ema_state_dict = ema.get_model().state_dict()
+    for (key, param) in model.state_dict().items():
+        prev_param = state[key]
+        ema_param = ema_state_dict[key]
+        if 'version' in key:
+            continue
+        self.assertTorchAllClose(ema_param, config.ema_decay * prev_param + (1 - config.ema_decay) * param)
+    self.assertEqual(len(ema.fp32_params), 0)
+    model2 = DummyModule()
+    ema.reverse(model2)
+    for (key, param) in model2.state_dict().items():
+        ema_param = ema_state_dict[key]
+        self.assertTrue(torch.allclose(ema_param, param))
+    with patch.object(ema, '_step_internal', return_value=None) as mock_method:
+        ema.step(model)
+        mock_method.assert_called_once_with(model, None)
+
+----------
+
+
+
+Test Class Name: TestEMA

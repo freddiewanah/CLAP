@@ -1,0 +1,21 @@
+def ssd_or_hdd(self) -> str:
+    """Get a random value from list.
+
+        :return: HDD or SSD.
+
+        :Example:
+            512GB SSD.
+        """
+    return self.random.choice(HDD_SSD)
+
+----------
+
+def test_ssd_or_hdd(self, hard):
+    result = hard.ssd_or_hdd()
+    assert result in HDD_SSD
+
+----------
+
+
+
+Test Class Name: TestHardware

@@ -1,0 +1,34 @@
+def get_task(self, name: str, *, raise_exception: bool=True) -> Optional[Task]:
+    try:
+        return self._task_registry[name]
+    except KeyError:
+        if raise_exception:
+            raise SanicException(f'Registered task named "{name}" not found.')
+        return None
+
+----------
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason='Not supported in 3.7')
+def test_create_named_task(app):
+
+    async def dummy():
+        ...
+
+    @app.before_server_start
+    async def setup(app, _):
+        app.add_task(dummy, name='dummy_task')
+
+    @app.after_server_start
+    async def stop(app, _):
+        task = app.get_task('dummy_task')
+        assert app._task_registry
+        assert isinstance(task, asyncio.Task)
+        assert task.get_name() == 'dummy_task'
+        app.stop()
+    app.run(single_process=True)
+
+----------
+
+
+
+Test Class Name: default

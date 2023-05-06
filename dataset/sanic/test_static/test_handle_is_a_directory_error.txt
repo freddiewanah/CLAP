@@ -1,0 +1,33 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_handle_is_a_directory_error(app, static_file_directory):
+    error_text = 'Is a directory. Access denied'
+    app.static('/static', static_file_directory)
+
+    @app.exception(Exception)
+    async def handleStaticDirError(request, exception):
+        if isinstance(exception, IsADirectoryError):
+            return text(error_text, status=403)
+        raise exception
+    (request, response) = app.test_client.get('/static/')
+    assert response.status == 403
+    assert response.text == error_text
+
+----------
+
+
+
+Test Class Name: default

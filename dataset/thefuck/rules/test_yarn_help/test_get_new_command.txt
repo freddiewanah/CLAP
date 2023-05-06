@@ -1,0 +1,16 @@
+def open_command(arg):
+    if find_executable('xdg-open'):
+        return 'xdg-open ' + arg
+    return 'open ' + arg
+
+----------
+
+@pytest.mark.parametrize('command, url', [(Command('yarn help clean', output_clean), 'https://yarnpkg.com/en/docs/cli/clean')])
+def test_get_new_command(command, url):
+    assert get_new_command(command) == open_command(url)
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,17 @@
+def parse_locale(locale) -> Locale:
+    try:
+        return Locale.parse(locale, sep='_')
+    except (ValueError, UnknownLocaleError, TypeError) as e:
+        raise ValidationError(f'Invalid value for locale: {str(e)}')
+
+----------
+
+def test_valid_language(self):
+    locale = parse_locale('en')
+    self.assertEqual(locale.language, 'en')
+
+----------
+
+
+
+Test Class Name: LocalizationTests

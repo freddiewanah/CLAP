@@ -1,0 +1,33 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.parametrize('method,attr, expected', [('get', 'text', 'OK1 test'), ('post', 'text', 'OK2 test'), ('put', 'text', 'OK2 test')])
+def test_overload_dynamic_routes(app, method, attr, expected):
+
+    @app.route('/overload/<param>', methods=['GET'])
+    async def handler1(request, param):
+        return text('OK1 ' + param)
+
+    @app.route('/overload/<param>', methods=['POST', 'PUT'])
+    async def handler2(request, param):
+        return text('OK2 ' + param)
+    (request, response) = getattr(app.test_client, method)('/overload/test')
+    assert getattr(response, attr) == expected
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,35 @@
+def run(app, level=logging.DEBUG):
+
+    @app.after_server_start
+    async def stop(app, _):
+        app.stop()
+    with caplog.at_level(level):
+        Sanic.serve()
+    return caplog.record_tuples
+
+----------
+
+@pytest.mark.xfail(reason='Flaky Test on Non Linux Infra')
+def test_unix_socket_creation(caplog: LogCaptureFixture):
+    from socket import AF_UNIX, socket
+    with socket(AF_UNIX) as sock:
+        sock.bind(SOCKPATH)
+    assert os.path.exists(SOCKPATH)
+    ino = os.stat(SOCKPATH).st_ino
+    app = Sanic(name='test')
+
+    @app.after_server_start
+    def running(app: Sanic):
+        assert os.path.exists(SOCKPATH)
+        assert ino != os.stat(SOCKPATH).st_ino
+        app.stop()
+    with caplog.at_level(logging.INFO):
+        app.run(unix=SOCKPATH, single_process=True)
+    assert ('sanic.root', logging.INFO, f"Goin' Fast @ {SOCKPATH} http://...") in caplog.record_tuples
+    assert not os.path.exists(SOCKPATH)
+
+----------
+
+
+
+Test Class Name: default

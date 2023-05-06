@@ -1,0 +1,35 @@
+def apply_augmentations(augmentations: List[Union[Transform, Augmentation]], inputs):
+    """
+    Use ``T.AugmentationList(augmentations)(inputs)`` instead.
+    """
+    if isinstance(inputs, np.ndarray):
+        image_only = True
+        inputs = AugInput(inputs)
+    else:
+        image_only = False
+    tfms = inputs.apply_augmentations(augmentations)
+    return (inputs.image if image_only else inputs, tfms)
+
+----------
+
+def test_apply_rotated_boxes(self):
+    np.random.seed(125)
+    cfg = get_cfg()
+    is_train = True
+    augs = detection_utils.build_augmentation(cfg, is_train)
+    image = np.random.rand(200, 300)
+    (image, transforms) = T.apply_augmentations(augs, image)
+    image_shape = image.shape[:2]
+    assert image_shape == (800, 1200)
+    annotation = {'bbox': [179, 97, 62, 40, -56]}
+    boxes = np.array([annotation['bbox']], dtype=np.float64)
+    transformed_bbox = transforms.apply_rotated_box(boxes)[0]
+    expected_bbox = np.array([484, 388, 248, 160, 56], dtype=np.float64)
+    err_msg = 'transformed_bbox = {}, expected {}'.format(transformed_bbox, expected_bbox)
+    assert np.allclose(transformed_bbox, expected_bbox), err_msg
+
+----------
+
+
+
+Test Class Name: TestTransforms

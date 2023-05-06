@@ -1,0 +1,19 @@
+def street_name(self) -> str:
+    """Get a random street name.
+
+        :return: Street name.
+        """
+    street_names: t.List[str] = self.extract(['street', 'name'])
+    return self.random.choice(street_names)
+
+----------
+
+def test_street_name(self, address):
+    result = address.street_name()
+    assert result in address._data['street']['name']
+
+----------
+
+
+
+Test Class Name: TestAddress

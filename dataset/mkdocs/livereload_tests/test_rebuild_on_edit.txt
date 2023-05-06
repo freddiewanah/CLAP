@@ -1,0 +1,44 @@
+def watch(self, path: str, func: Optional[Callable[[], None]]=None, recursive: bool=True) -> None:
+    """Add the 'path' to watched paths, call the function and reload when any file changes under it."""
+    path = os.path.abspath(path)
+    if func is None or func is self.builder:
+        funct = self.builder
+    else:
+        funct = func
+        warnings.warn("Plugins should not pass the 'func' parameter of watch(). The ability to execute custom callbacks will be removed soon.", DeprecationWarning, stacklevel=2)
+    if path in self._watched_paths:
+        self._watched_paths[path] += 1
+        return
+    self._watched_paths[path] = 1
+
+    def callback(event):
+        if event.is_directory:
+            return
+        log.debug(str(event))
+        with self._rebuild_cond:
+            self._to_rebuild[funct] = True
+            self._rebuild_cond.notify_all()
+    handler = watchdog.events.FileSystemEventHandler()
+    handler.on_any_event = callback
+    log.debug(f"Watching '{path}'")
+    self._watch_refs[path] = self.observer.schedule(handler, path, recursive=recursive)
+
+----------
+
+@tempdir()
+def test_rebuild_on_edit(self, site_dir):
+    started_building = threading.Event()
+    with open(Path(site_dir, 'test'), 'wb') as f:
+        time.sleep(0.01)
+        with testing_server(site_dir, started_building.set) as server:
+            server.watch(site_dir)
+            time.sleep(0.01)
+            f.write(b'hi\n')
+            f.flush()
+            self.assertTrue(started_building.wait(timeout=10))
+
+----------
+
+
+
+Test Class Name: BuildTests

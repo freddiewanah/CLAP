@@ -1,0 +1,19 @@
+def assertPathsEqual(self, a, b, msg=None):
+    self.assertEqual(a.replace(os.sep, '/'), b.replace(os.sep, '/'))
+
+----------
+
+def test_file_name_with_space(self):
+    f = File('foo bar.md', '/path/to/docs', '/path/to/site', use_directory_urls=False)
+    self.assertEqual(f.src_uri, 'foo bar.md')
+    self.assertPathsEqual(f.abs_src_path, '/path/to/docs/foo bar.md')
+    self.assertEqual(f.dest_uri, 'foo bar.html')
+    self.assertPathsEqual(f.abs_dest_path, '/path/to/site/foo bar.html')
+    self.assertEqual(f.url, 'foo%20bar.html')
+    self.assertEqual(f.name, 'foo bar')
+
+----------
+
+
+
+Test Class Name: TestFiles

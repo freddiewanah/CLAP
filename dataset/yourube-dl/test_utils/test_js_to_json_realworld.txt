@@ -1,0 +1,49 @@
+def js_to_json(code):
+    COMMENT_RE = '/\\*(?:(?!\\*/).)*?\\*/|//[^\\n]*'
+    SKIP_RE = '\\s*(?:{comment})?\\s*'.format(comment=COMMENT_RE)
+    INTEGER_TABLE = (('(?s)^(0[xX][0-9a-fA-F]+){skip}:?$'.format(skip=SKIP_RE), 16), ('(?s)^(0+[0-7]+){skip}:?$'.format(skip=SKIP_RE), 8))
+
+    def fix_kv(m):
+        v = m.group(0)
+        if v in ('true', 'false', 'null'):
+            return v
+        elif v.startswith('/*') or v.startswith('//') or v.startswith('!') or (v == ','):
+            return ''
+        if v[0] in ("'", '"'):
+            v = re.sub('(?s)\\\\.|"', lambda m: {'"': '\\"', "\\'": "'", '\\\n': '', '\\x': '\\u00'}.get(m.group(0), m.group(0)), v[1:-1])
+        else:
+            for (regex, base) in INTEGER_TABLE:
+                im = re.match(regex, v)
+                if im:
+                    i = int(im.group(1), base)
+                    return '"%d":' % i if v.endswith(':') else '%d' % i
+        return '"%s"' % v
+    return re.sub('(?sx)\n        "(?:[^"\\\\]*(?:\\\\\\\\|\\\\[\'"nurtbfx/\\n]))*[^"\\\\]*"|\n        \'(?:[^\'\\\\]*(?:\\\\\\\\|\\\\[\'"nurtbfx/\\n]))*[^\'\\\\]*\'|\n        {comment}|,(?={skip}[\\]}}])|\n        (?:(?<![0-9])[eE]|[a-df-zA-DF-Z_])[.a-zA-Z_0-9]*|\n        \\b(?:0[xX][0-9a-fA-F]+|0+[0-7]+)(?:{skip}:)?|\n        [0-9]+(?={skip}:)|\n        !+\n        '.format(comment=COMMENT_RE, skip=SKIP_RE), fix_kv, code)
+
+----------
+
+def test_js_to_json_realworld(self):
+    inp = "{\n            'clip':{'provider':'pseudo'}\n        }"
+    self.assertEqual(js_to_json(inp), '{\n            "clip":{"provider":"pseudo"}\n        }')
+    json.loads(js_to_json(inp))
+    inp = "{\n            'playlist':[{'controls':{'all':null}}]\n        }"
+    self.assertEqual(js_to_json(inp), '{\n            "playlist":[{"controls":{"all":null}}]\n        }')
+    inp = '"The CW\\\'s \\\'Crazy Ex-Girlfriend\\\'"'
+    self.assertEqual(js_to_json(inp), '"The CW\'s \'Crazy Ex-Girlfriend\'"')
+    inp = '"SAND Number: SAND 2013-7800P\\nPresenter: Tom Russo\\nHabanero Software Training - Xyce Software\\nXyce, Sandia\\u0027s"'
+    json_code = js_to_json(inp)
+    self.assertEqual(json.loads(json_code), json.loads(inp))
+    inp = "{\n            0:{src:'skipped', type: 'application/dash+xml'},\n            1:{src:'skipped', type: 'application/vnd.apple.mpegURL'},\n        }"
+    self.assertEqual(js_to_json(inp), '{\n            "0":{"src":"skipped", "type": "application/dash+xml"},\n            "1":{"src":"skipped", "type": "application/vnd.apple.mpegURL"}\n        }')
+    inp = '{"foo":101}'
+    self.assertEqual(js_to_json(inp), '{"foo":101}')
+    inp = '{"duration": "00:01:07"}'
+    self.assertEqual(js_to_json(inp), '{"duration": "00:01:07"}')
+    inp = '{segments: [{"offset":-3.885780586188048e-16,"duration":39.75000000000001}]}'
+    self.assertEqual(js_to_json(inp), '{"segments": [{"offset":-3.885780586188048e-16,"duration":39.75000000000001}]}')
+
+----------
+
+
+
+Test Class Name: TestUtil

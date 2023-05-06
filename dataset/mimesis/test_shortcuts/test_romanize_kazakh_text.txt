@@ -1,0 +1,29 @@
+def romanize(string: str, locale: t.Union[Locale, str]) -> str:
+    """Romanize a given string.
+
+    Supported locales are:
+        Locale.RU
+        Locale.UK
+        Locale.KK
+
+    :param string: Cyrillic string.
+    :param locale: Locale.
+    :return: Romanized string.
+    """
+    locale = validate_locale(locale)
+    if locale not in (Locale.RU, Locale.UK, Locale.KK):
+        raise ValueError(f'Romanization is not available for: {locale}')
+    table = _get_translation_table(locale)
+    return string.translate(table)
+
+----------
+
+def test_romanize_kazakh_text():
+    expected_result = 'Python - eñ zhaqsy bağdarlamalau tili!'
+    assert shortcuts.romanize('Python - ең жақсы бағдарламалау тілі!', locale=Locale.KK) == expected_result
+
+----------
+
+
+
+Test Class Name: default

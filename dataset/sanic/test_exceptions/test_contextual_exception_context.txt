@@ -1,0 +1,41 @@
+@route('/')
+def index():
+    return ujson.dumps({'test': True})
+
+----------
+
+@pytest.mark.parametrize('debug', (True, False))
+def test_contextual_exception_context(debug):
+    app = Sanic('Test')
+
+    class TeapotError(SanicException):
+        status_code = 418
+        message = 'Sorry, I cannot brew coffee'
+
+    def fail():
+        raise TeapotError(context={'foo': 'bar'})
+    app.post('/coffee/json', error_format='json')(lambda _: fail())
+    app.post('/coffee/html', error_format='html')(lambda _: fail())
+    app.post('/coffee/text', error_format='text')(lambda _: fail())
+    (_, response) = app.test_client.post('/coffee/json', debug=debug)
+    assert response.status == 418
+    assert response.json['message'] == 'Sorry, I cannot brew coffee'
+    assert response.json['context'] == {'foo': 'bar'}
+    (_, response) = app.test_client.post('/coffee/html', debug=debug)
+    soup = BeautifulSoup(response.body, 'html.parser')
+    dl = dl_to_dict(soup, 'exception-context')
+    assert response.status == 418
+    assert 'Sorry, I cannot brew coffee' in soup.find('p').text
+    assert dl == {'foo': 'bar'}
+    (_, response) = app.test_client.post('/coffee/text', debug=debug)
+    lines = list(map(lambda x: x.decode(), response.body.split(b'\n')))
+    idx = lines.index('Context') + 1
+    assert response.status == 418
+    assert lines[2] == 'Sorry, I cannot brew coffee'
+    assert lines[idx] == '    foo: "bar"'
+
+----------
+
+
+
+Test Class Name: TeaError

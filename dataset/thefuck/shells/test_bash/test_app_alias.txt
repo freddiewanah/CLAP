@@ -1,0 +1,16 @@
+def app_alias(self, alias_name):
+    return '\n            function {name} () {{\n                TF_PYTHONIOENCODING=$PYTHONIOENCODING;\n                export TF_SHELL=bash;\n                export TF_ALIAS={name};\n                export TF_SHELL_ALIASES=$(alias);\n                export TF_HISTORY=$(fc -ln -10);\n                export PYTHONIOENCODING=utf-8;\n                TF_CMD=$(\n                    thefuck {argument_placeholder} "$@"\n                ) && eval "$TF_CMD";\n                unset TF_HISTORY;\n                export PYTHONIOENCODING=$TF_PYTHONIOENCODING;\n                {alter_history}\n            }}\n        '.format(name=alias_name, argument_placeholder=ARGUMENT_PLACEHOLDER, alter_history='history -s $TF_CMD;' if settings.alter_history else '')
+
+----------
+
+def test_app_alias(self, shell):
+    assert 'fuck () {' in shell.app_alias('fuck')
+    assert 'FUCK () {' in shell.app_alias('FUCK')
+    assert 'thefuck' in shell.app_alias('fuck')
+    assert 'PYTHONIOENCODING' in shell.app_alias('fuck')
+
+----------
+
+
+
+Test Class Name: TestBash

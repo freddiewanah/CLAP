@@ -1,0 +1,21 @@
+def process_response(self, request, response, spider):
+    if request.meta.get('dont_retry', False):
+        return response
+    if response.status in self.retry_http_codes:
+        reason = response_status_message(response.status)
+        return self._retry(request, reason, spider) or response
+    return response
+
+----------
+
+def test_priority_adjust(self):
+    req = Request('http://www.scrapytest.org/503')
+    rsp = Response('http://www.scrapytest.org/503', body=b'', status=503)
+    req2 = self.mw.process_response(req, rsp, self.spider)
+    assert req2.priority < req.priority
+
+----------
+
+
+
+Test Class Name: RetryTest

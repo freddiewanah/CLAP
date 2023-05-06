@@ -1,0 +1,32 @@
+def load_module(self, fullname):
+    if not self._redirect:
+        raise ValueError('no redirect found for {0}'.format(fullname))
+    mod = import_module(self._redirect)
+    sys.modules[fullname] = mod
+    return mod
+
+----------
+
+def test_nspkg_loader_load_module():
+    for name in ['ansible_collections.ansible', 'ansible_collections.testns']:
+        parent_pkg = name.partition('.')[0]
+        module_to_load = name.rpartition('.')[2]
+        paths = extend_paths(default_test_collection_paths, parent_pkg)
+        existing_child_paths = [p for p in extend_paths(paths, module_to_load) if os.path.exists(p)]
+        if name in sys.modules:
+            del sys.modules[name]
+        loader = _AnsibleCollectionNSPkgLoader(name, path_list=paths)
+        assert repr(loader).startswith('_AnsibleCollectionNSPkgLoader(path=')
+        module = loader.load_module(name)
+        assert module.__name__ == name
+        assert isinstance(module.__loader__, _AnsibleCollectionNSPkgLoader)
+        assert module.__path__ == existing_child_paths
+        assert module.__package__ == name
+        assert module.__file__ == '<ansible_synthetic_collection_package>'
+        assert sys.modules.get(name) == module
+
+----------
+
+
+
+Test Class Name: default

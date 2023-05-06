@@ -1,0 +1,17 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.usefixtures('no_memoize')
+@pytest.mark.parametrize('script, output', [('vom file.py', 'vom: not found'), ('fucck', 'fucck: not found'), ('puthon', "'puthon' is not recognized as an internal or external command"), ('got commit', 'got: command not found'), ('gti commit -m "new commit"', 'gti: command not found')])
+def test_match(mocker, script, output):
+    mocker.patch('thefuck.rules.no_command.which', return_value=None)
+    assert match(Command(script, output))
+
+----------
+
+
+
+Test Class Name: default

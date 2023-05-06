@@ -1,0 +1,28 @@
+@property
+def array(self):
+    """Fetch a read only view of an np.array, stored in plasma."""
+    ret = self.client.get(self.object_id)
+    return ret
+
+----------
+
+def test_hash_collision(self):
+    data_server_1 = np.array([0, 1])
+    data_server_2 = np.array([2, 3])
+    arr1 = PlasmaView(data_server_1, dummy_path, 1, plasma_path=self.path)
+    assert len(arr1.client.list()) == 1
+    arr2 = PlasmaView(data_server_2, dummy_path, 1, plasma_path=self.path)
+    assert len(arr1.client.list()) == 1
+    assert len(arr2.client.list()) == 1
+    assert (arr2.array == data_server_1).all()
+    arr3 = PlasmaView(data_server_2, dummy_path, (1, 12312312312, None), plasma_path=self.path)
+    assert len(arr2.client.list()) == 2, 'No new object was created by using a novel hash key'
+    assert arr3.object_id in arr2.client.list(), 'No new object was created by using a novel hash key'
+    assert arr3.object_id in arr3.client.list(), 'No new object was created by using a novel hash key'
+    del arr3, arr2, arr1
+
+----------
+
+
+
+Test Class Name: TestPlasmaView

@@ -1,0 +1,17 @@
+@classmethod
+def from_json(cls: Type[A], s: JsonData, *, parse_float=None, parse_int=None, parse_constant=None, infer_missing=False, **kw) -> A:
+    kvs = json.loads(s, parse_float=parse_float, parse_int=parse_int, parse_constant=parse_constant, **kw)
+    return cls.from_dict(kvs, infer_missing=infer_missing)
+
+----------
+
+def test_parameterized_subscripted(self):
+    j = '{ "a": { "value": "test", "required": true } }'
+    dc = DataClassWithParameterizedGeneric[str].from_json(j)
+    assert dc.a == dict(value='test', required=True)
+
+----------
+
+
+
+Test Class Name: TestUnsupportedGenerics

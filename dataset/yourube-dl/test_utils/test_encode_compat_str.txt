@@ -1,0 +1,14 @@
+def encode_compat_str(string, encoding=preferredencoding(), errors='strict'):
+    return string if isinstance(string, compat_str) else compat_str(string, encoding, errors)
+
+----------
+
+def test_encode_compat_str(self):
+    self.assertEqual(encode_compat_str(b'\xd1\x82\xd0\xb5\xd1\x81\xd1\x82', 'utf-8'), 'тест')
+    self.assertEqual(encode_compat_str('тест', 'utf-8'), 'тест')
+
+----------
+
+
+
+Test Class Name: TestUtil

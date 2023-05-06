@@ -1,0 +1,13 @@
+def and_(self, *commands):
+    return u' && '.join(commands)
+
+----------
+
+def test_and_(self, shell):
+    assert shell.and_('ls', 'cd') == 'ls && cd'
+
+----------
+
+
+
+Test Class Name: TestGeneric

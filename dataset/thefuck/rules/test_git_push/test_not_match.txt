@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, branch_name', [('git push master', None), ('ls', 'master')])
+def test_not_match(output, script, branch_name):
+    assert not match(Command(script, output))
+
+----------
+
+
+
+Test Class Name: default

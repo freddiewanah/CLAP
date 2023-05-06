@@ -1,0 +1,34 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_payload_too_large_from_error_handler(app):
+    app.config.REQUEST_MAX_SIZE = 1
+
+    @app.route('/1')
+    async def handler1(request):
+        return text('OK')
+
+    @app.exception(PayloadTooLarge)
+    def handler_exception(request, exception):
+        return text('Payload Too Large from error_handler.', 413)
+    (_, response) = app.test_client.get('/1', gather_request=False)
+    assert response.status == 413
+    assert response.text == 'Payload Too Large from error_handler.'
+
+----------
+
+
+
+Test Class Name: default

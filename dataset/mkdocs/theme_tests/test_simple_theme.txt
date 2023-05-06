@@ -1,0 +1,19 @@
+def parse_locale(locale) -> Locale:
+    try:
+        return Locale.parse(locale, sep='_')
+    except (ValueError, UnknownLocaleError, TypeError) as e:
+        raise ValidationError(f'Invalid value for locale: {str(e)}')
+
+----------
+
+def test_simple_theme(self):
+    theme = Theme(name='mkdocs')
+    self.assertEqual(theme.dirs, [os.path.join(theme_dir, 'mkdocs'), mkdocs_templates_dir])
+    self.assertEqual(theme.static_templates, {'404.html', 'sitemap.xml'})
+    self.assertEqual(get_vars(theme), {'name': 'mkdocs', 'locale': parse_locale('en'), 'include_search_page': False, 'search_index_only': False, 'analytics': {'gtag': None}, 'highlightjs': True, 'hljs_style': 'github', 'hljs_languages': [], 'navigation_depth': 2, 'nav_style': 'primary', 'shortcuts': {'help': 191, 'next': 78, 'previous': 80, 'search': 83}})
+
+----------
+
+
+
+Test Class Name: ThemeTests

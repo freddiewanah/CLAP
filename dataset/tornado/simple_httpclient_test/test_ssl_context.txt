@@ -1,0 +1,27 @@
+def fetch(self, request: Union['HTTPRequest', str], **kwargs: Any) -> 'HTTPResponse':
+    """Executes a request, returning an `HTTPResponse`.
+
+        The request may be either a string URL or an `HTTPRequest` object.
+        If it is a string, we construct an `HTTPRequest` using any additional
+        kwargs: ``HTTPRequest(request, **kwargs)``
+
+        If an error occurs during the fetch, we raise an `HTTPError` unless
+        the ``raise_error`` keyword argument is set to False.
+        """
+    response = self._io_loop.run_sync(functools.partial(self._async_client.fetch, request, **kwargs))
+    return response
+
+----------
+
+def test_ssl_context(self):
+    ssl_ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+    ssl_ctx.check_hostname = False
+    ssl_ctx.verify_mode = ssl.CERT_NONE
+    resp = self.fetch('/hello', ssl_options=ssl_ctx)
+    self.assertEqual(resp.body, b'Hello world!')
+
+----------
+
+
+
+Test Class Name: SimpleHTTPSClientTestCase

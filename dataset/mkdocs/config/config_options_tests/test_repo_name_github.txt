@@ -1,0 +1,15 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_repo_name_github(self) -> None:
+    conf = self.get_config(self.Schema, {'repo_url': 'https://github.com/mkdocs/mkdocs'})
+    assert_type(conf.repo_name, Optional[str])
+    self.assertEqual(conf.repo_name, 'GitHub')
+
+----------
+
+
+
+Test Class Name: default

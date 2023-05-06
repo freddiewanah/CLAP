@@ -1,0 +1,33 @@
+@staticmethod
+def split(addrinfo: List[Tuple]) -> Tuple[List[Tuple[socket.AddressFamily, Tuple]], List[Tuple[socket.AddressFamily, Tuple]]]:
+    """Partition the ``addrinfo`` list by address family.
+
+        Returns two lists.  The first list contains the first entry from
+        ``addrinfo`` and all others with the same family, and the
+        second list contains all other addresses (normally one list will
+        be AF_INET and the other AF_INET6, although non-standard resolvers
+        may return additional families).
+        """
+    primary = []
+    secondary = []
+    primary_af = addrinfo[0][0]
+    for (af, addr) in addrinfo:
+        if af == primary_af:
+            primary.append((af, addr))
+        else:
+            secondary.append((af, addr))
+    return (primary, secondary)
+
+----------
+
+def test_break_continue(self):
+    template = Template(utf8('{% for i in range(10) %}\n    {% if i == 2 %}\n        {% continue %}\n    {% end %}\n    {{ i }}\n    {% if i == 6 %}\n        {% break %}\n    {% end %}\n{% end %}'))
+    result = template.generate()
+    result = b''.join(result.split())
+    self.assertEqual(result, b'013456')
+
+----------
+
+
+
+Test Class Name: TemplateTest

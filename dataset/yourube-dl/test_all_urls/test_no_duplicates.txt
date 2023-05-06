@@ -1,0 +1,23 @@
+@classmethod
+def suitable(cls, url):
+    if parse_qs(url).get('list', [None])[0]:
+        return False
+    return super(YoutubeIE, cls).suitable(url)
+
+----------
+
+def test_no_duplicates(self):
+    ies = gen_extractors()
+    for tc in gettestcases(include_onlymatching=True):
+        url = tc['url']
+        for ie in ies:
+            if type(ie).__name__ in ('GenericIE', tc['name'] + 'IE'):
+                self.assertTrue(ie.suitable(url), '%s should match URL %r' % (type(ie).__name__, url))
+            else:
+                self.assertFalse(ie.suitable(url), '%s should not match URL %r . That URL belongs to %s.' % (type(ie).__name__, url, tc['name']))
+
+----------
+
+
+
+Test Class Name: TestAllURLsMatching

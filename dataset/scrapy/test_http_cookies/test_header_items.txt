@@ -1,0 +1,13 @@
+def header_items(self):
+    return [(to_unicode(k, errors='replace'), [to_unicode(x, errors='replace') for x in v]) for (k, v) in self.request.headers.items()]
+
+----------
+
+def test_header_items(self):
+    self.assertEqual(self.wrapped.header_items(), [('Content-Type', ['text/html'])])
+
+----------
+
+
+
+Test Class Name: WrappedRequestTest

@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, output', [('git commit -m "test"', 'no changes added to commit'), ('git commit', 'no changes added to commit')])
+def test_match(output, script):
+    assert match(Command(script, output))
+
+----------
+
+
+
+Test Class Name: default

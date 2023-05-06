@@ -1,0 +1,21 @@
+def decimal_number(self, start: float=-1000.0, end: float=1000.0) -> Decimal:
+    """Generate random decimal number.
+
+        :param start:  Start range.
+        :param end: End range.
+        :return: :py:class:`decimal.Decimal` object.
+        """
+    return Decimal.from_float(self.float_number(start, end))
+
+----------
+
+def test_decimal(self, numeric):
+    result = numeric.decimal_number(-100, 100)
+    assert -100 <= result <= 100
+    assert isinstance(result, decimal.Decimal)
+
+----------
+
+
+
+Test Class Name: TestNumbers

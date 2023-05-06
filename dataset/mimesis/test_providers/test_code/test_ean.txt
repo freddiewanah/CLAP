@@ -1,0 +1,26 @@
+def ean(self, fmt: t.Optional[EANFormat]=None) -> str:
+    """Generate EAN.
+
+        To change EAN format, pass parameter ``code`` with needed value of
+        the enum object :class:`~mimesis.enums.EANFormat`.
+
+        :param fmt: Format of EAN.
+        :return: EAN.
+        :raises NonEnumerableError: if code is not enum EANFormat.
+        """
+    key = self.validate_enum(item=fmt, enum=EANFormat)
+    mask = EAN_MASKS[key]
+    return self.random.custom_code(mask=mask)
+
+----------
+
+@pytest.mark.parametrize('fmt, length', [(EANFormat.EAN8, 8), (EANFormat.EAN13, 13)])
+def test_ean(self, code, fmt, length):
+    result = code.ean(fmt=fmt)
+    assert len(result) == length
+
+----------
+
+
+
+Test Class Name: TestCode

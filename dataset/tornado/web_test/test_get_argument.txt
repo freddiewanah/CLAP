@@ -1,0 +1,27 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_get_argument(self):
+    response = self.fetch('/get_argument?foo=bar')
+    self.assertEqual(response.body, b'bar')
+    response = self.fetch('/get_argument?foo=')
+    self.assertEqual(response.body, b'')
+    response = self.fetch('/get_argument')
+    self.assertEqual(response.body, b'default')
+    body = urllib.parse.urlencode(dict(foo='hello'))
+    response = self.fetch('/get_argument?foo=bar', method='POST', body=body)
+    self.assertEqual(response.body, b'hello')
+    response = self.fetch('/get_arguments?foo=bar', method='POST', body=body)
+    self.assertEqual(json_decode(response.body), dict(default=['bar', 'hello'], query=['bar'], body=['hello']))
+
+----------
+
+
+
+Test Class Name: WSGISafeWebTest

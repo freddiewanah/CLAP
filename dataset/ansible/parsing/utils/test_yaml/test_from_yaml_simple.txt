@@ -1,0 +1,15 @@
+def from_yaml(data):
+    if isinstance(data, string_types):
+        return yaml_load(text_type(to_text(data, errors='surrogate_or_strict')))
+    return data
+
+----------
+
+def test_from_yaml_simple():
+    assert from_yaml(u'---\n- test: 1\n  test2: "2"\n- café: "café"') == [{u'test': 1, u'test2': u'2'}, {u'café': u'café'}]
+
+----------
+
+
+
+Test Class Name: default

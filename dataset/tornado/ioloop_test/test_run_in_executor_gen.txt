@@ -1,0 +1,61 @@
+@staticmethod
+def current(instance: bool=True) -> Optional['IOLoop']:
+    """Returns the current thread's `IOLoop`.
+
+        If an `IOLoop` is currently running or has been marked as
+        current by `make_current`, returns that instance.  If there is
+        no current `IOLoop` and ``instance`` is true, creates one.
+
+        .. versionchanged:: 4.1
+           Added ``instance`` argument to control the fallback to
+           `IOLoop.instance()`.
+        .. versionchanged:: 5.0
+           On Python 3, control of the current `IOLoop` is delegated
+           to `asyncio`, with this and other methods as pass-through accessors.
+           The ``instance`` argument now controls whether an `IOLoop`
+           is created automatically when there is none, instead of
+           whether we fall back to `IOLoop.instance()` (which is now
+           an alias for this method). ``instance=False`` is deprecated,
+           since even if we do not create an `IOLoop`, this method
+           may initialize the asyncio loop.
+
+        .. deprecated:: 6.2
+           It is deprecated to call ``IOLoop.current()`` when no `asyncio`
+           event loop is running.
+        """
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        if not instance:
+            return None
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    try:
+        return IOLoop._ioloop_for_asyncio[loop]
+    except KeyError:
+        if instance:
+            from tornado.platform.asyncio import AsyncIOMainLoop
+            current = AsyncIOMainLoop()
+        else:
+            current = None
+    return current
+
+----------
+
+@gen_test
+def test_run_in_executor_gen(self):
+    event1 = threading.Event()
+    event2 = threading.Event()
+
+    def sync_func(self_event, other_event):
+        self_event.set()
+        other_event.wait()
+        return self_event
+    res = (yield [IOLoop.current().run_in_executor(None, sync_func, event1, event2), IOLoop.current().run_in_executor(None, sync_func, event2, event1)])
+    self.assertEqual([event1, event2], res)
+
+----------
+
+
+
+Test Class Name: TestIOLoopFutures

@@ -1,0 +1,21 @@
+def rate_limit_argument_spec(spec=None):
+    """Creates an argument spec for working with rate limiting"""
+    arg_spec = dict(rate=dict(type='int'), rate_limit=dict(type='int'))
+    if spec:
+        arg_spec.update(spec)
+    return arg_spec
+
+----------
+
+@pytest.mark.parametrize('stdin', RATE_LIMIT_VALID_ARGS, indirect=['stdin'])
+def test_validate_rate_limit_argument_spec(mocker, stdin):
+    kwargs = dict(argument_spec=rate_limit_argument_spec())
+    am = basic.AnsibleModule(**kwargs)
+    assert isinstance(am.params['rate'], integer_types)
+    assert isinstance(am.params['rate_limit'], integer_types)
+
+----------
+
+
+
+Test Class Name: default

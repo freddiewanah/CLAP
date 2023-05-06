@@ -1,0 +1,18 @@
+def is_repo_url(value):
+    """Return True if value is a repository URL."""
+    return bool(REPO_REGEX.match(value))
+
+----------
+
+def test_expand_abbreviations():
+    """Validate `repository.expand_abbreviations` correctly translate url."""
+    template = 'gh:audreyfeldroy/cookiecutter-pypackage'
+    assert is_repo_url(template) is False
+    expanded_template = expand_abbreviations(template, BUILTIN_ABBREVIATIONS)
+    assert is_repo_url(expanded_template) is True
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,25 @@
+def utf8(value: Union[None, str, bytes]) -> Optional[bytes]:
+    """Converts a string argument to a byte string.
+
+    If the argument is already a byte string or None, it is returned unchanged.
+    Otherwise it must be a unicode string and is encoded as utf8.
+    """
+    if isinstance(value, _UTF8_TYPES):
+        return value
+    if not isinstance(value, unicode_type):
+        raise TypeError('Expected bytes, unicode, or None; got %r' % type(value))
+    return value.encode('utf-8')
+
+----------
+
+def test_non_ascii_name(self):
+    name = tornado.locale.LOCALE_NAMES['es_LA']['name']
+    self.assertTrue(isinstance(name, unicode_type))
+    self.assertEqual(name, 'Español')
+    self.assertEqual(utf8(name), b'Espa\xc3\xb1ol')
+
+----------
+
+
+
+Test Class Name: LocaleDataTest

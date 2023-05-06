@@ -1,0 +1,51 @@
+def rekey_on_member(data, key, duplicates='error'):
+    """
+    Rekey a dict of dicts on another member
+
+    May also create a dict from a list of dicts.
+
+    duplicates can be one of ``error`` or ``overwrite`` to specify whether to error out if the key
+    value would be duplicated or to overwrite previous entries if that's the case.
+    """
+    if duplicates not in ('error', 'overwrite'):
+        raise AnsibleFilterError('duplicates parameter to rekey_on_member has unknown value: {0}'.format(duplicates))
+    new_obj = {}
+    bool(data) and bool(key)
+    if isinstance(data, Mapping):
+        iterate_over = data.values()
+    elif isinstance(data, Iterable) and (not isinstance(data, (text_type, binary_type))):
+        iterate_over = data
+    else:
+        raise AnsibleFilterTypeError('Type is not a valid list, set, or dict')
+    for item in iterate_over:
+        if not isinstance(item, Mapping):
+            raise AnsibleFilterTypeError('List item is not a valid dict')
+        try:
+            key_elem = item[key]
+        except KeyError:
+            raise AnsibleFilterError('Key {0} was not found'.format(key))
+        except TypeError as e:
+            raise AnsibleFilterTypeError(to_native(e))
+        except Exception as e:
+            raise AnsibleFilterError(to_native(e))
+        if new_obj.get(key_elem, None):
+            if duplicates == 'error':
+                raise AnsibleFilterError('Key {0} is not unique, cannot correctly turn into dict'.format(key_elem))
+            elif duplicates == 'overwrite':
+                new_obj[key_elem] = item
+        else:
+            new_obj[key_elem] = item
+    return new_obj
+
+----------
+
+def test_duplicate_strategy_overwrite(self):
+    list_original = ({'proto': 'eigrp', 'id': 1}, {'proto': 'ospf', 'id': 2}, {'proto': 'eigrp', 'id': 3})
+    expected = {'eigrp': {'proto': 'eigrp', 'id': 3}, 'ospf': {'proto': 'ospf', 'id': 2}}
+    assert ms.rekey_on_member(list_original, 'proto', duplicates='overwrite') == expected
+
+----------
+
+
+
+Test Class Name: TestRekeyOnMember

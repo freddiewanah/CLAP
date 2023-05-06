@@ -1,0 +1,24 @@
+def get_context(nav: Navigation, files: Union[Sequence[File], Files], config: MkDocsConfig, page: Optional[Page]=None, base_url: str='') -> Dict[str, Any]:
+    """
+    Return the template context for a given page or template.
+    """
+    if page is not None:
+        base_url = utils.get_relative_url('.', page.url)
+    extra_javascript = utils.create_media_urls(config.extra_javascript, page, base_url)
+    extra_css = utils.create_media_urls(config.extra_css, page, base_url)
+    if isinstance(files, Files):
+        files = files.documentation_pages()
+    return {'nav': nav, 'pages': files, 'base_url': base_url, 'extra_css': extra_css, 'extra_javascript': extra_javascript, 'mkdocs_version': mkdocs.__version__, 'build_date_utc': utils.get_build_datetime(), 'config': config, 'page': page}
+
+----------
+
+def test_context_base_url__absolute_nested_no_page_use_directory_urls(self):
+    cfg = load_config()
+    context = build.get_context(mock.Mock(), mock.Mock(), cfg, base_url='/foo/')
+    self.assertEqual(context['base_url'], '/foo/')
+
+----------
+
+
+
+Test Class Name: BuildTests

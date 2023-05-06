@@ -1,0 +1,24 @@
+def run(self) -> None:
+    """Start json minimizer and exit when all json files were minimized."""
+    for file in self.files:
+        self.minify(file)
+    after = human_repr(self.after_total)
+    before = human_repr(self.before_total)
+    saved = human_repr(self.before_total - self.after_total)
+    info = f'\nTotal: {Fore.LIGHTGREEN_EX}{before}{Style.RESET_ALL} -> {Fore.LIGHTGREEN_EX}{after}{Style.RESET_ALL}. Compressed: {Fore.LIGHTGREEN_EX}{saved}{Style.RESET_ALL}\n'
+    print(info)
+
+----------
+
+def test_minimizer_minifies_file(tmp_path):
+    file = tmp_path / 'spam.json'
+    file.write_text('{\n    "spam": [\n        "eggs"\n    ]\n}')
+    minifier = Minimizer(files=(file,))
+    minifier.run()
+    assert file.read_text() == '{"spam":["eggs"]}'
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,26 @@
+@git_support
+def get_new_command(command):
+    command_parts = command.script_parts[:]
+    upstream_option_index = _get_upstream_option_index(command_parts)
+    if upstream_option_index is not None:
+        command_parts.pop(upstream_option_index)
+        if len(command_parts) > upstream_option_index:
+            command_parts.pop(upstream_option_index)
+    else:
+        push_idx = command_parts.index('push') + 1
+        while len(command_parts) > push_idx and command_parts[len(command_parts) - 1][0] != '-':
+            command_parts.pop(len(command_parts) - 1)
+    arguments = re.findall('git push (.*)', command.output)[-1].replace("'", "\\'").strip()
+    return replace_argument(' '.join(command_parts), 'push', 'push {}'.format(arguments))
+
+----------
+
+@pytest.mark.parametrize('before, after', [('choco install logstitcher', 'choco install logstitcher.install'), ('cinst logstitcher', 'cinst logstitcher.install'), ('choco install logstitcher -y', 'choco install logstitcher.install -y'), ('cinst logstitcher -y', 'cinst logstitcher.install -y'), ('choco install logstitcher -y -n=test', 'choco install logstitcher.install -y -n=test'), ('cinst logstitcher -y -n=test', 'cinst logstitcher.install -y -n=test'), ('choco install logstitcher -y -n=test /env', 'choco install logstitcher.install -y -n=test /env'), ('cinst logstitcher -y -n=test /env', 'cinst logstitcher.install -y -n=test /env'), ('choco install chocolatey -y', 'choco install chocolatey.install -y'), ('cinst chocolatey -y', 'cinst chocolatey.install -y')])
+def test_get_new_command(before, after):
+    assert get_new_command(Command(before, '')) == after
+
+----------
+
+
+
+Test Class Name: default

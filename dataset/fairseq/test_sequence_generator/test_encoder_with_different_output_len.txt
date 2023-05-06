@@ -1,0 +1,36 @@
+def forward(self, tokens, lprobs, bsz: int, beam_size: int, step: int):
+    """
+        Args:
+            tokens(Tensor): Input tokens(Bsz*beam, seq_len)
+            lprobs(Tensor): likelihood probability,
+            Expected to be updated in place.(Bsz*beam, vocab_size)
+            bsz(int): batch size
+            step(int): current step
+            beam_size(int): beam size
+            no_repeat_ngram_size(int): Ngram size
+        """
+    msg = f'expected {bsz * beam_size} got'
+    assert tokens.size(0) == bsz * beam_size, f'{msg} {tokens.size(0)}'
+    assert lprobs.size(0) == bsz * beam_size, f'{msg} {lprobs.size(0)}'
+    if self.use_extension:
+        return self.call_cuda_extension(tokens, lprobs, bsz, beam_size, step)
+    else:
+        return self._no_repeat_ngram(tokens, lprobs, bsz, beam_size, step)
+
+----------
+
+def test_encoder_with_different_output_len(self):
+    args = self.model.encoder.args
+    task = test_utils.TestTranslationTask.setup_task(args, self.tgt_dict, self.tgt_dict)
+    reshaping_model = test_utils.TestReshapingModel.build_model(args, task)
+    generator = SequenceGenerator([reshaping_model], self.tgt_dict, beam_size=2, max_len_b=2)
+    hypos = generator.forward(self.sample)
+    for sent in [0, 1]:
+        for beam in [0, 1]:
+            assert hypos[sent][beam]['attention'] is not None
+
+----------
+
+
+
+Test Class Name: TestSequenceGenerator

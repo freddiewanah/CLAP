@@ -1,0 +1,47 @@
+def get_training_parser(default_task='translation'):
+    parser = get_parser('Trainer', default_task)
+    add_dataset_args(parser, train=True)
+    add_distributed_training_args(parser)
+    add_model_args(parser)
+    add_optimization_args(parser)
+    add_checkpoint_args(parser)
+    add_ema_args(parser)
+    return parser
+
+----------
+
+def test_denoising(self):
+    with TemporaryDirectory() as dirname:
+        raw_file = os.path.join(dirname, 'raw')
+        data = make_data(out_file=raw_file)
+        vocab = build_vocab(data)
+        binarizer = VocabularyDatasetBinarizer(vocab, append_eos=False)
+        split = 'train'
+        bin_file = os.path.join(dirname, split)
+        dataset_impl = 'mmap'
+        FileBinarizer.multiprocess_dataset(input_file=raw_file, binarizer=binarizer, dataset_impl=dataset_impl, vocab_size=len(vocab), output_prefix=bin_file)
+        train_args = options.parse_args_and_arch(options.get_training_parser(), ['--task', 'denoising', '--arch', 'bart_base', '--seed', '42', '--mask-length', 'word', '--permute-sentences', '1', '--rotate', '0', '--replace-length', '-1', '--mask', '0.2', dirname])
+        cfg = convert_namespace_to_omegaconf(train_args)
+        task = DenoisingTask(cfg.task, binarizer.dict)
+        original_dataset = task._load_dataset_split(bin_file, 1, False)
+        task.load_dataset(split)
+        masked_dataset = task.dataset(split)
+        iterator = task.get_batch_iterator(dataset=masked_dataset, max_tokens=65536, max_positions=4096).next_epoch_itr(shuffle=False)
+        mask_index = task.source_dictionary.index('<mask>')
+        for batch in iterator:
+            for sample in range(len(batch)):
+                net_input = batch['net_input']
+                masked_src_tokens = net_input['src_tokens'][sample]
+                masked_src_length = net_input['src_lengths'][sample]
+                masked_tgt_tokens = batch['target'][sample]
+                sample_id = batch['id'][sample]
+                original_tokens = original_dataset[sample_id]
+                original_tokens = original_tokens.masked_select(masked_src_tokens[:masked_src_length] == mask_index)
+                masked_tokens = masked_tgt_tokens.masked_select(masked_src_tokens == mask_index)
+                assert masked_tokens.equal(original_tokens)
+
+----------
+
+
+
+Test Class Name: TestDenoising

@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', ['saerch', 'uninstall'])
+def test_match(command):
+    assert match(Command('yum {}'.format(command), yum_invalid_op_text.format(command)))
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,26 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_register_namespace(self):
+    body = b'<?xml version="1.0" encoding="UTF-8"?>\n        <urlset xmlns:x="http://www.google.com/schemas/sitemap/0.84"\n                xmlns:y="http://www.example.com/schemas/extras/1.0">\n        <url><x:loc>http://www.example.com/Special-Offers.html</loc><y:updated>2009-08-16</updated>\n            <other value="bar" y:custom="fuu"/>\n        </url>\n        <url><loc>http://www.example.com/</loc><y:updated>2009-08-16</updated><other value="foo"/></url>\n        </urlset>'
+    response = XmlResponse(url='http://example.com/sitemap.xml', body=body)
+
+    class _XMLSpider(self.spider_class):
+        itertag = 'url'
+        namespaces = (('a', 'http://www.google.com/schemas/sitemap/0.84'), ('b', 'http://www.example.com/schemas/extras/1.0'))
+
+        def parse_node(self, response, selector):
+            yield {'loc': selector.xpath('a:loc/text()').getall(), 'updated': selector.xpath('b:updated/text()').getall(), 'other': selector.xpath('other/@value').getall(), 'custom': selector.xpath('other/@b:custom').getall()}
+    for iterator in ('iternodes', 'xml'):
+        spider = _XMLSpider('example', iterator=iterator)
+        output = list(spider._parse(response))
+        self.assertEqual(len(output), 2, iterator)
+        self.assertEqual(output, [{'loc': ['http://www.example.com/Special-Offers.html'], 'updated': ['2009-08-16'], 'custom': ['fuu'], 'other': ['bar']}, {'loc': [], 'updated': ['2009-08-16'], 'other': ['foo'], 'custom': []}], iterator)
+
+----------
+
+
+
+Test Class Name: XMLFeedSpiderTest

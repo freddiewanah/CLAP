@@ -1,0 +1,32 @@
+def utf8(value: Union[None, str, bytes]) -> Optional[bytes]:
+    """Converts a string argument to a byte string.
+
+    If the argument is already a byte string or None, it is returned unchanged.
+    Otherwise it must be a unicode string and is encoded as utf8.
+    """
+    if isinstance(value, _UTF8_TYPES):
+        return value
+    if not isinstance(value, unicode_type):
+        raise TypeError('Expected bytes, unicode, or None; got %r' % type(value))
+    return value.encode('utf-8')
+
+----------
+
+def test_cookie_special_char(self):
+    response = self.fetch('/special_char')
+    headers = sorted(response.headers.get_list('Set-Cookie'))
+    self.assertEqual(len(headers), 3)
+    self.assertEqual(headers[0], 'equals="a=b"; Path=/')
+    self.assertEqual(headers[1], 'quote="a\\"b"; Path=/')
+    self.assertTrue(headers[2] in ('semicolon="a;b"; Path=/', 'semicolon="a\\073b"; Path=/'), headers[2])
+    data = [('foo=a=b', 'a=b'), ('foo="a=b"', 'a=b'), ('foo="a;b"', '"a'), ('foo=a\\073b', 'a\\073b'), ('foo="a\\073b"', 'a;b'), ('foo="a\\"b"', 'a"b')]
+    for (header, expected) in data:
+        logging.debug('trying %r', header)
+        response = self.fetch('/get', headers={'Cookie': header})
+        self.assertEqual(response.body, utf8(expected))
+
+----------
+
+
+
+Test Class Name: SetCookieFalsyFlags

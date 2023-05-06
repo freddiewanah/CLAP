@@ -1,0 +1,29 @@
+@classmethod
+def from_config(cls, config, custom_objects=None):
+    if 'name' in config:
+        name = config['name']
+        build_input_shape = config.get('build_input_shape')
+        layer_configs = config['layers']
+    else:
+        name = None
+        layer_configs = config
+    model = cls(name=name)
+    for layer_config in layer_configs:
+        use_legacy_format = 'module' not in layer_config
+        layer = layer_module.deserialize(layer_config, custom_objects=custom_objects, use_legacy_format=use_legacy_format)
+        model.add(layer)
+    if not model.inputs and build_input_shape and isinstance(build_input_shape, (tuple, list)):
+        model.build(build_input_shape)
+    return model
+
+----------
+
+def test_functional_cnn(self):
+    model = training.Model.from_config(get_config_samples.FUNCTIONAL_CNN)
+    self.assertLen(model.layers, 4)
+
+----------
+
+
+
+Test Class Name: TestGetConfigBackwardsCompatible

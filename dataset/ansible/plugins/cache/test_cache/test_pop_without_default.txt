@@ -1,0 +1,16 @@
+def pop(self, key, *args):
+    if args:
+        return self._cache.pop(key, args[0])
+    return self._cache.pop(key)
+
+----------
+
+def test_pop_without_default(self):
+    with pytest.raises(KeyError):
+        assert self.cache.pop('foo')
+
+----------
+
+
+
+Test Class Name: TestCachePluginAdjudicator

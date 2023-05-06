@@ -1,0 +1,47 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_download_media_redirected_default_failure(self):
+    crawler = self._create_crawler(RedirectedMediaDownloadSpider)
+    with LogCapture() as log:
+        yield crawler.crawl(self.mockserver.url('/files/images/'), media_key=self.media_key, media_urls_key=self.media_urls_key, mockserver=self.mockserver)
+    self._assert_files_download_failure(crawler, self.items, 302, str(log))
+
+----------
+
+def _create_crawler(self, spider_class, runner=None, **kwargs):
+    if runner is None:
+        runner = self.runner
+    crawler = runner.create_crawler(spider_class, **kwargs)
+    crawler.signals.connect(self._on_item_scraped, signals.item_scraped)
+    return crawler
+def _assert_files_download_failure(self, crawler, items, code, logs):
+    self.assertEqual(len(items), 1)
+    self.assertIn(self.media_key, items[0])
+    self.assertFalse(items[0][self.media_key])
+    self.assertEqual(crawler.stats.get_value('downloader/request_method_count/GET'), 4)
+    self.assertEqual(crawler.stats.get_value('downloader/response_count'), 4)
+    self.assertEqual(crawler.stats.get_value('downloader/response_status_count/200'), 1)
+    self.assertEqual(crawler.stats.get_value(f'downloader/response_status_count/{code}'), 3)
+    file_dl_failure = f'File (code: {code}): Error downloading file from'
+    self.assertEqual(logs.count(file_dl_failure), 3)
+    self.assertEqual([x for x in self.tmpmediastore.iterdir()], [])
+
+Test Class Name: FileDownloadCrawlTestCase

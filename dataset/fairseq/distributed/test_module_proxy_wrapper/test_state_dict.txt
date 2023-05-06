@@ -1,0 +1,19 @@
+def state_dict(self, *args, **kwargs):
+    """Forward to the twice-wrapped module."""
+    return self.module.module.state_dict(*args, **kwargs)
+
+----------
+
+def test_state_dict(self):
+    (wrapped_module, module) = self._get_module()
+    assert objects_are_equal(wrapped_module.state_dict(), module.state_dict())
+
+----------
+
+def _get_module(self):
+    module = Model()
+    wrapped_module = MockDDPWrapper(module)
+    wrapped_module = ModuleProxyWrapper(wrapped_module)
+    return (wrapped_module, module)
+
+Test Class Name: TestModuleProxyWrapper

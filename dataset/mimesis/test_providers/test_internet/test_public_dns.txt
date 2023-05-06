@@ -1,0 +1,18 @@
+def public_dns(self) -> str:
+    """Generates a random public DNS.
+
+        :Example:
+            1.1.1.1
+        """
+    return self.random.choice(PUBLIC_DNS)
+
+----------
+
+def test_public_dns(self, net):
+    assert net.public_dns() in data.PUBLIC_DNS
+
+----------
+
+
+
+Test Class Name: TestInternet

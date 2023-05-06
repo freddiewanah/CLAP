@@ -1,0 +1,49 @@
+def display(self, msg, color=None, stderr=False, screen_only=False, log_only=False, newline=True):
+    """ Display a message to the user
+
+        Note: msg *must* be a unicode string to prevent UnicodeError tracebacks.
+        """
+    if self._final_q:
+        return self._final_q.send_display(msg, color=color, stderr=stderr, screen_only=screen_only, log_only=log_only, newline=newline)
+    nocolor = msg
+    if not log_only:
+        has_newline = msg.endswith(u'\n')
+        if has_newline:
+            msg2 = msg[:-1]
+        else:
+            msg2 = msg
+        if color:
+            msg2 = stringc(msg2, color)
+        if has_newline or newline:
+            msg2 = msg2 + u'\n'
+        if not stderr:
+            fileobj = sys.stdout
+        else:
+            fileobj = sys.stderr
+        with self._lock:
+            fileobj.write(msg2)
+    if logger and (not screen_only):
+        msg2 = nocolor.lstrip('\n')
+        lvl = logging.INFO
+        if color:
+            try:
+                lvl = color_to_log_level[color]
+            except KeyError:
+                raise AnsibleAssertionError('Invalid color supplied to display: %s' % color)
+        logger.log(lvl, msg2)
+
+----------
+
+def test_display_basic_message(capsys, mocker):
+    mocker.patch('ansible.utils.display.logger', return_value=None)
+    d = Display()
+    d.display(u'Some displayed message')
+    (out, err) = capsys.readouterr()
+    assert out == 'Some displayed message\n'
+    assert err == ''
+
+----------
+
+
+
+Test Class Name: default

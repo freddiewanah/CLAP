@@ -1,0 +1,25 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+@patch('ansible.parsing.vault.subprocess.Popen')
+def test_read_file_os_error(self, mock_popen):
+    self._mock_popen(mock_popen)
+    mock_popen.side_effect = OSError('That is not an executable')
+    secret = vault.ScriptVaultSecret()
+    with patch.object(secret, 'loader') as mock_loader:
+        mock_loader.is_executable = MagicMock(return_value=True)
+        self.assertRaisesRegex(errors.AnsibleError, 'Problem running vault password script.*', secret.load)
+
+----------
+
+def _mock_popen(self, mock_popen, return_code=0, stdout=b'', stderr=b''):
+
+    def communicate():
+        return (stdout, stderr)
+    mock_popen.return_value = MagicMock(returncode=return_code)
+    mock_popen_instance = mock_popen.return_value
+    mock_popen_instance.communicate = communicate
+
+Test Class Name: TestScriptVaultSecret

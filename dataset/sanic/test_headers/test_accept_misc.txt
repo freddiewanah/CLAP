@@ -1,0 +1,50 @@
+def match(self, mime_with_params: Union[str, MediaType]) -> Optional[MediaType]:
+    """Check if this media type matches the given mime type/subtype.
+        Wildcards are supported both ways on both type and subtype.
+        If mime contains a semicolon, optionally followed by parameters,
+        the parameters of the two media types must match exactly.
+        Note:  Use the `==` operator instead to check for literal matches
+        without expanding wildcards.
+        @param media_type: A type/subtype string to match.
+        @return `self` if the media types are compatible, else `None`
+        """
+    mt = MediaType._parse(mime_with_params) if isinstance(mime_with_params, str) else mime_with_params
+    return self if mt and all((self.params.get(k) == v for (k, v) in mt.params.items())) and (self.subtype == mt.subtype or self.subtype == '*' or mt.subtype == '*') and (self.type == mt.type or self.type == '*' or mt.type == '*') else None
+
+----------
+
+def test_accept_misc():
+    header = 'foo/bar;q=0.0, */plain;param=123, text/plain, text/*, foo/bar;q=0.5'
+    a = headers.parse_accept(header)
+    assert repr(a) == '[*/plain;param=123, text/plain, text/*, foo/bar;q=0.5, foo/bar;q=0.0]'
+    assert str(a) == '*/plain;param=123, text/plain, text/*, foo/bar;q=0.5, foo/bar;q=0.0'
+    m = a.match('foo/bar', 'text/*', 'text/plain')
+    assert repr(m) == '<text/* matched */plain;param=123>'
+    assert m == 'text/*'
+    assert m.mime == 'text/*'
+    assert m.header.mime == '*/plain'
+    assert m.header.type == '*'
+    assert m.header.subtype == 'plain'
+    assert m.header.q == 1.0
+    assert m.header.params == dict(param='123')
+    assert m == a.match('text/*')
+    assert m != 123
+    m = a.match('foo/bar')
+    assert repr(m) == '<foo/bar matched foo/bar;q=0.5>'
+    assert m == 'foo/bar'
+    assert m == 'foo/bar;q=0.5'
+    m = a.match()
+    assert m == ''
+    assert m.header is None
+    a = headers.parse_accept(None)
+    assert a == ['*/*']
+    assert a.match('foo/bar')
+    a = headers.parse_accept('')
+    assert a == []
+    assert not a.match('foo/bar')
+
+----------
+
+
+
+Test Class Name: default

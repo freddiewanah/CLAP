@@ -1,0 +1,46 @@
+def register_middleware(self, middleware: Union[MiddlewareType, Middleware], attach_to: str='request', *, priority: Union[Default, int]=_default) -> Union[MiddlewareType, Middleware]:
+    """
+        Register an application level middleware that will be attached
+        to all the API URLs registered under this application.
+
+        This method is internally invoked by the :func:`middleware`
+        decorator provided at the app level.
+
+        :param middleware: Callback method to be attached to the
+            middleware
+        :param attach_to: The state at which the middleware needs to be
+            invoked in the lifecycle of an *HTTP Request*.
+            **request** - Invoke before the request is processed
+            **response** - Invoke before the response is returned back
+        :return: decorated method
+        """
+    retval = middleware
+    location = MiddlewareLocation[attach_to.upper()]
+    if not isinstance(middleware, Middleware):
+        middleware = Middleware(middleware, location=location, priority=priority if isinstance(priority, int) else 0)
+    elif middleware.priority != priority and isinstance(priority, int):
+        middleware = Middleware(middleware.func, location=middleware.location, priority=priority)
+    if location is MiddlewareLocation.REQUEST:
+        if middleware not in self.request_middleware:
+            self.request_middleware.append(middleware)
+    if location is MiddlewareLocation.RESPONSE:
+        if middleware not in self.response_middleware:
+            self.response_middleware.appendleft(middleware)
+    return retval
+
+----------
+
+def test_add_conflicting_priority(app: Sanic):
+
+    def foo(*_):
+        ...
+    middleware = Middleware(foo, MiddlewareLocation.REQUEST, priority=998)
+    app.register_middleware(middleware=middleware, priority=999)
+    assert app.request_middleware[0].priority == 999
+    middleware.priority == 998
+
+----------
+
+
+
+Test Class Name: default

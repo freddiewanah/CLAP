@@ -1,0 +1,23 @@
+def get_media_requests(self, item, info):
+    urls = ItemAdapter(item).get(self.files_urls_field, [])
+    return [Request(u) for u in urls]
+
+----------
+
+def test_item_fields_default(self):
+    url = 'http://www.example.com/files/1.txt'
+    item = self.item_class(name='item1', file_urls=[url])
+    pipeline = FilesPipeline.from_settings(Settings({'FILES_STORE': 's3://example/files/'}))
+    requests = list(pipeline.get_media_requests(item, None))
+    self.assertEqual(requests[0].url, url)
+    results = [(True, {'url': url})]
+    item = pipeline.item_completed(results, item, None)
+    files = ItemAdapter(item).get('files')
+    self.assertEqual(files, [results[0][1]])
+    self.assertIsInstance(item, self.item_class)
+
+----------
+
+
+
+Test Class Name: FilesPipelineTestCaseFieldsMixin

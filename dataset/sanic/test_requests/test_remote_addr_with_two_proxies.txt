@@ -1,0 +1,51 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_remote_addr_with_two_proxies(app):
+    app.config.PROXIES_COUNT = 2
+    app.config.REAL_IP_HEADER = 'x-real-ip'
+
+    @app.route('/')
+    async def handler(request):
+        return text(request.remote_addr)
+    headers = {'X-Real-IP': '127.0.0.2', 'X-Forwarded-For': '127.0.1.1'}
+    (request, response) = app.test_client.get('/', headers=headers)
+    assert request.remote_addr == '127.0.0.2'
+    assert response.body == b'127.0.0.2'
+    headers = {'X-Forwarded-For': '127.0.1.1'}
+    (request, response) = app.test_client.get('/', headers=headers)
+    assert request.remote_addr == ''
+    assert response.body == b''
+    headers = {'X-Forwarded-For': '127.0.0.1, 127.0.1.2'}
+    (request, response) = app.test_client.get('/', headers=headers)
+    assert request.remote_addr == '127.0.0.1'
+    assert response.body == b'127.0.0.1'
+    (request, response) = app.test_client.get('/')
+    assert request.remote_addr == ''
+    assert response.body == b''
+    headers = {'X-Forwarded-For': '127.0.0.1, ,   ,,127.0.1.2'}
+    (request, response) = app.test_client.get('/', headers=headers)
+    assert request.remote_addr == '127.0.0.1'
+    assert response.body == b'127.0.0.1'
+    headers = {'X-Forwarded-For': ', 127.0.2.2, ,  ,127.0.0.1, ,   ,,127.0.1.2'}
+    (request, response) = app.test_client.get('/', headers=headers)
+    assert request.remote_addr == '127.0.0.1'
+    assert response.body == b'127.0.0.1'
+
+----------
+
+
+
+Test Class Name: Bar

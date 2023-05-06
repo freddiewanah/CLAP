@@ -1,0 +1,39 @@
+@torch.jit.unused
+def from_instances(instances: Instances):
+    """
+        Create scripted Instances from original Instances
+        """
+    fields = instances.get_fields()
+    image_size = instances.image_size
+    ret = newInstances(image_size)
+    for (name, val) in fields.items():
+        assert hasattr(ret, f'_{name}'), f'No attribute named {name} in {cls_name}'
+        setattr(ret, name, deepcopy(val))
+    return ret
+
+----------
+
+def test_script_getitem(self):
+
+    class f(torch.nn.Module):
+
+        def forward(self, x: Instances, idx):
+            return x[idx]
+    image_shape = (15, 15)
+    fields = {'proposal_boxes': Boxes, 'a': Tensor}
+    inst = Instances(image_shape)
+    inst.proposal_boxes = Boxes(torch.rand(4, 4))
+    inst.a = torch.rand(4, 10)
+    idx = torch.tensor([True, False, True, False])
+    with patch_instances(fields) as new_instance:
+        script_module = torch.jit.script(f())
+        out = f()(inst, idx)
+        out_scripted = script_module(new_instance.from_instances(inst), idx)
+        self.assertTrue(torch.equal(out.proposal_boxes.tensor, out_scripted.proposal_boxes.tensor))
+        self.assertTrue(torch.equal(out.a, out_scripted.a))
+
+----------
+
+
+
+Test Class Name: default

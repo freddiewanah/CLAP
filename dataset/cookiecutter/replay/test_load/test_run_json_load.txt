@@ -1,0 +1,30 @@
+def load(replay_dir, template_name):
+    """Read json data from file."""
+    if not isinstance(template_name, str):
+        raise TypeError('Template name is required to be of type str')
+    replay_file = get_file_name(replay_dir, template_name)
+    with open(replay_file) as infile:
+        context = json.load(infile)
+    if 'cookiecutter' not in context:
+        raise ValueError('Context is required to contain a cookiecutter key')
+    return context
+
+----------
+
+def test_run_json_load(mocker, mock_user_config, template_name, context, replay_test_dir, replay_file):
+    """Test that replay.load runs json.load under the hood and that the context     is correctly loaded from the file in replay_dir."""
+    spy_get_replay_file = mocker.spy(replay, 'get_file_name')
+    mock_json_load = mocker.patch('json.load', side_effect=json.load)
+    loaded_context = replay.load(replay_test_dir, template_name)
+    assert not mock_user_config.called
+    spy_get_replay_file.assert_called_once_with(replay_test_dir, template_name)
+    assert mock_json_load.call_count == 1
+    ((infile_handler,), kwargs) = mock_json_load.call_args
+    assert infile_handler.name == replay_file
+    assert loaded_context == context
+
+----------
+
+
+
+Test Class Name: default

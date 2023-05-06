@@ -1,0 +1,18 @@
+def download_request(self, request: Request, spider: Spider) -> Deferred:
+    agent = ScrapyH2Agent(context_factory=self._context_factory, pool=self._pool, crawler=self._crawler)
+    return agent.download_request(request, spider)
+
+----------
+
+def test_protocol(self):
+    request = Request(self.getURL('host'), method='GET')
+    d = self.download_request(request, Spider('foo'))
+    d.addCallback(lambda r: r.protocol)
+    d.addCallback(self.assertEqual, 'h2')
+    return d
+
+----------
+
+
+
+Test Class Name: Https2TestCase

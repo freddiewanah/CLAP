@@ -1,0 +1,21 @@
+def day_of_week(self, abbr: bool=False) -> str:
+    """Get a random day of week.
+
+        :param abbr: Abbreviated day name.
+        :return: Day of the week.
+        """
+    key = 'abbr' if abbr else 'name'
+    days: t.List[str] = self.extract(['day', key])
+    return self.random.choice(days)
+
+----------
+
+def test_generic_datetime(self, g1, g2):
+    assert g1.datetime.week_date() == g2.datetime.week_date()
+    assert g1.datetime.day_of_week() == g2.datetime.day_of_week()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

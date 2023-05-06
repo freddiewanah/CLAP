@@ -1,0 +1,25 @@
+def generate(self, **kwargs: Any) -> bytes:
+    """Generate this template with the given arguments."""
+    namespace = {'escape': escape.xhtml_escape, 'xhtml_escape': escape.xhtml_escape, 'url_escape': escape.url_escape, 'json_encode': escape.json_encode, 'squeeze': escape.squeeze, 'linkify': escape.linkify, 'datetime': datetime, '_tt_utf8': escape.utf8, '_tt_string_types': (unicode_type, bytes), '__name__': self.name.replace('.', '_'), '__loader__': ObjectDict(get_source=lambda name: self.code)}
+    namespace.update(self.namespace)
+    namespace.update(kwargs)
+    exec_in(self.compiled, namespace)
+    execute = typing.cast(Callable[[], bytes], namespace['_tt_execute'])
+    linecache.clearcache()
+    return execute()
+
+----------
+
+def test_error_line_number_extends_sub_error(self):
+    loader = DictLoader({'base.html': "{% block 'block' %}{% end %}", 'sub.html': "\n{% extends 'base.html' %}\n{% block 'block' %}\n{{1/0}}\n{% end %}\n            "})
+    try:
+        loader.load('sub.html').generate()
+        self.fail('did not get expected exception')
+    except ZeroDivisionError:
+        self.assertTrue('# sub.html:4 (via base.html:1)' in traceback.format_exc())
+
+----------
+
+
+
+Test Class Name: StackTraceTest

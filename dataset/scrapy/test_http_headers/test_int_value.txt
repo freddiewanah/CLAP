@@ -1,0 +1,25 @@
+def getlist(self, key, def_val=None):
+    try:
+        return super().__getitem__(key)
+    except KeyError:
+        if def_val is not None:
+            return self.normvalue(def_val)
+        return []
+
+----------
+
+def test_int_value(self):
+    h1 = Headers({'hey': 5})
+    h1['foo'] = 1
+    h1.setdefault('bar', 2)
+    h1.setlist('buz', [1, 'dos', 3])
+    self.assertEqual(h1.getlist('foo'), [b'1'])
+    self.assertEqual(h1.getlist('bar'), [b'2'])
+    self.assertEqual(h1.getlist('buz'), [b'1', b'dos', b'3'])
+    self.assertEqual(h1.getlist('hey'), [b'5'])
+
+----------
+
+
+
+Test Class Name: HeadersTest

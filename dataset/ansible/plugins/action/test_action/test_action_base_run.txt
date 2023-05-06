@@ -1,0 +1,58 @@
+@abstractmethod
+def run(self, tmp=None, task_vars=None):
+    """ Action Plugins should implement this method to perform their
+        tasks.  Everything else in this base class is a helper method for the
+        action plugin to do that.
+
+        :kwarg tmp: Deprecated parameter.  This is no longer used.  An action plugin that calls
+            another one and wants to use the same remote tmp for both should set
+            self._connection._shell.tmpdir rather than this parameter.
+        :kwarg task_vars: The variables (host vars, group vars, config vars,
+            etc) associated with this task.
+        :returns: dictionary of results from the module
+
+        Implementors of action modules may find the following variables especially useful:
+
+        * Module parameters.  These are stored in self._task.args
+        """
+    result = {}
+    if tmp is not None:
+        result['warning'] = ['ActionModule.run() no longer honors the tmp parameter. Action plugins should set self._connection._shell.tmpdir to share the tmpdir']
+    del tmp
+    if self._task.async_val and (not self._supports_async):
+        raise AnsibleActionFail('async is not supported for this task.')
+    elif self._task.check_mode and (not self._supports_check_mode):
+        raise AnsibleActionSkip('check mode is not supported for this task.')
+    elif self._task.async_val and self._task.check_mode:
+        raise AnsibleActionFail('check mode and async cannot be used on same task.')
+    if self._VALID_ARGS:
+        task_opts = frozenset(self._task.args.keys())
+        bad_opts = task_opts.difference(self._VALID_ARGS)
+        if bad_opts:
+            raise AnsibleActionFail('Invalid options for %s: %s' % (self._task.action, ','.join(list(bad_opts))))
+    if self._connection._shell.tmpdir is None and self._early_needs_tmp_path():
+        self._make_tmp_path()
+    return result
+
+----------
+
+def test_action_base_run(self):
+    mock_task = MagicMock()
+    mock_task.action = 'foo'
+    mock_task.args = dict(a=1, b=2, c=3)
+    mock_connection = MagicMock()
+    play_context = PlayContext()
+    mock_task.async_val = None
+    action_base = DerivedActionBase(mock_task, mock_connection, play_context, None, None, None)
+    results = action_base.run()
+    self.assertEqual(results, dict())
+    mock_task.async_val = 0
+    action_base = DerivedActionBase(mock_task, mock_connection, play_context, None, None, None)
+    results = action_base.run()
+    self.assertEqual(results, {})
+
+----------
+
+
+
+Test Class Name: TestActionBase

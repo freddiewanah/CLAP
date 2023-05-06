@@ -1,0 +1,27 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_empty_json(app):
+
+    @app.route('/')
+    async def handler(request):
+        assert request.json is None
+        return json(request.json)
+    (request, response) = app.test_client.get('/')
+    assert response.status == 200
+    assert response.body == b'null'
+
+----------
+
+
+
+Test Class Name: Bar

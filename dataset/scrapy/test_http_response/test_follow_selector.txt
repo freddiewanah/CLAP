@@ -1,0 +1,22 @@
+def css(self, query):
+    return self.selector.css(query)
+
+----------
+
+def test_follow_selector(self):
+    resp = self._links_response()
+    urls = ['http://example.com/sample2.html', 'http://example.com/sample3.html', 'http://example.com/sample3.html', 'http://example.com/sample3.html', 'http://example.com/sample3.html#foo', 'http://www.google.com/something', 'http://example.com/innertag.html']
+    for sellist in [resp.css('a'), resp.xpath('//a')]:
+        for (sel, url) in zip(sellist, urls):
+            self._assert_followed_url(sel, url, response=resp)
+    self._assert_followed_url(Selector(text='<link href="foo"></link>').css('link')[0], 'http://example.com/foo', response=resp)
+    for sellist in [resp.css('a::attr(href)'), resp.xpath('//a/@href')]:
+        for (sel, url) in zip(sellist, urls):
+            self._assert_followed_url(sel, url, response=resp)
+    self.assertRaises(ValueError, resp.follow, resp.css('div')[0])
+
+----------
+
+
+
+Test Class Name: TextResponseTest

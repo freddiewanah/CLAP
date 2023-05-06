@@ -1,0 +1,19 @@
+@classmethod
+def from_crawler(cls, crawler, uri, *, feed_options=None):
+    return build_storage(cls, uri, access_key=crawler.settings['AWS_ACCESS_KEY_ID'], secret_key=crawler.settings['AWS_SECRET_ACCESS_KEY'], session_token=crawler.settings['AWS_SESSION_TOKEN'], acl=crawler.settings['FEED_STORAGE_S3_ACL'] or None, endpoint_url=crawler.settings['AWS_ENDPOINT_URL'] or None, feed_options=feed_options)
+
+----------
+
+def test_from_crawler_with_acl(self):
+    settings = {'AWS_ACCESS_KEY_ID': 'access_key', 'AWS_SECRET_ACCESS_KEY': 'secret_key', 'FEED_STORAGE_S3_ACL': 'custom-acl'}
+    crawler = get_crawler(settings_dict=settings)
+    storage = S3FeedStorage.from_crawler(crawler, 's3://mybucket/export.csv')
+    self.assertEqual(storage.access_key, 'access_key')
+    self.assertEqual(storage.secret_key, 'secret_key')
+    self.assertEqual(storage.acl, 'custom-acl')
+
+----------
+
+
+
+Test Class Name: S3FeedStorageTest

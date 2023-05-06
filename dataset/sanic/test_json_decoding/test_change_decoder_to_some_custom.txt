@@ -1,0 +1,34 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_change_decoder_to_some_custom():
+
+    def my_custom_decoder(some_str: str):
+        dict = sloads(some_str)
+        dict['some_key'] = 'new_value'
+        return dict
+    app = Sanic('Test', loads=my_custom_decoder)
+    assert Request._loads == my_custom_decoder
+    req_body = {'some_key': 'some_value'}
+
+    @app.post('/test')
+    def handler(request):
+        new_json = request.json
+        return json(new_json)
+    (req, res) = app.test_client.post('/test', json=req_body)
+    assert sloads(res.body) == {'some_key': 'new_value'}
+
+----------
+
+
+
+Test Class Name: default

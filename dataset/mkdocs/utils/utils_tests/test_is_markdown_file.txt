@@ -1,0 +1,22 @@
+def is_markdown_file(path: str) -> bool:
+    """
+    Return True if the given file path is a Markdown file.
+
+    https://superuser.com/questions/249436/file-extension-for-markdown-files
+    """
+    return path.endswith(markdown_extensions)
+
+----------
+
+def test_is_markdown_file(self):
+    expected_results = {'index.md': True, 'index.markdown': True, 'index.MARKDOWN': False, 'index.txt': False, 'indexmd': False}
+    for (path, expected_result) in expected_results.items():
+        with self.subTest(path):
+            is_markdown = utils.is_markdown_file(path)
+            self.assertEqual(is_markdown, expected_result)
+
+----------
+
+
+
+Test Class Name: UtilsTests

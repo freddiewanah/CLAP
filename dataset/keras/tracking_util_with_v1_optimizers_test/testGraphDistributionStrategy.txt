@@ -1,0 +1,38 @@
+@tf.function
+def run():
+    return distribution.run(func)
+
+----------
+
+def testGraphDistributionStrategy(self):
+    self.skipTest('b/121381184')
+    num_training_steps = 10
+    checkpoint_directory = self.get_temp_dir()
+    checkpoint_prefix = os.path.join(checkpoint_directory, 'ckpt')
+
+    def _train_fn(optimizer, model, root):
+        input_value = tf.constant([[3.0]])
+        return optimizer.minimize(functools.partial(model, input_value), global_step=root.optimizer_step)
+    for training_continuation in range(3):
+        with tf.Graph().as_default():
+            strategy = tf.distribute.MirroredStrategy()
+            with strategy.scope():
+                model = MyModel()
+                optimizer = tf.compat.v1.train.AdamOptimizer(0.001)
+                root = tf.train.Checkpoint(optimizer=optimizer, model=model, optimizer_step=tf.compat.v1.train.get_or_create_global_step())
+                status = root.restore(tf.train.latest_checkpoint(checkpoint_directory))
+                train_op = strategy.extended.call_for_each_replica(functools.partial(_train_fn, optimizer, model, root))
+                with self.session() as session:
+                    if training_continuation > 0:
+                        status.assert_consumed()
+                    status.initialize_or_restore()
+                    for _ in range(num_training_steps):
+                        session.run(train_op)
+                    root.save(file_prefix=checkpoint_prefix)
+            self.assertEqual((training_continuation + 1) * num_training_steps, root.optimizer_step.numpy())
+
+----------
+
+
+
+Test Class Name: CheckpointingTests

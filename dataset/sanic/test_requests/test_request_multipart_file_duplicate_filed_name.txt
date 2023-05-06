@@ -1,0 +1,23 @@
+def getlist(self, name: str, default: Optional[Any]=None) -> Optional[Any]:
+    """
+        Return the entire list
+        """
+    return super().get(name, default)
+
+----------
+
+def test_request_multipart_file_duplicate_filed_name(app):
+
+    @app.route('/', methods=['POST'])
+    async def post(request):
+        return text('OK')
+    payload = '--e73ffaa8b1b2472b8ec848de833cb05b\r\nContent-Disposition: form-data; name="file"\r\nContent-Type: application/octet-stream\r\nContent-Length: 15\r\n\r\n{"test":"json"}\r\n--e73ffaa8b1b2472b8ec848de833cb05b\r\nContent-Disposition: form-data; name="file"\r\nContent-Type: application/octet-stream\r\nContent-Length: 15\r\n\r\n{"test":"json2"}\r\n--e73ffaa8b1b2472b8ec848de833cb05b--\r\n'
+    headers = {'Content-Type': 'multipart/form-data; boundary=e73ffaa8b1b2472b8ec848de833cb05b'}
+    (request, _) = app.test_client.post(data=payload, headers=headers, debug=True)
+    assert request.form.getlist('file') == ['{"test":"json"}', '{"test":"json2"}']
+
+----------
+
+
+
+Test Class Name: Bar

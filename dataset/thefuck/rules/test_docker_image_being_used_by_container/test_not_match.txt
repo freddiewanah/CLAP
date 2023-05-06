@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_not_match():
+    err_response = 'bash: docker: command not found'
+    assert not match(Command('docker image rm -f cd809b04b6ff', err_response))
+
+----------
+
+
+
+Test Class Name: default

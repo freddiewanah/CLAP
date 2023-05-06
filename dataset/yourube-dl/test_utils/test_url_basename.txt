@@ -1,0 +1,19 @@
+def url_basename(url):
+    path = compat_urllib_parse.urlparse(url).path
+    return path.strip('/').split('/')[-1]
+
+----------
+
+def test_url_basename(self):
+    self.assertEqual(url_basename('http://foo.de/'), '')
+    self.assertEqual(url_basename('http://foo.de/bar/baz'), 'baz')
+    self.assertEqual(url_basename('http://foo.de/bar/baz?x=y'), 'baz')
+    self.assertEqual(url_basename('http://foo.de/bar/baz#x=y'), 'baz')
+    self.assertEqual(url_basename('http://foo.de/bar/baz/'), 'baz')
+    self.assertEqual(url_basename('http://media.w3.org/2010/05/sintel/trailer.mp4'), 'trailer.mp4')
+
+----------
+
+
+
+Test Class Name: TestUtil

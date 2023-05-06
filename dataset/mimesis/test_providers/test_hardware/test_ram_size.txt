@@ -1,0 +1,21 @@
+def ram_size(self) -> str:
+    """Get a random size of RAM.
+
+        :return: RAM size.
+
+        :Example:
+            16GB.
+        """
+    return self.random.choice(RAM_SIZES)
+
+----------
+
+def test_ram_size(self, hard):
+    result = hard.ram_size()
+    assert result in RAM_SIZES
+
+----------
+
+
+
+Test Class Name: TestHardware

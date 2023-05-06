@@ -1,0 +1,17 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_match():
+    response1 = "\n    Could not install packages due to an EnvironmentError: [Errno 13] Permission denied: '/Library/Python/2.7/site-packages/entrypoints.pyc'\nConsider using the `--user` option or check the permissions.\n"
+    assert match(Command('pip install -r requirements.txt', response1))
+    response2 = '\nCollecting bacon\n  Downloading https://files.pythonhosted.org/packages/b2/81/19fb79139ee71c8bc4e5a444546f318e2b87253b8939ec8a7e10d63b7341/bacon-0.3.1.zip (11.0MB)\n    100% |████████████████████████████████| 11.0MB 3.0MB/s\nInstalling collected packages: bacon\n  Running setup.py install for bacon ... done\nSuccessfully installed bacon-0.3.1\n'
+    assert not match(Command('pip install bacon', response2))
+
+----------
+
+
+
+Test Class Name: default

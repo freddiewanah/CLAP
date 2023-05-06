@@ -1,0 +1,38 @@
+def acquire(self, timeout: Optional[Union[float, datetime.timedelta]]=None) -> Awaitable[_ReleasingContextManager]:
+    """Decrement the counter. Returns an awaitable.
+
+        Block if the counter is zero and wait for a `.release`. The awaitable
+        raises `.TimeoutError` after the deadline.
+        """
+    waiter = Future()
+    if self._value > 0:
+        self._value -= 1
+        waiter.set_result(_ReleasingContextManager(self))
+    else:
+        self._waiters.append(waiter)
+        if timeout:
+
+            def on_timeout() -> None:
+                if not waiter.done():
+                    waiter.set_exception(gen.TimeoutError())
+                self._garbage_collect()
+            io_loop = ioloop.IOLoop.current()
+            timeout_handle = io_loop.add_timeout(timeout, on_timeout)
+            waiter.add_done_callback(lambda _: io_loop.remove_timeout(timeout_handle))
+    return waiter
+
+----------
+
+def test_acquire_release(self):
+    lock = locks.Lock()
+    self.assertTrue(asyncio.ensure_future(lock.acquire()).done())
+    future = asyncio.ensure_future(lock.acquire())
+    self.assertFalse(future.done())
+    lock.release()
+    self.assertTrue(future.done())
+
+----------
+
+
+
+Test Class Name: LockTests

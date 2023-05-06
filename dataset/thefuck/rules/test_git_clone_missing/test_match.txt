@@ -1,0 +1,17 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('cmd', valid_urls)
+@pytest.mark.parametrize('output', outputs)
+def test_match(cmd, output):
+    c = Command(cmd, output)
+    assert match(c)
+
+----------
+
+
+
+Test Class Name: default

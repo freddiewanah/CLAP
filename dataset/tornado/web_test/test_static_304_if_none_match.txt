@@ -1,0 +1,28 @@
+def get_and_head(self, *args, **kwargs):
+    """Performs a GET and HEAD request and returns the GET response.
+
+        Fails if any ``Content-*`` headers returned by the two requests
+        differ.
+        """
+    head_response = self.fetch(*args, method='HEAD', **kwargs)
+    get_response = self.fetch(*args, method='GET', **kwargs)
+    content_headers = set()
+    for h in itertools.chain(head_response.headers, get_response.headers):
+        if h.startswith('Content-'):
+            content_headers.add(h)
+    for h in content_headers:
+        self.assertEqual(head_response.headers.get(h), get_response.headers.get(h), '%s differs between GET (%s) and HEAD (%s)' % (h, head_response.headers.get(h), get_response.headers.get(h)))
+    return get_response
+
+----------
+
+def test_static_304_if_none_match(self):
+    response1 = self.get_and_head('/static/robots.txt')
+    response2 = self.get_and_head('/static/robots.txt', headers={'If-None-Match': response1.headers['Etag']})
+    self.assertEqual(response2.code, 304)
+
+----------
+
+
+
+Test Class Name: OverrideStaticUrlHandler

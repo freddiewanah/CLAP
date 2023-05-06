@@ -1,0 +1,31 @@
+def check_type_int(value):
+    """Verify that the value is an integer and return it or convert the value
+    to an integer and return it
+
+    Raises :class:`TypeError` if unable to convert to an int
+
+    :arg value: String or int to convert of verify
+
+    :return: int of given value
+    """
+    if isinstance(value, integer_types):
+        return value
+    if isinstance(value, string_types):
+        try:
+            return int(value)
+        except ValueError:
+            pass
+    raise TypeError('%s cannot be converted to an int' % type(value))
+
+----------
+
+def test_check_type_int():
+    test_cases = (('1', 1), (u'1', 1), (1002, 1002))
+    for case in test_cases:
+        assert case[1] == check_type_int(case[0])
+
+----------
+
+
+
+Test Class Name: default

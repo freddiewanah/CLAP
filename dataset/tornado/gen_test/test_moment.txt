@@ -1,0 +1,33 @@
+@gen.coroutine
+def f():
+    yield gen.moment
+    raise gen.Return((1, 2))
+
+----------
+
+@gen_test
+def test_moment(self):
+    calls = []
+
+    @gen.coroutine
+    def f(name, yieldable):
+        for i in range(5):
+            calls.append(name)
+            yield yieldable
+    immediate = Future()
+    immediate.set_result(None)
+    yield [f('a', immediate), f('b', immediate)]
+    self.assertEqual(''.join(calls), 'aaaaabbbbb')
+    calls = []
+    yield [f('a', gen.moment), f('b', gen.moment)]
+    self.assertEqual(''.join(calls), 'ababababab')
+    self.finished = True
+    calls = []
+    yield [f('a', gen.moment), f('b', immediate)]
+    self.assertEqual(''.join(calls), 'abbbbbaaaa')
+
+----------
+
+
+
+Test Class Name: GenCoroutineTest

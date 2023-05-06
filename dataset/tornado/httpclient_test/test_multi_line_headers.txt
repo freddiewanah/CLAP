@@ -1,0 +1,30 @@
+def fileno(self) -> Union[int, ioloop._Selectable]:
+    return self.socket
+
+----------
+
+def test_multi_line_headers(self):
+    (sock, port) = bind_unused_port()
+    with closing(sock):
+
+        @gen.coroutine
+        def accept_callback(conn, address):
+            stream = IOStream(conn)
+            request_data = (yield stream.read_until(b'\r\n\r\n'))
+            if b'HTTP/1.' not in request_data:
+                self.skipTest('requires HTTP/1.x')
+            yield stream.write(b'HTTP/1.1 200 OK\nX-XSS-Protection: 1;\n\tmode=block\n\n'.replace(b'\n', b'\r\n'))
+            stream.close()
+        netutil.add_accept_handler(sock, accept_callback)
+        try:
+            resp = self.fetch('http://127.0.0.1:%d/' % port)
+            resp.rethrow()
+            self.assertEqual(resp.headers['X-XSS-Protection'], '1; mode=block')
+        finally:
+            self.io_loop.remove_handler(sock.fileno())
+
+----------
+
+
+
+Test Class Name: HTTPClientCommonTestCase

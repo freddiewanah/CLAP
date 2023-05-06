@@ -1,0 +1,32 @@
+def parse_locale(locale) -> Locale:
+    try:
+        return Locale.parse(locale, sep='_')
+    except (ValueError, UnknownLocaleError, TypeError) as e:
+        raise ValidationError(f'Invalid value for locale: {str(e)}')
+
+----------
+
+@tempdir()
+@tempdir()
+def test_theme(self, mytheme, custom):
+    configs = [dict(), {'theme': 'readthedocs'}, {'theme': {'name': 'readthedocs'}}, {'theme': {'name': None, 'custom_dir': mytheme}}, {'theme': {'name': 'readthedocs', 'custom_dir': custom}}, {'theme': {'name': 'mkdocs', 'locale': 'fr', 'static_templates': ['foo.html'], 'show_sidebar': False, 'some_var': 'bar'}}]
+    mkdocs_dir = os.path.abspath(os.path.dirname(mkdocs.__file__))
+    mkdocs_templates_dir = os.path.join(mkdocs_dir, 'templates')
+    theme_dir = os.path.abspath(os.path.join(mkdocs_dir, 'themes'))
+    results = ({'dirs': [os.path.join(theme_dir, 'mkdocs'), mkdocs_templates_dir], 'static_templates': ['404.html', 'sitemap.xml'], 'vars': {'name': 'mkdocs', 'locale': parse_locale('en'), 'include_search_page': False, 'search_index_only': False, 'analytics': {'gtag': None}, 'highlightjs': True, 'hljs_style': 'github', 'hljs_languages': [], 'navigation_depth': 2, 'nav_style': 'primary', 'shortcuts': {'help': 191, 'next': 78, 'previous': 80, 'search': 83}}}, {'dirs': [os.path.join(theme_dir, 'readthedocs'), mkdocs_templates_dir], 'static_templates': ['404.html', 'sitemap.xml'], 'vars': {'name': 'readthedocs', 'locale': parse_locale('en'), 'include_search_page': True, 'search_index_only': False, 'analytics': {'anonymize_ip': False, 'gtag': None}, 'highlightjs': True, 'hljs_languages': [], 'include_homepage_in_sidebar': True, 'prev_next_buttons_location': 'bottom', 'navigation_depth': 4, 'sticky_navigation': True, 'logo': None, 'titles_only': False, 'collapse_navigation': True}}, {'dirs': [os.path.join(theme_dir, 'readthedocs'), mkdocs_templates_dir], 'static_templates': ['404.html', 'sitemap.xml'], 'vars': {'name': 'readthedocs', 'locale': parse_locale('en'), 'include_search_page': True, 'search_index_only': False, 'analytics': {'anonymize_ip': False, 'gtag': None}, 'highlightjs': True, 'hljs_languages': [], 'include_homepage_in_sidebar': True, 'prev_next_buttons_location': 'bottom', 'navigation_depth': 4, 'sticky_navigation': True, 'logo': None, 'titles_only': False, 'collapse_navigation': True}}, {'dirs': [mytheme, mkdocs_templates_dir], 'static_templates': ['sitemap.xml'], 'vars': {'name': None, 'locale': parse_locale('en')}}, {'dirs': [custom, os.path.join(theme_dir, 'readthedocs'), mkdocs_templates_dir], 'static_templates': ['404.html', 'sitemap.xml'], 'vars': {'name': 'readthedocs', 'locale': parse_locale('en'), 'include_search_page': True, 'search_index_only': False, 'analytics': {'anonymize_ip': False, 'gtag': None}, 'highlightjs': True, 'hljs_languages': [], 'include_homepage_in_sidebar': True, 'prev_next_buttons_location': 'bottom', 'navigation_depth': 4, 'sticky_navigation': True, 'logo': None, 'titles_only': False, 'collapse_navigation': True}}, {'dirs': [os.path.join(theme_dir, 'mkdocs'), mkdocs_templates_dir], 'static_templates': ['404.html', 'sitemap.xml', 'foo.html'], 'vars': {'name': 'mkdocs', 'locale': parse_locale('fr'), 'show_sidebar': False, 'some_var': 'bar', 'include_search_page': False, 'search_index_only': False, 'analytics': {'gtag': None}, 'highlightjs': True, 'hljs_style': 'github', 'hljs_languages': [], 'navigation_depth': 2, 'nav_style': 'primary', 'shortcuts': {'help': 191, 'next': 78, 'previous': 80, 'search': 83}}})
+    for (config_contents, result) in zip(configs, results):
+        with self.subTest(config_contents):
+            conf = config.Config(schema=(('theme', c.Theme(default='mkdocs')),))
+            conf.load_dict(config_contents)
+            (errors, warnings) = conf.validate()
+            self.assertEqual(errors, [])
+            self.assertEqual(warnings, [])
+            self.assertEqual(conf['theme'].dirs, result['dirs'])
+            self.assertEqual(conf['theme'].static_templates, set(result['static_templates']))
+            self.assertEqual({k: conf['theme'][k] for k in iter(conf['theme'])}, result['vars'])
+
+----------
+
+
+
+Test Class Name: ConfigTests

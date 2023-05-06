@@ -1,0 +1,31 @@
+def to_subnet(addr, mask, dotted_notation=False):
+    """ coverts an addr / mask pair to a subnet in cidr notation """
+    try:
+        if not is_masklen(mask):
+            raise ValueError
+        cidr = int(mask)
+        mask = to_netmask(mask)
+    except ValueError:
+        cidr = to_masklen(mask)
+    addr = addr.split('.')
+    mask = mask.split('.')
+    network = list()
+    for (s_addr, s_mask) in zip(addr, mask):
+        network.append(str(int(s_addr) & int(s_mask)))
+    if dotted_notation:
+        return '%s %s' % ('.'.join(network), to_netmask(cidr))
+    return '%s/%s' % ('.'.join(network), cidr)
+
+----------
+
+def test_to_subnet():
+    result = to_subnet('192.168.1.1', 24)
+    assert '192.168.1.0/24' == result
+    result = to_subnet('192.168.1.1', 24, dotted_notation=True)
+    assert '192.168.1.0 255.255.255.0' == result
+
+----------
+
+
+
+Test Class Name: default

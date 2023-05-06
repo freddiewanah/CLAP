@@ -1,0 +1,35 @@
+@classmethod
+def from_dir_path_as_unknown(cls, dir_path, art_mgr):
+    """Make collection from an unspecified dir type.
+
+        This alternative constructor attempts to grab metadata from the
+        given path if it's a directory. If there's no metadata, it
+        falls back to guessing the FQCN based on the directory path and
+        sets the version to "*".
+
+        It raises a ValueError immediately if the input is not an
+        existing directory path.
+        """
+    if not os.path.isdir(dir_path):
+        raise ValueError("The collection directory '{path!s}' doesn't exist".format(path=to_native(dir_path)))
+    try:
+        return cls.from_dir_path(dir_path, art_mgr)
+    except ValueError:
+        return cls.from_dir_path_implicit(dir_path)
+
+----------
+
+def test_build_requirement_from_path(collection_artifact):
+    tmp_path = os.path.join(os.path.split(collection_artifact[1])[0], b'temp')
+    concrete_artifact_cm = collection.concrete_artifact_manager.ConcreteArtifactsManager(tmp_path, validate_certs=False)
+    actual = Requirement.from_dir_path_as_unknown(collection_artifact[0], concrete_artifact_cm)
+    assert actual.namespace == u'ansible_namespace'
+    assert actual.name == u'collection'
+    assert actual.src == collection_artifact[0]
+    assert actual.ver == u'0.1.0'
+
+----------
+
+
+
+Test Class Name: RequirementCandidates

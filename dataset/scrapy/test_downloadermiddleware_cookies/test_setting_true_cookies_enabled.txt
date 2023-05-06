@@ -1,0 +1,16 @@
+@classmethod
+def from_crawler(cls, crawler):
+    if not crawler.settings.getbool('COOKIES_ENABLED'):
+        raise NotConfigured
+    return cls(crawler.settings.getbool('COOKIES_DEBUG'))
+
+----------
+
+def test_setting_true_cookies_enabled(self):
+    self.assertIsInstance(CookiesMiddleware.from_crawler(get_crawler(settings_dict={'COOKIES_ENABLED': True})), CookiesMiddleware)
+
+----------
+
+
+
+Test Class Name: CookiesMiddlewareTest

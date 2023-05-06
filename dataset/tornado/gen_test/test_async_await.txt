@@ -1,0 +1,26 @@
+@gen.coroutine
+def f1():
+    1 / 0
+
+----------
+
+@gen_test
+def test_async_await(self):
+
+    @gen.coroutine
+    def f1():
+        yield gen.moment
+        raise gen.Return(42)
+
+    async def f2():
+        result = await f1()
+        return result
+    result = (yield f2())
+    self.assertEqual(result, 42)
+    self.finished = True
+
+----------
+
+
+
+Test Class Name: GenCoroutineTest

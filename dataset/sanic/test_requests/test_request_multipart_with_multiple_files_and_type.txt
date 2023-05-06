@@ -1,0 +1,25 @@
+def getlist(self, name: str, default: Optional[Any]=None) -> Optional[Any]:
+    """
+        Return the entire list
+        """
+    return super().get(name, default)
+
+----------
+
+def test_request_multipart_with_multiple_files_and_type(app):
+
+    @app.route('/', methods=['POST'])
+    async def post(request):
+        return text('OK')
+    payload = '------sanic\r\nContent-Disposition: form-data; name="file"; filename="test.json"\r\nContent-Type: application/json\r\n\r\n\r\n------sanic\r\nContent-Disposition: form-data; name="file"; filename="some_file.pdf"\r\nContent-Type: application/pdf\r\n\r\n\r\n------sanic--'
+    headers = {'content-type': 'multipart/form-data; boundary=------sanic'}
+    (request, _) = app.test_client.post(data=payload, headers=headers)
+    assert len(request.files.getlist('file')) == 2
+    assert request.files.getlist('file')[0].type == 'application/json'
+    assert request.files.getlist('file')[1].type == 'application/pdf'
+
+----------
+
+
+
+Test Class Name: Bar

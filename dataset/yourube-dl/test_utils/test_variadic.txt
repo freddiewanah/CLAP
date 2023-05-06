@@ -1,0 +1,15 @@
+def variadic(x, allowed_types=(compat_str, bytes, dict)):
+    return x if isinstance(x, compat_collections_abc.Iterable) and (not isinstance(x, allowed_types)) else (x,)
+
+----------
+
+def test_variadic(self):
+    self.assertEqual(variadic(None), (None,))
+    self.assertEqual(variadic('spam'), ('spam',))
+    self.assertEqual(variadic('spam', allowed_types=dict), 'spam')
+
+----------
+
+
+
+Test Class Name: TestUtil

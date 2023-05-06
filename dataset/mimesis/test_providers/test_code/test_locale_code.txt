@@ -1,0 +1,21 @@
+def locale_code(self) -> str:
+    """Get a random locale code (MS-LCID).
+
+        See Windows Language Code Identifier Reference
+        for more information.
+
+        :return: Locale code.
+        """
+    return self.random.choice(LOCALE_CODES)
+
+----------
+
+def test_locale_code(self, code):
+    result = code.locale_code()
+    assert result in LOCALE_CODES
+
+----------
+
+
+
+Test Class Name: TestCode

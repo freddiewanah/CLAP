@@ -1,0 +1,28 @@
+def patronymic(self, gender: t.Optional[Gender]=None) -> str:
+    """Generate random patronymic name.
+
+        :param gender: Gender of person.
+        :return: Patronymic name.
+
+        :Example:
+            \u0410\u043b\u0435\u043a\u0441\u0435\u0435\u0432\u043d\u0430.
+        """
+    gender = self.validate_enum(gender, Gender)
+    patronymics: t.List[str] = self.extract(['patronymic', str(gender)])
+    return self.random.choice(patronymics)
+
+----------
+
+@pytest.mark.parametrize('gender', [Gender.FEMALE, Gender.MALE])
+def test_patronymic(russia, gender):
+    result = russia.patronymic(gender=gender)
+    assert result is not None
+    assert len(result) >= 4
+    with pytest.raises(NonEnumerableError):
+        russia.patronymic(gender='nil')
+
+----------
+
+
+
+Test Class Name: default

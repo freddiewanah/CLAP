@@ -1,0 +1,131 @@
+def to_bytes(obj, encoding='utf-8', errors=None, nonstring='simplerepr'):
+    """Make sure that a string is a byte string
+
+    :arg obj: An object to make sure is a byte string.  In most cases this
+        will be either a text string or a byte string.  However, with
+        ``nonstring='simplerepr'``, this can be used as a traceback-free
+        version of ``str(obj)``.
+    :kwarg encoding: The encoding to use to transform from a text string to
+        a byte string.  Defaults to using 'utf-8'.
+    :kwarg errors: The error handler to use if the text string is not
+        encodable using the specified encoding.  Any valid `codecs error
+        handler <https://docs.python.org/3/library/codecs.html#codec-base-classes>`_
+        may be specified. There are three additional error strategies
+        specifically aimed at helping people to port code.  The first two are:
+
+            :surrogate_or_strict: Will use ``surrogateescape`` if it is a valid
+                handler, otherwise it will use ``strict``
+            :surrogate_or_replace: Will use ``surrogateescape`` if it is a valid
+                handler, otherwise it will use ``replace``.
+
+        Because ``surrogateescape`` was added in Python3 this usually means that
+        Python3 will use ``surrogateescape`` and Python2 will use the fallback
+        error handler. Note that the code checks for ``surrogateescape`` when the
+        module is imported.  If you have a backport of ``surrogateescape`` for
+        Python2, be sure to register the error handler prior to importing this
+        module.
+
+        The last error handler is:
+
+            :surrogate_then_replace: Will use ``surrogateescape`` if it is a valid
+                handler.  If encoding with ``surrogateescape`` would traceback,
+                surrogates are first replaced with a replacement characters
+                and then the string is encoded using ``replace`` (which replaces
+                the rest of the nonencodable bytes).  If ``surrogateescape`` is
+                not present it will simply use ``replace``.  (Added in Ansible 2.3)
+                This strategy is designed to never traceback when it attempts
+                to encode a string.
+
+        The default until Ansible-2.2 was ``surrogate_or_replace``
+        From Ansible-2.3 onwards, the default is ``surrogate_then_replace``.
+
+    :kwarg nonstring: The strategy to use if a nonstring is specified in
+        ``obj``.  Default is 'simplerepr'.  Valid values are:
+
+        :simplerepr: The default.  This takes the ``str`` of the object and
+            then returns the bytes version of that string.
+        :empty: Return an empty byte string
+        :passthru: Return the object passed in
+        :strict: Raise a :exc:`TypeError`
+
+    :returns: Typically this returns a byte string.  If a nonstring object is
+        passed in this may be a different type depending on the strategy
+        specified by nonstring.  This will never return a text string.
+
+    .. note:: If passed a byte string, this function does not check that the
+        string is valid in the specified encoding.  If it's important that the
+        byte string is in the specified encoding do::
+
+            encoded_string = to_bytes(to_text(input_string, 'latin-1'), 'utf-8')
+
+    .. version_changed:: 2.3
+
+        Added the ``surrogate_then_replace`` error handler and made it the default error handler.
+    """
+    if isinstance(obj, binary_type):
+        return obj
+    original_errors = errors
+    if errors in _COMPOSED_ERROR_HANDLERS:
+        if HAS_SURROGATEESCAPE:
+            errors = 'surrogateescape'
+        elif errors == 'surrogate_or_strict':
+            errors = 'strict'
+        else:
+            errors = 'replace'
+    if isinstance(obj, text_type):
+        try:
+            return obj.encode(encoding, errors)
+        except UnicodeEncodeError:
+            if original_errors in (None, 'surrogate_then_replace'):
+                return_string = obj.encode('utf-8', 'surrogateescape')
+                return_string = return_string.decode('utf-8', 'replace')
+                return return_string.encode(encoding, 'replace')
+            raise
+    if nonstring == 'simplerepr':
+        try:
+            value = str(obj)
+        except UnicodeError:
+            try:
+                value = repr(obj)
+            except UnicodeError:
+                return to_bytes('')
+    elif nonstring == 'passthru':
+        return obj
+    elif nonstring == 'empty':
+        return to_bytes('')
+    elif nonstring == 'strict':
+        raise TypeError('obj must be a string type')
+    else:
+        raise TypeError("Invalid value %s for to_bytes' nonstring parameter" % nonstring)
+    return to_bytes(value, encoding, errors)
+
+----------
+
+@pytest.mark.parametrize(['ignore_certs_cli', 'ignore_certs_cfg', 'expected_server2_validate_certs', 'expected_server3_validate_certs'], [(None, None, True, True), (None, True, True, False), (None, False, True, True), (True, None, False, False), (True, True, False, False), (True, False, False, False)])
+def test_validate_certs_server_config(ignore_certs_cfg, ignore_certs_cli, expected_server2_validate_certs, expected_server3_validate_certs, monkeypatch):
+    server_names = ['server1', 'server2', 'server3']
+    cfg_lines = ['[galaxy]', 'server_list=server1,server2,server3', '[galaxy_server.server1]', 'url=https://galaxy.ansible.com/api/', 'validate_certs=False', '[galaxy_server.server2]', 'url=https://galaxy.ansible.com/api/', 'validate_certs=True', '[galaxy_server.server3]', 'url=https://galaxy.ansible.com/api/']
+    cli_args = ['ansible-galaxy', 'collection', 'install', 'namespace.collection:1.0.0']
+    if ignore_certs_cli:
+        cli_args.append('--ignore-certs')
+    if ignore_certs_cfg is not None:
+        monkeypatch.setattr(C, 'GALAXY_IGNORE_CERTS', ignore_certs_cfg)
+    monkeypatch.setattr(C, 'GALAXY_SERVER_LIST', server_names)
+    with tempfile.NamedTemporaryFile(suffix='.cfg') as tmp_file:
+        tmp_file.write(to_bytes('\n'.join(cfg_lines), errors='surrogate_or_strict'))
+        tmp_file.flush()
+        monkeypatch.setattr(C.config, '_config_file', tmp_file.name)
+        C.config._parse_config_file()
+        galaxy_cli = GalaxyCLI(args=cli_args)
+        mock_execute_install = MagicMock()
+        monkeypatch.setattr(galaxy_cli, '_execute_install_collection', mock_execute_install)
+        galaxy_cli.run()
+    assert galaxy_cli.api_servers[0].validate_certs is False
+    assert galaxy_cli.api_servers[1].validate_certs is expected_server2_validate_certs
+    assert galaxy_cli.api_servers[2].validate_certs is expected_server3_validate_certs
+
+----------
+
+
+
+Test Class Name: default

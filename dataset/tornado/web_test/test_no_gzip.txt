@@ -1,0 +1,18 @@
+def get(self, *args: Any, **kwargs: Any) -> None:
+    to_url = self._url.format(*args, **kwargs)
+    if self.request.query_arguments:
+        to_url = httputil.url_concat(to_url, list(httputil.qs_to_qsl(self.request.query_arguments)))
+    self.redirect(to_url, permanent=self._permanent)
+
+----------
+
+def test_no_gzip(self):
+    response = self.fetch('/get_argument')
+    self.assertNotIn('Accept-Encoding', response.headers.get('Vary', ''))
+    self.assertNotIn('gzip', response.headers.get('Content-Encoding', ''))
+
+----------
+
+
+
+Test Class Name: WSGISafeWebTest

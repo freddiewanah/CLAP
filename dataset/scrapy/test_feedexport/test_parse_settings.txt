@@ -1,0 +1,24 @@
+@classmethod
+def from_crawler(cls, crawler, uri, *, feed_options=None):
+    return build_storage(cls, uri, access_key=crawler.settings['AWS_ACCESS_KEY_ID'], secret_key=crawler.settings['AWS_SECRET_ACCESS_KEY'], session_token=crawler.settings['AWS_SESSION_TOKEN'], acl=crawler.settings['FEED_STORAGE_S3_ACL'] or None, endpoint_url=crawler.settings['AWS_ENDPOINT_URL'] or None, feed_options=feed_options)
+
+----------
+
+def test_parse_settings(self):
+    try:
+        from google.cloud.storage import Client
+    except ImportError:
+        raise unittest.SkipTest('GCSFeedStorage requires google-cloud-storage')
+    settings = {'GCS_PROJECT_ID': '123', 'FEED_STORAGE_GCS_ACL': 'publicRead'}
+    crawler = get_crawler(settings_dict=settings)
+    storage = GCSFeedStorage.from_crawler(crawler, 'gs://mybucket/export.csv')
+    assert storage.project_id == '123'
+    assert storage.acl == 'publicRead'
+    assert storage.bucket_name == 'mybucket'
+    assert storage.blob_name == 'export.csv'
+
+----------
+
+
+
+Test Class Name: GCSFeedStorageTest

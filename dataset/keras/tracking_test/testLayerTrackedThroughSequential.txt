@@ -1,0 +1,43 @@
+def ffnet(layer_sizes, name):
+    ff = sequential.Sequential(name=name)
+    for (i, width) in enumerate(layer_sizes):
+        ff.add(core.Dense(width, activation='relu' if i < len(layer_sizes) - 1 else None))
+    return ff
+
+----------
+
+def testLayerTrackedThroughSequential(self):
+
+    class AttrDict(dict):
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.__dict__ = self
+
+    def ffnet(layer_sizes, name):
+        ff = sequential.Sequential(name=name)
+        for (i, width) in enumerate(layer_sizes):
+            ff.add(core.Dense(width, activation='relu' if i < len(layer_sizes) - 1 else None))
+        return ff
+
+    class MyModel2(training.Model):
+
+        def __init__(self, config, name='my_model_2'):
+            super().__init__(name=name)
+            self._num_tokens = config.num_tokens
+            self._ffnet = [ffnet(config.module_layers + (self._num_tokens,), 'ff')]
+
+        def null_input(self):
+            return tf.zeros([1, self._num_tokens], dtype=tf.float32)
+
+        def call(self, input_, module_index=None):
+            return self._ffnet[0](input_)
+    m2 = MyModel2(AttrDict(num_tokens=5, module_layers=(50, 30)))
+    m2(m2.null_input())
+    self.assertLen(m2.trainable_variables, 6)
+
+----------
+
+
+
+Test Class Name: default

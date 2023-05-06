@@ -1,0 +1,25 @@
+def keys(self):
+    return self._values.keys()
+
+----------
+
+def test_metaclass(self):
+
+    class TestItem(Item):
+        name = Field()
+        keys = Field()
+        values = Field()
+    i = TestItem()
+    i['name'] = 'John'
+    self.assertEqual(list(i.keys()), ['name'])
+    self.assertEqual(list(i.values()), ['John'])
+    i['keys'] = 'Keys'
+    i['values'] = 'Values'
+    self.assertSortedEqual(list(i.keys()), ['keys', 'values', 'name'])
+    self.assertSortedEqual(list(i.values()), ['Keys', 'Values', 'John'])
+
+----------
+
+
+
+Test Class Name: TestItem

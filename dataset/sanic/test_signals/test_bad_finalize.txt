@@ -1,0 +1,26 @@
+def finalize(self):
+    try:
+        self.router.finalize()
+    except FinalizationError as e:
+        if not Sanic.test_mode:
+            raise e
+    self.finalize_middleware()
+
+----------
+
+def test_bad_finalize(app):
+    counter = 0
+
+    @app.signal('foo.bar.baz')
+    def sync_signal(amount):
+        nonlocal counter
+        counter += amount
+    with pytest.raises(RuntimeError, match='Cannot finalize signals outside of event loop'):
+        app.signal_router.finalize()
+    assert counter == 0
+
+----------
+
+
+
+Test Class Name: FooEnum

@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_quotes(self):
+    jsi = JSInterpreter('function f(){return "a\\"\\\\("}')
+    self.assertEqual(jsi.call_function('f'), 'a"\\(')
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

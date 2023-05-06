@@ -1,0 +1,22 @@
+def company_type(self, abbr: bool=False) -> str:
+    """Get a random type of business entity.
+
+        :param abbr: Abbreviated company type.
+        :return: Types of business entity.
+        """
+    key = 'abbr' if abbr else 'title'
+    company_types: t.List[str] = self.extract(['company', 'type', key])
+    return self.random.choice(company_types)
+
+----------
+
+@pytest.mark.parametrize('abbr, key', [(False, 'title'), (True, 'abbr')])
+def test_company_type(self, finance, abbr, key):
+    result = finance.company_type(abbr=abbr)
+    assert result in finance._data['company']['type'][key]
+
+----------
+
+
+
+Test Class Name: TestFinance

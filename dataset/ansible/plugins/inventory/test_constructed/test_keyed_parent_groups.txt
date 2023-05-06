@@ -1,0 +1,31 @@
+def get_host(self, hostname):
+    """ fetch host object using name deal with implicit localhost """
+    matching_host = self.hosts.get(hostname, None)
+    if matching_host is None and hostname in C.LOCALHOST:
+        matching_host = self._create_implicit_localhost(hostname)
+    return matching_host
+
+----------
+
+def test_keyed_parent_groups(inventory_module):
+    inventory_module.inventory.add_host('web1')
+    inventory_module.inventory.add_host('web2')
+    inventory_module.inventory.set_variable('web1', 'region', 'japan')
+    inventory_module.inventory.set_variable('web2', 'region', 'japan')
+    host1 = inventory_module.inventory.get_host('web1')
+    host2 = inventory_module.inventory.get_host('web2')
+    keyed_groups = [{'prefix': 'region', 'key': 'region', 'parent_group': 'region_list'}]
+    for host in [host1, host2]:
+        inventory_module._add_host_to_keyed_groups(keyed_groups, host.vars, host.name, strict=False)
+    assert 'region_japan' in inventory_module.inventory.groups
+    assert 'region_list' in inventory_module.inventory.groups
+    region_group = inventory_module.inventory.groups['region_japan']
+    all_regions = inventory_module.inventory.groups['region_list']
+    assert all_regions.child_groups == [region_group]
+    assert region_group.hosts == [host1, host2]
+
+----------
+
+
+
+Test Class Name: default

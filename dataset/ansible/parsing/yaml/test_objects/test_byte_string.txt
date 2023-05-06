@@ -1,0 +1,14 @@
+def encode(self, encoding=None, errors=None):
+    return to_bytes(self.data, encoding=encoding, errors=errors)
+
+----------
+
+def test_byte_string(self):
+    seq = 'some letters'.encode('utf8')
+    self.assert_values(seq)
+
+----------
+
+
+
+Test Class Name: TestAnsibleVaultUnicodeNoVault

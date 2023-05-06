@@ -1,0 +1,22 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_trusted_downstream(self):
+    valid_ipv4_list = {'X-Forwarded-For': '127.0.0.1, 4.4.4.4, 5.5.5.5'}
+    resp = self.fetch('/', headers=valid_ipv4_list)
+    if resp.headers['request-version'].startswith('HTTP/2'):
+        self.skipTest('requires HTTP/1.x')
+    result = json_decode(resp.body)
+    self.assertEqual(result['remote_ip'], '4.4.4.4')
+
+----------
+
+
+
+Test Class Name: Handler

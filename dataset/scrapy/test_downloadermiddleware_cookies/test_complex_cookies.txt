@@ -1,0 +1,27 @@
+def get(self, key, def_val=None):
+    try:
+        return super().get(key, def_val)[-1]
+    except IndexError:
+        return None
+
+----------
+
+def test_complex_cookies(self):
+    cookies = [{'name': 'C1', 'value': 'value1', 'path': '/foo', 'domain': 'scrapytest.org'}, {'name': 'C2', 'value': 'value2', 'path': '/bar', 'domain': 'scrapytest.org'}, {'name': 'C3', 'value': 'value3', 'path': '/foo', 'domain': 'scrapytest.org'}, {'name': 'C4', 'value': 'value4', 'path': '/foo', 'domain': 'scrapy.org'}]
+    req = Request('http://scrapytest.org/', cookies=cookies)
+    self.mw.process_request(req, self.spider)
+    req = Request('http://scrapytest.org/foo')
+    self.mw.process_request(req, self.spider)
+    assert req.headers.get('Cookie') in (b'C1=value1; C3=value3', b'C3=value3; C1=value1')
+    req = Request('http://scrapytest.org/bar')
+    self.mw.process_request(req, self.spider)
+    self.assertEqual(req.headers.get('Cookie'), b'C2=value2')
+    req = Request('http://scrapytest.org/baz')
+    self.mw.process_request(req, self.spider)
+    assert 'Cookie' not in req.headers
+
+----------
+
+
+
+Test Class Name: CookiesMiddlewareTest

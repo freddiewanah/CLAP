@@ -1,0 +1,24 @@
+def documentation_pages(self) -> Sequence[File]:
+    """Return iterable of all Markdown page file objects."""
+    return [file for file in self if file.is_documentation_page()]
+
+----------
+
+@tempdir()
+@mock.patch('jinja2.environment.Template.render', return_value='')
+def test_build_page_empty(self, site_dir, render_mock):
+    cfg = load_config(site_dir=site_dir, nav=['index.md'], plugins=[])
+    fs = [File('index.md', cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls'])]
+    files = Files(fs)
+    nav = get_navigation(files, cfg)
+    with self.assertLogs('mkdocs') as cm:
+        build._build_page(files.documentation_pages()[0].page, cfg, files, nav, cfg['theme'].get_env())
+    self.assertEqual('\n'.join(cm.output), "INFO:mkdocs.commands.build:Page skipped: 'index.md'. Generated empty output.")
+    self.assertPathNotFile(site_dir, 'index.html')
+    render_mock.assert_called_once()
+
+----------
+
+
+
+Test Class Name: BuildTests

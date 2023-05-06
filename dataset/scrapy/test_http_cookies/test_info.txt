@@ -1,0 +1,13 @@
+def info(self):
+    return self
+
+----------
+
+def test_info(self):
+    self.assertIs(self.wrapped.info(), self.wrapped)
+
+----------
+
+
+
+Test Class Name: WrappedResponseTest

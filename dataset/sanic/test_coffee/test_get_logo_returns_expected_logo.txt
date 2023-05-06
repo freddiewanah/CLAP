@@ -1,0 +1,19 @@
+def get_logo(full=False, coffee=False):
+    logo = (FULL_COLOR_LOGO if full else COFFEE_LOGO if coffee else COLOR_LOGO) if is_atty() else BASE_LOGO
+    if sys.platform == 'darwin' and environ.get('TERM_PROGRAM') == 'Apple_Terminal':
+        logo = ansi_pattern.sub('', logo)
+    return logo
+
+----------
+
+def test_get_logo_returns_expected_logo():
+    with patch('sys.stdout.isatty') as isatty:
+        isatty.return_value = True
+        logo = get_logo(coffee=True)
+    assert logo is COFFEE_LOGO
+
+----------
+
+
+
+Test Class Name: default

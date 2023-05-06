@@ -1,0 +1,25 @@
+def empty(status: int=204, headers: Optional[Dict[str, str]]=None) -> HTTPResponse:
+    """
+    Returns an empty response to the client.
+
+    :param status Response code.
+    :param headers Custom Headers.
+    """
+    return HTTPResponse(body=b'', status=status, headers=headers)
+
+----------
+
+def test_added_route_ctx_kwargs(app):
+
+    @app.route('/', ctx_foo='foo', ctx_bar=99)
+    async def handler(request: Request):
+        return empty()
+    (request, _) = app.test_client.get('/')
+    assert request.route.ctx.foo == 'foo'
+    assert request.route.ctx.bar == 99
+
+----------
+
+
+
+Test Class Name: default

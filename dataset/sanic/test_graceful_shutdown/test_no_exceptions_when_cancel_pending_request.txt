@@ -1,0 +1,33 @@
+def run(app, level=logging.DEBUG):
+
+    @app.after_server_start
+    async def stop(app, _):
+        app.stop()
+    with caplog.at_level(level):
+        Sanic.serve()
+    return caplog.record_tuples
+
+----------
+
+def test_no_exceptions_when_cancel_pending_request(app, caplog: LogCaptureFixture):
+    app.config.GRACEFUL_SHUTDOWN_TIMEOUT = 1
+
+    @app.get('/')
+    async def handler(request):
+        await asyncio.sleep(5)
+
+    @app.listener('after_server_start')
+    async def _request(sanic, loop):
+        connect = asyncio.open_connection('127.0.0.1', 8000)
+        (_, writer) = await connect
+        writer.write(b'GET / HTTP/1.1\r\n\r\n')
+        app.stop()
+    with caplog.at_level(logging.INFO):
+        app.run(single_process=True, access_log=True)
+    assert 'Request: GET http:/// stopped. Transport is closed.' in caplog.text
+
+----------
+
+
+
+Test Class Name: default

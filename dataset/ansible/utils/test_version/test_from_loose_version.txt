@@ -1,0 +1,41 @@
+@staticmethod
+def from_loose_version(loose_version):
+    """This method is designed to take a ``LooseVersion``
+        and attempt to construct a ``SemanticVersion`` from it
+
+        This is useful where you want to do simple version math
+        without requiring users to provide a compliant semver.
+        """
+    if not isinstance(loose_version, LooseVersion):
+        raise ValueError('%r is not a LooseVersion' % loose_version)
+    try:
+        version = loose_version.version[:]
+    except AttributeError:
+        raise ValueError('%r is not a LooseVersion' % loose_version)
+    extra_idx = 3
+    for marker in ('-', '+'):
+        try:
+            idx = version.index(marker)
+        except ValueError:
+            continue
+        else:
+            if idx < extra_idx:
+                extra_idx = idx
+    version = version[:extra_idx]
+    if version and set((type(v) for v in version)) != set((int,)):
+        raise ValueError('Non integer values in %r' % loose_version)
+    extra = re.search('[+-].+$', loose_version.vstring)
+    version = version + [0] * (3 - len(version))
+    return SemanticVersion('%s%s' % ('.'.join((str(v) for v in version)), extra.group(0) if extra else ''))
+
+----------
+
+@pytest.mark.parametrize('value,expected', LOOSE_VERSION)
+def test_from_loose_version(value, expected):
+    assert SemanticVersion.from_loose_version(value) == expected
+
+----------
+
+
+
+Test Class Name: default

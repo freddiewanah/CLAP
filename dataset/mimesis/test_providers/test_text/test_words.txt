@@ -1,0 +1,25 @@
+def words(self, quantity: int=5) -> t.List[str]:
+    """Generate a list of random words.
+
+        :param quantity: Quantity of words. Default is 5.
+        :return: Word list.
+
+        :Example:
+            [science, network, god, octopus, love]
+        """
+    words = self.extract(['words', 'normal'])
+    return self.random.choices(words, k=quantity)
+
+----------
+
+def test_words(self, text):
+    result = text.words(quantity=5)
+    assert len(result) == 5
+    result = text.words(quantity=1)
+    assert len(result) == 1
+
+----------
+
+
+
+Test Class Name: TestText

@@ -1,0 +1,37 @@
+def group_dict(self, group: str) -> Dict[str, Any]:
+    """The names and values of options in a group.
+
+        Useful for copying options into Application settings::
+
+            from tornado.options import define, parse_command_line, options
+
+            define('template_path', group='application')
+            define('static_path', group='application')
+
+            parse_command_line()
+
+            application = Application(
+                handlers, **options.group_dict('application'))
+
+        .. versionadded:: 3.1
+        """
+    return dict(((opt.name, opt.value()) for (name, opt) in self._options.items() if not group or group == opt.group_name))
+
+----------
+
+def test_group_dict(self):
+    options = OptionParser()
+    options.define('a', default=1)
+    options.define('b', group='b_group', default=2)
+    frame = sys._getframe(0)
+    this_file = frame.f_code.co_filename
+    self.assertEqual(set(['b_group', '', this_file]), options.groups())
+    b_group_dict = options.group_dict('b_group')
+    self.assertEqual({'b': 2}, b_group_dict)
+    self.assertEqual({}, options.group_dict('nonexistent'))
+
+----------
+
+
+
+Test Class Name: OptionsTest

@@ -1,0 +1,59 @@
+def tempdir(files=None, **kw):
+    """
+    A decorator for building a temporary directory with prepopulated files.
+
+    The temporary directory and files are created just before the wrapped function is called and are destroyed
+    immediately after the wrapped function returns.
+
+    The `files` keyword should be a dict of file paths as keys and strings of file content as values.
+    If `files` is a list, then each item is assumed to be a path of an empty file. All other
+    keywords are passed to `tempfile.TemporaryDirectory` to create the parent directory.
+
+    In the following example, two files are created in the temporary directory and then are destroyed when
+    the function exits:
+
+        @tempdir(files={
+            'foo.txt': 'foo content',
+            'bar.txt': 'bar content'
+        })
+        def example(self, tdir):
+            assert os.path.isfile(os.path.join(tdir, 'foo.txt'))
+            pth = os.path.join(tdir, 'bar.txt')
+            assert os.path.isfile(pth)
+            with open(pth, 'r', encoding='utf-8') as f:
+                assert f.read() == 'bar content'
+    """
+    files = {f: '' for f in files} if isinstance(files, (list, tuple)) else files or {}
+    kw['prefix'] = 'mkdocs_test-' + kw.get('prefix', '')
+
+    def decorator(fn):
+
+        @wraps(fn)
+        def wrapper(self, *args):
+            with TemporaryDirectory(**kw) as td:
+                for (path, content) in files.items():
+                    pth = os.path.join(td, path)
+                    utils.write_file(content.encode(encoding='utf-8'), pth)
+                return fn(self, td, *args)
+        return wrapper
+    return decorator
+
+----------
+
+@tempdir()
+def test_theme_as_complex_config(self, custom_dir) -> None:
+    config = {'name': 'mkdocs', 'custom_dir': custom_dir, 'static_templates': ['sitemap.html'], 'show_sidebar': False}
+
+    class Schema(Config):
+        option = c.Theme()
+    conf = self.get_config(Schema, {'option': config})
+    self.assertEqual(conf.option.name, 'mkdocs')
+    self.assertIn(custom_dir, conf.option.dirs)
+    self.assertEqual(conf.option.static_templates, {'404.html', 'sitemap.xml', 'sitemap.html'})
+    self.assertEqual(conf.option['show_sidebar'], False)
+
+----------
+
+
+
+Test Class Name: default

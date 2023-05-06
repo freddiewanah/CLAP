@@ -1,0 +1,26 @@
+def side_effect(old_cmd, command):
+    offending_pattern = re.compile('(?:Offending (?:key for IP|\\S+ key)|Matching host key) in ([^:]+):(\\d+)', re.MULTILINE)
+    offending = offending_pattern.findall(old_cmd.output)
+    for (filepath, lineno) in offending:
+        with open(filepath, 'r') as fh:
+            lines = fh.readlines()
+            del lines[int(lineno) - 1]
+        with open(filepath, 'w') as fh:
+            fh.writelines(lines)
+
+----------
+
+@pytest.mark.parametrize('script,filename', [(u'unzip café', u'café.zip'), (u'unzip café.zip', u'café.zip'), (u'unzip foo', u'foo.zip'), (u'unzip foo.zip', u'foo.zip')])
+def test_side_effect(zip_error, script, filename):
+    zip_error(filename)
+    side_effect(Command(script, ''), None)
+    dir_list = os.listdir(u'.')
+    if filename not in set(dir_list):
+        filename = normalize('NFD', filename)
+    assert set(dir_list) == {filename, 'd'}
+
+----------
+
+
+
+Test Class Name: default

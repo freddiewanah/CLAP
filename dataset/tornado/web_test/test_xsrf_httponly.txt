@@ -1,0 +1,27 @@
+def get(self, *args: Any, **kwargs: Any) -> None:
+    to_url = self._url.format(*args, **kwargs)
+    if self.request.query_arguments:
+        to_url = httputil.url_concat(to_url, list(httputil.qs_to_qsl(self.request.query_arguments)))
+    self.redirect(to_url, permanent=self._permanent)
+
+----------
+
+def test_xsrf_httponly(self):
+    response = self.fetch('/')
+    self.assertIn('httponly;', response.headers['Set-Cookie'].lower())
+    self.assertIn('expires=', response.headers['Set-Cookie'].lower())
+    header = response.headers.get('Set-Cookie')
+    assert header is not None
+    match = re.match('.*; expires=(?P<expires>.+);.*', header)
+    assert match is not None
+    expires = datetime.datetime.utcnow() + datetime.timedelta(days=2)
+    parsed = email.utils.parsedate(match.groupdict()['expires'])
+    assert parsed is not None
+    header_expires = datetime.datetime(*parsed[:6])
+    self.assertTrue(abs((expires - header_expires).total_seconds()) < 10)
+
+----------
+
+
+
+Test Class Name: Handler

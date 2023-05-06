@@ -1,0 +1,33 @@
+def has_next(self):
+    """Whether the iterator has been exhausted."""
+    return self.n < self.total
+
+----------
+
+def test_counting_iterator_index(self, ref=None, itr=None):
+    if ref is None:
+        assert itr is None
+        ref = list(range(10))
+        itr = iterators.CountingIterator(ref)
+    else:
+        assert len(ref) == 10
+        assert itr is not None
+    self.assertTrue(itr.has_next())
+    self.assertEqual(itr.n, 0)
+    self.assertEqual(next(itr), ref[0])
+    self.assertEqual(itr.n, 1)
+    self.assertEqual(next(itr), ref[1])
+    self.assertEqual(itr.n, 2)
+    itr.skip(3)
+    self.assertEqual(itr.n, 5)
+    self.assertEqual(next(itr), ref[5])
+    itr.skip(2)
+    self.assertEqual(itr.n, 8)
+    self.assertEqual(list(itr), [ref[8], ref[9]])
+    self.assertFalse(itr.has_next())
+
+----------
+
+
+
+Test Class Name: TestIterators

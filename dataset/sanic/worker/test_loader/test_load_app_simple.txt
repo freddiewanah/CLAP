@@ -1,0 +1,42 @@
+def load(self) -> SanicApp:
+    module_path = os.path.abspath(self.cwd)
+    if module_path not in sys.path:
+        sys.path.append(module_path)
+    if self.factory:
+        return self.factory()
+    else:
+        from sanic.app import Sanic
+        from sanic.simple import create_simple_server
+        if self.as_simple:
+            path = Path(self.module_input)
+            app = create_simple_server(path)
+        else:
+            if self.module_name == '' and os.path.isdir(self.module_input):
+                raise ValueError(f'App not found.\n   Please use --simple if you are passing a directory to sanic.\n   eg. sanic {self.module_input} --simple')
+            module = import_module(self.module_name)
+            app = getattr(module, self.app_name, None)
+            if self.as_factory:
+                try:
+                    app = app(self.args)
+                except TypeError:
+                    app = app()
+            app_type_name = type(app).__name__
+            if not isinstance(app, Sanic) and self.args and hasattr(self.args, 'module'):
+                if callable(app):
+                    solution = f'sanic {self.args.module} --factory'
+                    raise ValueError(f'Module is not a Sanic app, it is a {app_type_name}\n  If this callable returns a Sanic instance try: \n{solution}')
+                raise ValueError(f'Module is not a Sanic app, it is a {app_type_name}\n  Perhaps you meant {self.args.module}:app?')
+    return app
+
+----------
+
+def test_load_app_simple():
+    loader = AppLoader(str(STATIC), as_simple=True)
+    app = loader.load()
+    assert isinstance(app, Sanic)
+
+----------
+
+
+
+Test Class Name: default

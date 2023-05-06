@@ -1,0 +1,21 @@
+def get(self, key, def_val=None):
+    try:
+        return super().get(key, def_val)[-1]
+    except IndexError:
+        return None
+
+----------
+
+@defer.inlineCallbacks
+def test_headers_received_stop_download_callback(self):
+    crawler = get_crawler(HeadersReceivedCallbackSpider)
+    yield crawler.crawl(mockserver=self.mockserver)
+    self.assertIsNone(crawler.spider.meta.get('failure'))
+    self.assertIsInstance(crawler.spider.meta['response'], Response)
+    self.assertEqual(crawler.spider.meta['response'].headers, crawler.spider.meta.get('headers_received'))
+
+----------
+
+
+
+Test Class Name: CrawlSpiderTestCase

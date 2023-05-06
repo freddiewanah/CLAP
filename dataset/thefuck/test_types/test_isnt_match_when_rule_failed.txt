@@ -1,0 +1,29 @@
+def is_match(self, command):
+    """Returns `True` if rule matches the command.
+
+        :type command: Command
+        :rtype: bool
+
+        """
+    if command.output is None and self.requires_output:
+        return False
+    try:
+        with logs.debug_time(u'Trying rule: {};'.format(self.name)):
+            if self.match(command):
+                return True
+    except Exception:
+        logs.rule_failed(self, sys.exc_info())
+
+----------
+
+@pytest.mark.usefixtures('no_colors')
+def test_isnt_match_when_rule_failed(self, capsys):
+    rule = Rule('test', Mock(side_effect=OSError('Denied')), requires_output=False)
+    assert not rule.is_match(Command('ls', ''))
+    assert capsys.readouterr()[1].split('\n')[0] == '[WARN] Rule test:'
+
+----------
+
+
+
+Test Class Name: TestRule

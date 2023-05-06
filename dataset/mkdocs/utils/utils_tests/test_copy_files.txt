@@ -1,0 +1,32 @@
+def copy_file(self, dirty: bool=False) -> None:
+    """Copy source file to destination, ensuring parent directories exist."""
+    if dirty and (not self.is_modified()):
+        log.debug(f"Skip copying unmodified file: '{self.src_uri}'")
+    else:
+        log.debug(f"Copying media file: '{self.src_uri}'")
+        try:
+            utils.copy_file(self.abs_src_path, self.abs_dest_path)
+        except shutil.SameFileError:
+            pass
+
+----------
+
+@tempdir()
+@tempdir()
+def test_copy_files(self, src_dir, dst_dir):
+    cases = [dict(src_path='foo.txt', dst_path='foo.txt', expected='foo.txt'), dict(src_path='bar.txt', dst_path='foo/', expected='foo/bar.txt'), dict(src_path='baz.txt', dst_path='foo/bar/baz.txt', expected='foo/bar/baz.txt')]
+    for case in cases:
+        (src, dst, expected) = (case['src_path'], case['dst_path'], case['expected'])
+        with self.subTest(src):
+            src = os.path.join(src_dir, src)
+            with open(src, 'w') as f:
+                f.write('content')
+            dst = os.path.join(dst_dir, dst)
+            utils.copy_file(src, dst)
+            self.assertTrue(os.path.isfile(os.path.join(dst_dir, expected)))
+
+----------
+
+
+
+Test Class Name: UtilsTests

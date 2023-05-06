@@ -1,0 +1,18 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_xmliter_unicode(self):
+    body = '<?xml version="1.0" encoding="UTF-8"?>\n            <þingflokkar>\n               <þingflokkur id="26">\n                  <heiti />\n                  <skammstafanir>\n                     <stuttskammstöfun>-</stuttskammstöfun>\n                     <löngskammstöfun />\n                  </skammstafanir>\n                  <tímabil>\n                     <fyrstaþing>80</fyrstaþing>\n                  </tímabil>\n               </þingflokkur>\n               <þingflokkur id="21">\n                  <heiti>Alþýðubandalag</heiti>\n                  <skammstafanir>\n                     <stuttskammstöfun>Ab</stuttskammstöfun>\n                     <löngskammstöfun>Alþb.</löngskammstöfun>\n                  </skammstafanir>\n                  <tímabil>\n                     <fyrstaþing>76</fyrstaþing>\n                     <síðastaþing>123</síðastaþing>\n                  </tímabil>\n               </þingflokkur>\n               <þingflokkur id="27">\n                  <heiti>Alþýðuflokkur</heiti>\n                  <skammstafanir>\n                     <stuttskammstöfun>A</stuttskammstöfun>\n                     <löngskammstöfun>Alþfl.</löngskammstöfun>\n                  </skammstafanir>\n                  <tímabil>\n                     <fyrstaþing>27</fyrstaþing>\n                     <síðastaþing>120</síðastaþing>\n                  </tímabil>\n               </þingflokkur>\n            </þingflokkar>'
+    for r in (XmlResponse(url='http://example.com', body=body.encode('utf-8')), XmlResponse(url='http://example.com', body=body, encoding='utf-8')):
+        attrs = []
+        for x in self.xmliter(r, 'þingflokkur'):
+            attrs.append((x.attrib['id'], x.xpath('./skammstafanir/stuttskammstöfun/text()').getall(), x.xpath('./tímabil/fyrstaþing/text()').getall()))
+        self.assertEqual(attrs, [('26', ['-'], ['80']), ('21', ['Ab'], ['76']), ('27', ['A'], ['27'])])
+
+----------
+
+
+
+Test Class Name: XmliterTestCase

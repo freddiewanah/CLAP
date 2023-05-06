@@ -1,0 +1,17 @@
+def is_set(self) -> bool:
+    """Return ``True`` if the internal flag is true."""
+    return self._value
+
+----------
+
+def test_event_set_multiple(self):
+    e = locks.Event()
+    e.set()
+    e.set()
+    self.assertTrue(e.is_set())
+
+----------
+
+
+
+Test Class Name: EventTest

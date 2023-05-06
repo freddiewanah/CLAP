@@ -1,0 +1,24 @@
+def keys(self):
+    return self._values.keys()
+
+----------
+
+def test_metaclass_inheritance(self):
+
+    class ParentItem(Item):
+        name = Field()
+        keys = Field()
+        values = Field()
+
+    class TestItem(ParentItem):
+        keys = Field()
+    i = TestItem()
+    i['keys'] = 3
+    self.assertEqual(list(i.keys()), ['keys'])
+    self.assertEqual(list(i.values()), [3])
+
+----------
+
+
+
+Test Class Name: TestItem

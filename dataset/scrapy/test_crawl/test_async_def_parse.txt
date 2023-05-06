@@ -1,0 +1,31 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_async_def_parse(self):
+    crawler = get_crawler(AsyncDefSpider)
+    with LogCapture() as log:
+        yield crawler.crawl(self.mockserver.url('/status?n=200'), mockserver=self.mockserver)
+    self.assertIn('Got response 200', str(log))
+
+----------
+
+
+
+Test Class Name: CrawlSpiderTestCase

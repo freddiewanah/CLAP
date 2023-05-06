@@ -1,0 +1,33 @@
+def parse_cookie(cookie: str) -> Dict[str, str]:
+    """Parse a ``Cookie`` HTTP header into a dict of name/value pairs.
+
+    This function attempts to mimic browser cookie parsing behavior;
+    it specifically does not follow any of the cookie-related RFCs
+    (because browsers don't either).
+
+    The algorithm used is identical to that used by Django version 1.9.10.
+
+    .. versionadded:: 4.4.2
+    """
+    cookiedict = {}
+    for chunk in cookie.split(str(';')):
+        if str('=') in chunk:
+            (key, val) = chunk.split(str('='), 1)
+        else:
+            (key, val) = (str(''), chunk)
+        (key, val) = (key.strip(), val.strip())
+        if key or val:
+            cookiedict[key] = _unquote_cookie(val)
+    return cookiedict
+
+----------
+
+def test_cookie_edgecases(self):
+    self.assertEqual(parse_cookie('a=b; Domain=example.com'), {'a': 'b', 'Domain': 'example.com'})
+    self.assertEqual(parse_cookie('a=b; h=i; a=c'), {'a': 'c', 'h': 'i'})
+
+----------
+
+
+
+Test Class Name: ParseCookieTest

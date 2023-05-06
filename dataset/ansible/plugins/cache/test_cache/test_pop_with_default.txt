@@ -1,0 +1,15 @@
+def pop(self, key, *args):
+    if args:
+        return self._cache.pop(key, args[0])
+    return self._cache.pop(key)
+
+----------
+
+def test_pop_with_default(self):
+    assert self.cache.pop('foo', 'bar') == 'bar'
+
+----------
+
+
+
+Test Class Name: TestCachePluginAdjudicator

@@ -1,0 +1,28 @@
+def name(self, gender: t.Optional[Gender]=None) -> str:
+    """Generate a random name.
+
+        :param gender: Gender's enum object.
+        :return: Name.
+
+        :Example:
+            John.
+        """
+    key = self.validate_enum(gender, Gender)
+    names: t.List[str] = self.extract(['names', key])
+    return self.random.choice(names)
+
+----------
+
+def test_name_with_none(self, _person):
+    result = _person.name(gender=None)
+    names = _person._data['names']
+    females = names['female']
+    males = names['male']
+    assert result is not None
+    assert result in females or result in males
+
+----------
+
+
+
+Test Class Name: TestPerson

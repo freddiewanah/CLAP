@@ -1,0 +1,46 @@
+def extract_info(self, url, download=True, ie_key=None, extra_info={}, process=True, force_generic_extractor=False):
+    """
+        Return a list with a dictionary for each video extracted.
+
+        Arguments:
+        url -- URL to extract
+
+        Keyword arguments:
+        download -- whether to download videos during extraction
+        ie_key -- extractor key hint
+        extra_info -- dictionary containing the extra values to add to each result
+        process -- whether to resolve all unresolved references (URLs, playlist items),
+            must be True for download to work.
+        force_generic_extractor -- force using the generic extractor
+        """
+    if not ie_key and force_generic_extractor:
+        ie_key = 'Generic'
+    if ie_key:
+        ies = [self.get_info_extractor(ie_key)]
+    else:
+        ies = self._ies
+    for ie in ies:
+        if not ie.suitable(url):
+            continue
+        ie = self.get_info_extractor(ie.ie_key())
+        if not ie.working():
+            self.report_warning('The program functionality for this site has been marked as broken, and will probably not work.')
+        return self.__extract_info(url, ie, download, extra_info, process)
+    else:
+        self.report_error('no suitable InfoExtractor for URL %s' % url)
+
+----------
+
+def test_nocheckcertificate(self):
+    if sys.version_info >= (2, 7, 9):
+        ydl = YoutubeDL({'logger': FakeLogger()})
+        self.assertRaises(Exception, ydl.extract_info, 'https://127.0.0.1:%d/video.html' % self.port)
+    ydl = YoutubeDL({'logger': FakeLogger(), 'nocheckcertificate': True})
+    r = ydl.extract_info('https://127.0.0.1:%d/video.html' % self.port)
+    self.assertEqual(r['entries'][0]['url'], 'https://127.0.0.1:%d/vid.mp4' % self.port)
+
+----------
+
+
+
+Test Class Name: TestHTTPS

@@ -1,0 +1,16 @@
+def cookie_headers(self, token=None):
+    if token is None:
+        token = self.xsrf_token
+    return {'Cookie': '_xsrf=' + token}
+
+----------
+
+def test_xsrf_success_header(self):
+    response = self.fetch('/', method='POST', body=b'', headers=dict({'X-Xsrftoken': self.xsrf_token}, **self.cookie_headers()))
+    self.assertEqual(response.code, 200)
+
+----------
+
+
+
+Test Class Name: Handler

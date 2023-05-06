@@ -1,0 +1,31 @@
+def stream(func):
+    func.is_stream = True
+    return func
+
+----------
+
+def test_streaming_body_requests(app):
+
+    @app.post('/', stream=True)
+    async def handler(request):
+        data = [part.decode('utf-8') async for part in request.stream]
+        return json({'request_id': str(request.id), 'connection_id': id(request.conn_info), 'data': data})
+    data = ['hello', 'world']
+    client = ReusableClient(app, port=1234)
+
+    async def stream(data):
+        for value in data:
+            yield value.encode('utf-8')
+    with client:
+        (_, response1) = client.post('/', data=stream(data))
+        (_, response2) = client.post('/', data=stream(data))
+    assert response1.status == response2.status == 200
+    assert response1.json['data'] == response2.json['data'] == data
+    assert response1.json['request_id'] != response2.json['request_id']
+    assert response1.json['connection_id'] == response2.json['connection_id']
+
+----------
+
+
+
+Test Class Name: default

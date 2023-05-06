@@ -1,0 +1,30 @@
+def parse_request_start_line(line: str) -> RequestStartLine:
+    """Returns a (method, path, version) tuple for an HTTP 1.x request line.
+
+    The response is a `collections.namedtuple`.
+
+    >>> parse_request_start_line("GET /foo HTTP/1.1")
+    RequestStartLine(method='GET', path='/foo', version='HTTP/1.1')
+    """
+    try:
+        (method, path, version) = line.split(' ')
+    except ValueError:
+        raise HTTPInputError('Malformed HTTP request line')
+    if not _http_version_re.match(version):
+        raise HTTPInputError('Malformed HTTP version in HTTP Request-Line: %r' % version)
+    return RequestStartLine(method, path, version)
+
+----------
+
+def test_parse_request_start_line(self):
+    start_line = ' '.join([self.METHOD, self.PATH, self.VERSION])
+    parsed_start_line = parse_request_start_line(start_line)
+    self.assertEqual(parsed_start_line.method, self.METHOD)
+    self.assertEqual(parsed_start_line.path, self.PATH)
+    self.assertEqual(parsed_start_line.version, self.VERSION)
+
+----------
+
+
+
+Test Class Name: ParseRequestStartLineTest

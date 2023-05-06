@@ -1,0 +1,16 @@
+@classmethod
+def from_dict(cls: Type[A], kvs: Json, *, infer_missing=False) -> A:
+    return _decode_dataclass(cls, kvs, infer_missing)
+
+----------
+
+def test_undefined_parameters_ignore(valid_response, invalid_response):
+    from_valid = DontCareAPIDump.from_dict(valid_response)
+    from_invalid = DontCareAPIDump.from_dict(invalid_response)
+    assert from_valid == from_invalid
+
+----------
+
+
+
+Test Class Name: UnknownAPIDumpCamelCase

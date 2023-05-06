@@ -1,0 +1,27 @@
+def format_live_refs(ignore=NoneType):
+    """Return a tabular representation of tracked objects"""
+    s = 'Live References\n\n'
+    now = time()
+    for (cls, wdict) in sorted(live_refs.items(), key=lambda x: x[0].__name__):
+        if not wdict:
+            continue
+        if issubclass(cls, ignore):
+            continue
+        oldest = min(wdict.values())
+        s += f'{cls.__name__:<30} {len(wdict):6}   oldest: {int(now - oldest)}s ago\n'
+    return s
+
+----------
+
+def test_format_live_refs(self):
+    o1 = Foo()
+    o2 = Bar()
+    o3 = Foo()
+    self.assertEqual(trackref.format_live_refs(), 'Live References\n\nBar                                 1   oldest: 0s ago\nFoo                                 2   oldest: 0s ago\n')
+    self.assertEqual(trackref.format_live_refs(ignore=Foo), 'Live References\n\nBar                                 1   oldest: 0s ago\n')
+
+----------
+
+
+
+Test Class Name: TrackrefTestCase

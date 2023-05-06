@@ -1,0 +1,19 @@
+def iter_all(class_name):
+    """Iterate over all objects of the same class by its class name"""
+    for (cls, wdict) in live_refs.items():
+        if cls.__name__ == class_name:
+            return wdict.keys()
+
+----------
+
+def test_iter_all(self):
+    o1 = Foo()
+    o2 = Bar()
+    o3 = Foo()
+    self.assertEqual(set(trackref.iter_all('Foo')), {o1, o3})
+
+----------
+
+
+
+Test Class Name: TrackrefTestCase

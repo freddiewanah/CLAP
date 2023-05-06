@@ -1,0 +1,19 @@
+def street_number(self, maximum: int=1400) -> str:
+    """Generate a random street number.
+
+        :param maximum: Maximum value.
+        :return: Street number.
+        """
+    return str(self.random.randint(1, maximum))
+
+----------
+
+def test_street_number(self, _address):
+    result = _address.street_number()
+    assert re.match('[0-9]{1,5}$', result)
+
+----------
+
+
+
+Test Class Name: TestAddress

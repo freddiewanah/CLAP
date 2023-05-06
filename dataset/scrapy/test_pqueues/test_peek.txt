@@ -1,0 +1,40 @@
+def pop(self):
+    if self.curprio is None:
+        return
+    q = self.queues[self.curprio]
+    m = q.pop()
+    if not q:
+        del self.queues[self.curprio]
+        q.close()
+        prios = [p for (p, q) in self.queues.items() if q]
+        self.curprio = min(prios) if prios else None
+    return m
+
+----------
+
+def test_peek(self):
+    if not hasattr(queuelib.queue.FifoMemoryQueue, 'peek'):
+        raise unittest.SkipTest('queuelib.queue.FifoMemoryQueue.peek is undefined')
+    self.assertEqual(len(self.queue), 0)
+    req1 = Request('https://example.org/1')
+    req2 = Request('https://example.org/2')
+    req3 = Request('https://example.org/3')
+    self.queue.push(req1)
+    self.queue.push(req2)
+    self.queue.push(req3)
+    self.assertEqual(len(self.queue), 3)
+    self.assertEqual(self.queue.peek().url, req1.url)
+    self.assertEqual(self.queue.pop().url, req1.url)
+    self.assertEqual(len(self.queue), 2)
+    self.assertEqual(self.queue.peek().url, req2.url)
+    self.assertEqual(self.queue.pop().url, req2.url)
+    self.assertEqual(len(self.queue), 1)
+    self.assertEqual(self.queue.peek().url, req3.url)
+    self.assertEqual(self.queue.pop().url, req3.url)
+    self.assertIsNone(self.queue.peek())
+
+----------
+
+
+
+Test Class Name: DownloaderAwarePriorityQueueTest

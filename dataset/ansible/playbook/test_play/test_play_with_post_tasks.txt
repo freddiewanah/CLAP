@@ -1,0 +1,16 @@
+def has_tasks(self):
+    return len(self.block) > 0 or len(self.rescue) > 0 or len(self.always) > 0
+
+----------
+
+def test_play_with_post_tasks():
+    p = Play.load(dict(name='test play', hosts=['foo'], gather_facts=False, post_tasks=[dict(action='shell echo "hello world"')]))
+    assert len(p.post_tasks) >= 1
+    assert isinstance(p.post_tasks[0], Block)
+    assert p.post_tasks[0].has_tasks() is True
+
+----------
+
+
+
+Test Class Name: default

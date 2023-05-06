@@ -1,0 +1,24 @@
+def is_sequence(seq, include_strings=False):
+    """Identify whether the input is a sequence.
+
+    Strings and bytes are not sequences here,
+    unless ``include_string`` is ``True``.
+
+    Non-indexable things are never of a sequence type.
+    """
+    if not include_strings and is_string(seq):
+        return False
+    return isinstance(seq, Sequence)
+
+----------
+
+@pytest.mark.parametrize('non_sequence_input', TEST_ITEMS_NON_SEQUENCES)
+def test_sequence_negative(non_sequence_input):
+    """Test that non-sequences are identified correctly."""
+    assert not is_sequence(non_sequence_input)
+
+----------
+
+
+
+Test Class Name: FakeAnsibleVaultEncryptedUnicode

@@ -1,0 +1,27 @@
+def get_theme_names() -> Collection[str]:
+    """Return a list of all installed themes by name."""
+    return get_themes().keys()
+
+----------
+
+@mock.patch('mkdocs.utils.entry_points', autospec=True)
+def test_get_themes_warning(self, mock_iter):
+    theme1 = mock.Mock()
+    theme1.name = 'mkdocs2'
+    theme1.dist.name = 'mkdocs2'
+    theme1.load().__file__ = 'some/path1'
+    theme2 = mock.Mock()
+    theme2.name = 'mkdocs2'
+    theme2.dist.name = 'mkdocs3'
+    theme2.load().__file__ = 'some/path2'
+    mock_iter.return_value = [theme1, theme2]
+    with self.assertLogs('mkdocs') as cm:
+        theme_names = utils.get_theme_names()
+    self.assertEqual('\n'.join(cm.output), "WARNING:mkdocs.utils:A theme named 'mkdocs2' is provided by the Python packages 'mkdocs3' and 'mkdocs2'. The one in 'mkdocs3' will be used.")
+    self.assertCountEqual(theme_names, ['mkdocs2'])
+
+----------
+
+
+
+Test Class Name: UtilsTests

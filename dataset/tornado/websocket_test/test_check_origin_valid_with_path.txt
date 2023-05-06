@@ -1,0 +1,73 @@
+def websocket_connect(url: Union[str, httpclient.HTTPRequest], callback: Optional[Callable[['Future[WebSocketClientConnection]'], None]]=None, connect_timeout: Optional[float]=None, on_message_callback: Optional[Callable[[Union[None, str, bytes]], None]]=None, compression_options: Optional[Dict[str, Any]]=None, ping_interval: Optional[float]=None, ping_timeout: Optional[float]=None, max_message_size: int=_default_max_message_size, subprotocols: Optional[List[str]]=None) -> 'Awaitable[WebSocketClientConnection]':
+    """Client-side websocket support.
+
+    Takes a url and returns a Future whose result is a
+    `WebSocketClientConnection`.
+
+    ``compression_options`` is interpreted in the same way as the
+    return value of `.WebSocketHandler.get_compression_options`.
+
+    The connection supports two styles of operation. In the coroutine
+    style, the application typically calls
+    `~.WebSocketClientConnection.read_message` in a loop::
+
+        conn = yield websocket_connect(url)
+        while True:
+            msg = yield conn.read_message()
+            if msg is None: break
+            # Do something with msg
+
+    In the callback style, pass an ``on_message_callback`` to
+    ``websocket_connect``. In both styles, a message of ``None``
+    indicates that the connection has been closed.
+
+    ``subprotocols`` may be a list of strings specifying proposed
+    subprotocols. The selected protocol may be found on the
+    ``selected_subprotocol`` attribute of the connection object
+    when the connection is complete.
+
+    .. versionchanged:: 3.2
+       Also accepts ``HTTPRequest`` objects in place of urls.
+
+    .. versionchanged:: 4.1
+       Added ``compression_options`` and ``on_message_callback``.
+
+    .. versionchanged:: 4.5
+       Added the ``ping_interval``, ``ping_timeout``, and ``max_message_size``
+       arguments, which have the same meaning as in `WebSocketHandler`.
+
+    .. versionchanged:: 5.0
+       The ``io_loop`` argument (deprecated since version 4.1) has been removed.
+
+    .. versionchanged:: 5.1
+       Added the ``subprotocols`` argument.
+    """
+    if isinstance(url, httpclient.HTTPRequest):
+        assert connect_timeout is None
+        request = url
+        request.headers = httputil.HTTPHeaders(request.headers)
+    else:
+        request = httpclient.HTTPRequest(url, connect_timeout=connect_timeout)
+    request = cast(httpclient.HTTPRequest, httpclient._RequestProxy(request, httpclient.HTTPRequest._DEFAULTS))
+    conn = WebSocketClientConnection(request, on_message_callback=on_message_callback, compression_options=compression_options, ping_interval=ping_interval, ping_timeout=ping_timeout, max_message_size=max_message_size, subprotocols=subprotocols)
+    if callback is not None:
+        IOLoop.current().add_future(conn.connect_future, callback)
+    return conn.connect_future
+
+----------
+
+@gen_test
+def test_check_origin_valid_with_path(self):
+    port = self.get_http_port()
+    url = 'ws://127.0.0.1:%d/echo' % port
+    headers = {'Origin': 'http://127.0.0.1:%d/something' % port}
+    ws = (yield websocket_connect(HTTPRequest(url, headers=headers)))
+    ws.write_message('hello')
+    response = (yield ws.read_message())
+    self.assertEqual(response, 'hello')
+
+----------
+
+
+
+Test Class Name: WebSocketTest

@@ -1,0 +1,19 @@
+def keys(self):
+    return self._values.keys()
+
+----------
+
+@defer.inlineCallbacks
+def test_export_items(self):
+    """ Test partial deliveries in all supported formats """
+    items = [self.MyItem({'foo': 'bar1', 'egg': 'spam1'}), self.MyItem({'foo': 'bar2', 'egg': 'spam2', 'baz': 'quux2'}), self.MyItem({'foo': 'bar3', 'baz': 'quux3'})]
+    rows = [{'egg': 'spam1', 'foo': 'bar1', 'baz': ''}, {'egg': 'spam2', 'foo': 'bar2', 'baz': 'quux2'}, {'foo': 'bar3', 'baz': 'quux3', 'egg': ''}]
+    settings = {'FEED_EXPORT_BATCH_ITEM_COUNT': 2}
+    header = self.MyItem.fields.keys()
+    yield self.assertExported(items, header, rows, settings=settings)
+
+----------
+
+
+
+Test Class Name: BatchDeliveriesTest

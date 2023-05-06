@@ -1,0 +1,33 @@
+def read_user_yes_no(question, default_value):
+    """Prompt the user to reply with 'yes' or 'no' (or equivalent values).
+
+    - These input values will be converted to ``True``:
+      "1", "true", "t", "yes", "y", "on"
+    - These input values will be converted to ``False``:
+      "0", "false", "f", "no", "n", "off"
+
+    Actual parsing done by :func:`click.prompt`; Check this function codebase change in
+    case of unexpected behaviour.
+
+    :param str question: Question to the user
+    :param default_value: Value that will be returned if no input happens
+    """
+    return click.prompt(question, default=default_value, type=click.BOOL)
+
+----------
+
+def test_click_invocation(mocker):
+    """Test click function called correctly by cookiecutter.
+
+    Test for boolean type invocation.
+    """
+    prompt = mocker.patch('click.prompt')
+    prompt.return_value = DEFAULT
+    assert read_user_yes_no(QUESTION, DEFAULT) == DEFAULT
+    click.prompt.assert_called_once_with(QUESTION, default=DEFAULT, type=click.BOOL)
+
+----------
+
+
+
+Test Class Name: default

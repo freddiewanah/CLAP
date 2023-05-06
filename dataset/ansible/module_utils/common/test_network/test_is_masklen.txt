@@ -1,0 +1,18 @@
+def is_masklen(val):
+    try:
+        return 0 <= int(val) <= 32
+    except ValueError:
+        return False
+
+----------
+
+def test_is_masklen():
+    assert is_masklen(32)
+    assert not is_masklen(33)
+    assert not is_masklen('foo')
+
+----------
+
+
+
+Test Class Name: default

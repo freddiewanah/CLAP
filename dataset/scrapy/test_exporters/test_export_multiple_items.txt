@@ -1,0 +1,23 @@
+def finish_exporting(self):
+    pass
+
+----------
+
+def test_export_multiple_items(self):
+    i1 = self.item_class(name='hello', age='world')
+    i2 = self.item_class(name='bye', age='world')
+    f = BytesIO()
+    ie = PickleItemExporter(f)
+    ie.start_exporting()
+    ie.export_item(i1)
+    ie.export_item(i2)
+    ie.finish_exporting()
+    f.seek(0)
+    self.assertEqual(self.item_class(**pickle.load(f)), i1)
+    self.assertEqual(self.item_class(**pickle.load(f)), i2)
+
+----------
+
+
+
+Test Class Name: PickleItemExporterTest

@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_nested_try(self):
+    jsi = JSInterpreter('\n        function x() {try {\n            try{throw 10} finally {throw 42}\n            } catch(e){return 5} }\n        ')
+    self.assertEqual(jsi.call_function('x'), 5)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

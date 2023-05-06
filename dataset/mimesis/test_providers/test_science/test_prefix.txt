@@ -1,0 +1,30 @@
+def metric_prefix(self, sign: t.Optional[MetricPrefixSign]=None, symbol: bool=False) -> str:
+    """Get a random prefix for the International System of Units.
+
+        :param sign: Sing of prefix (positive/negative).
+        :param symbol: Return the symbol of the prefix.
+        :return: Metric prefix for SI measure units.
+        :raises NonEnumerableError: if sign is not supported.
+
+        :Example:
+            mega
+        """
+    prefixes = SI_PREFIXES_SYM if symbol else SI_PREFIXES
+    key = self.validate_enum(item=sign, enum=MetricPrefixSign)
+    return self.random.choice(prefixes[key])
+
+----------
+
+@pytest.mark.parametrize('sign, symbol', [(MetricPrefixSign.POSITIVE, True), (MetricPrefixSign.POSITIVE, False), (MetricPrefixSign.NEGATIVE, True), (MetricPrefixSign.NEGATIVE, False)])
+def test_prefix(self, science, sign, symbol):
+    prefix = science.metric_prefix(sign=sign, symbol=symbol)
+    prefixes = SI_PREFIXES_SYM if symbol else SI_PREFIXES
+    assert prefix in prefixes[sign.value]
+    with pytest.raises(NonEnumerableError):
+        science.metric_prefix(sign='nil')
+
+----------
+
+
+
+Test Class Name: TestScience

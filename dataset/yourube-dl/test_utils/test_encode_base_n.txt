@@ -1,0 +1,30 @@
+def encode_base_n(num, n, table=None):
+    FULL_TABLE = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    if not table:
+        table = FULL_TABLE[:n]
+    if n > len(table):
+        raise ValueError('base %d exceeds table length %d' % (n, len(table)))
+    if num == 0:
+        return table[0]
+    ret = ''
+    while num:
+        ret = table[num % n] + ret
+        num = num // n
+    return ret
+
+----------
+
+def test_encode_base_n(self):
+    self.assertEqual(encode_base_n(0, 30), '0')
+    self.assertEqual(encode_base_n(80, 30), '2k')
+    custom_table = '9876543210ZYXWVUTSRQPONMLKJIHGFEDCBA'
+    self.assertEqual(encode_base_n(0, 30, custom_table), '9')
+    self.assertEqual(encode_base_n(80, 30, custom_table), '7P')
+    self.assertRaises(ValueError, encode_base_n, 0, 70)
+    self.assertRaises(ValueError, encode_base_n, 0, 60, custom_table)
+
+----------
+
+
+
+Test Class Name: TestUtil

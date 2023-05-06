@@ -1,0 +1,66 @@
+def ctrlc_workaround_for_windows(app):
+
+    async def stay_active(app):
+        """Asyncio wakeups to allow receiving SIGINT in Python"""
+        while not die:
+            if app.state.is_stopping:
+                return
+            await asyncio.sleep(0.1)
+        app.stop()
+
+    def ctrlc_handler(sig, frame):
+        nonlocal die
+        if die:
+            raise KeyboardInterrupt('Non-graceful Ctrl+C')
+        die = True
+    die = False
+    signal.signal(signal.SIGINT, ctrlc_handler)
+    app.add_task(stay_active)
+
+----------
+
+@pytest.mark.skipif(os.name == 'nt', reason='windows cannot SIGINT processes')
+def test_windows_workaround():
+    """Test Windows workaround (on any other OS)"""
+
+    class MockApp:
+
+        def __init__(self):
+            self.state = SimpleNamespace()
+            self.state.is_stopping = False
+
+        def stop(self):
+            assert not self.state.is_stopping
+            self.state.is_stopping = True
+
+        def add_task(self, func):
+            loop = asyncio.get_event_loop()
+            self.stay_active_task = loop.create_task(func(self))
+
+    async def atest(stop_first):
+        app = MockApp()
+        ctrlc_workaround_for_windows(app)
+        await asyncio.sleep(0.05)
+        if stop_first:
+            app.stop()
+            await asyncio.sleep(0.2)
+        assert app.state.is_stopping == stop_first
+        os.kill(os.getpid(), signal.SIGINT)
+        await asyncio.sleep(0.2)
+        assert app.state.is_stopping
+        assert app.stay_active_task.result() is None
+        with pytest.raises(KeyboardInterrupt):
+            os.kill(os.getpid(), signal.SIGINT)
+        return 'OK'
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    res = loop.run_until_complete(atest(False))
+    assert res == 'OK'
+    res = loop.run_until_complete(atest(True))
+    assert res == 'OK'
+
+----------
+
+
+
+Test Class Name: default

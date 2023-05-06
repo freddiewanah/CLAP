@@ -1,0 +1,27 @@
+def get_channel_binding_cert_hash(certificate_der):
+    """ Gets the channel binding app data for a TLS connection using the peer cert. """
+    if not HAS_CRYPTOGRAPHY:
+        return
+    cert = x509.load_der_x509_certificate(certificate_der, default_backend())
+    hash_algorithm = None
+    try:
+        hash_algorithm = cert.signature_hash_algorithm
+    except UnsupportedAlgorithm:
+        pass
+    if not hash_algorithm or hash_algorithm.name in ['md5', 'sha1']:
+        hash_algorithm = hashes.SHA256()
+    digest = hashes.Hash(hash_algorithm, default_backend())
+    digest.update(certificate_der)
+    return digest.finalize()
+
+----------
+
+def test_cbt_no_cryptography(monkeypatch):
+    monkeypatch.setattr(urls, 'HAS_CRYPTOGRAPHY', False)
+    assert urls.get_channel_binding_cert_hash(None) is None
+
+----------
+
+
+
+Test Class Name: default

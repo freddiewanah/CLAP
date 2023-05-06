@@ -1,0 +1,22 @@
+def color(self) -> str:
+    """Get a random name of color.
+
+        :return: Color name.
+
+        :Example:
+            Red.
+        """
+    colors: t.List[str] = self.extract(['color'])
+    return self.random.choice(colors)
+
+----------
+
+def test_generic_text(self, g1, g2):
+    assert g1.text.swear_word() == g2.text.swear_word()
+    assert g1.text.color() == g2.text.color()
+
+----------
+
+
+
+Test Class Name: TestSeededGeneric

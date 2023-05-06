@@ -1,0 +1,19 @@
+def get(self, key, def_val=None):
+    return dict.get(self, self.normkey(key), self.normvalue(def_val))
+
+----------
+
+def test_caseless(self):
+    d = CaselessDict()
+    d['key_Lower'] = 1
+    self.assertEqual(d['KEy_loWer'], 1)
+    self.assertEqual(d.get('KEy_loWer'), 1)
+    d['KEY_LOWER'] = 3
+    self.assertEqual(d['key_Lower'], 3)
+    self.assertEqual(d.get('key_Lower'), 3)
+
+----------
+
+
+
+Test Class Name: MyMutableMapping

@@ -1,0 +1,81 @@
+def RedirectHandlerFactory(follow_redirects=None, validate_certs=True, ca_path=None, ciphers=None):
+    """This is a class factory that closes over the value of
+    ``follow_redirects`` so that the RedirectHandler class has access to
+    that value without having to use globals, and potentially cause problems
+    where ``open_url`` or ``fetch_url`` are used multiple times in a module.
+    """
+
+    class RedirectHandler(urllib_request.HTTPRedirectHandler):
+        """This is an implementation of a RedirectHandler to match the
+        functionality provided by httplib2. It will utilize the value of
+        ``follow_redirects`` that is passed into ``RedirectHandlerFactory``
+        to determine how redirects should be handled in urllib2.
+        """
+
+        def redirect_request(self, req, fp, code, msg, hdrs, newurl):
+            if not any((HAS_SSLCONTEXT, HAS_URLLIB3_PYOPENSSLCONTEXT)):
+                handler = maybe_add_ssl_handler(newurl, validate_certs, ca_path=ca_path, ciphers=ciphers)
+                if handler:
+                    urllib_request._opener.add_handler(handler)
+            if follow_redirects == 'urllib2':
+                return urllib_request.HTTPRedirectHandler.redirect_request(self, req, fp, code, msg, hdrs, newurl)
+            elif follow_redirects in ['no', 'none', False]:
+                raise urllib_error.HTTPError(newurl, code, msg, hdrs, fp)
+            method = req.get_method()
+            if follow_redirects in ['all', 'yes', True]:
+                if code < 300 or code >= 400:
+                    raise urllib_error.HTTPError(req.get_full_url(), code, msg, hdrs, fp)
+            elif follow_redirects == 'safe':
+                if code < 300 or code >= 400 or method not in ('GET', 'HEAD'):
+                    raise urllib_error.HTTPError(req.get_full_url(), code, msg, hdrs, fp)
+            else:
+                raise urllib_error.HTTPError(req.get_full_url(), code, msg, hdrs, fp)
+            try:
+                data = req.get_data()
+                origin_req_host = req.get_origin_req_host()
+            except AttributeError:
+                data = req.data
+                origin_req_host = req.origin_req_host
+            newurl = newurl.replace(' ', '%20')
+            if code in (307, 308):
+                headers = req.headers
+            else:
+                data = None
+                headers = dict(((k, v) for (k, v) in req.headers.items() if k.lower() not in ('content-length', 'content-type', 'transfer-encoding')))
+                if code == 303 and method != 'HEAD':
+                    method = 'GET'
+                if code == 302 and method != 'HEAD':
+                    method = 'GET'
+                if code == 301 and method == 'POST':
+                    method = 'GET'
+            return RequestWithMethod(newurl, method=method, headers=headers, data=data, origin_req_host=origin_req_host, unverifiable=True)
+    return RedirectHandler
+
+----------
+
+def test_Request_open(urlopen_mock, install_opener_mock):
+    r = Request().open('GET', 'https://ansible.com/')
+    args = urlopen_mock.call_args[0]
+    assert args[1] is None
+    assert args[2] == 10
+    req = args[0]
+    assert req.headers == {}
+    assert req.data is None
+    assert req.get_method() == 'GET'
+    opener = install_opener_mock.call_args[0][0]
+    handlers = opener.handlers
+    if not HAS_SSLCONTEXT:
+        expected_handlers = (SSLValidationHandler, RedirectHandlerFactory())
+    else:
+        expected_handlers = (RedirectHandlerFactory(),)
+    found_handlers = []
+    for handler in handlers:
+        if isinstance(handler, SSLValidationHandler) or handler.__class__.__name__ == 'RedirectHandler':
+            found_handlers.append(handler)
+    assert len(found_handlers) == len(expected_handlers)
+
+----------
+
+
+
+Test Class Name: default

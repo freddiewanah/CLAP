@@ -1,0 +1,29 @@
+def get_cfg() -> CfgNode:
+    """
+    Get a copy of the default config.
+
+    Returns:
+        a detectron2 CfgNode instance.
+    """
+    from .defaults import _C
+    return _C.clone()
+
+----------
+
+def testFuncWithCfg(self):
+    cfg = get_cfg()
+    cfg.ARG1 = 10
+    cfg.ARG3 = 30
+    self.assertEqual(_test_func(1), (1, 2, 3, 4))
+    with self.assertRaises(TypeError):
+        _test_func(cfg)
+    self.assertEqual(_test_func(cfg, arg2=2), (10, 2, 30, 4))
+    self.assertEqual(_test_func(cfg, arg1=100, arg2=20), (100, 20, 30, 4))
+    self.assertEqual(_test_func(cfg, arg1=100, arg2=20, arg4=40), (100, 20, 30, 40))
+    self.assertTrue(callable(_test_func.from_config))
+
+----------
+
+
+
+Test Class Name: default

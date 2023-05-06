@@ -1,0 +1,46 @@
+def run_script_with_context(script_path, cwd, context):
+    """Execute a script after rendering it with Jinja.
+
+    :param script_path: Absolute path to the script to run.
+    :param cwd: The directory to run the script from.
+    :param context: Cookiecutter project template context.
+    """
+    (_, extension) = os.path.splitext(script_path)
+    with open(script_path, encoding='utf-8') as file:
+        contents = file.read()
+    with tempfile.NamedTemporaryFile(delete=False, mode='wb', suffix=extension) as temp:
+        env = StrictEnvironment(context=context, keep_trailing_newline=True)
+        template = env.from_string(contents)
+        output = template.render(**context)
+        temp.write(output.encode('utf-8'))
+    run_script(temp.name, cwd)
+
+----------
+
+def test_run_script_with_context(self):
+    """Execute a hook script, passing a context."""
+    hook_path = os.path.join(self.hooks_path, 'post_gen_project.sh')
+    if sys.platform.startswith('win'):
+        post = 'post_gen_project.bat'
+        with Path(self.hooks_path, post).open('w') as f:
+            f.write('@echo off\n')
+            f.write('\n')
+            f.write('echo post generation hook\n')
+            f.write('echo. >{{cookiecutter.file}}\n')
+    else:
+        with Path(hook_path).open('w') as fh:
+            fh.write('#!/bin/bash\n')
+            fh.write('\n')
+            fh.write("echo 'post generation hook';\n")
+            fh.write("touch 'shell_post.txt'\n")
+            fh.write("touch '{{cookiecutter.file}}'\n")
+            os.chmod(hook_path, os.stat(hook_path).st_mode | stat.S_IXUSR)
+    hooks.run_script_with_context(os.path.join(self.hooks_path, self.post_hook), 'tests', {'cookiecutter': {'file': 'context_post.txt'}})
+    assert os.path.isfile('tests/context_post.txt')
+    assert 'tests' not in os.getcwd()
+
+----------
+
+
+
+Test Class Name: TestExternalHooks

@@ -1,0 +1,36 @@
+def create_keypoint_hflip_indices(dataset_names: Union[str, List[str]]) -> List[int]:
+    """
+    Args:
+        dataset_names: list of dataset names
+
+    Returns:
+        list[int]: a list of size=#keypoints, storing the
+        horizontally-flipped keypoint indices.
+    """
+    if isinstance(dataset_names, str):
+        dataset_names = [dataset_names]
+    check_metadata_consistency('keypoint_names', dataset_names)
+    check_metadata_consistency('keypoint_flip_map', dataset_names)
+    meta = MetadataCatalog.get(dataset_names[0])
+    names = meta.keypoint_names
+    flip_map = dict(meta.keypoint_flip_map)
+    flip_map.update({v: k for (k, v) in flip_map.items()})
+    flipped_names = [i if i not in flip_map else flip_map[i] for i in names]
+    flip_indices = [names.index(i) for i in flipped_names]
+    return flip_indices
+
+----------
+
+def test_flip_keypoints(self):
+    transforms = T.TransformList([T.HFlipTransform(400)])
+    anno = {'bbox': np.asarray([10, 10, 200, 300]), 'bbox_mode': BoxMode.XYXY_ABS, 'keypoints': np.random.rand(17, 3) * 50 + 15}
+    output = detection_utils.transform_instance_annotations(copy.deepcopy(anno), transforms, (400, 400), keypoint_hflip_indices=detection_utils.create_keypoint_hflip_indices(['keypoints_coco_2017_train']))
+    self.assertTrue(np.allclose(output['keypoints'][0, 0], 400 - anno['keypoints'][0, 0]))
+    self.assertTrue(np.allclose(output['keypoints'][1:, 0].reshape(-1, 2)[:, ::-1], 400 - anno['keypoints'][1:, 0].reshape(-1, 2)))
+    self.assertTrue(np.allclose(output['keypoints'][1:, 1:].reshape(-1, 2, 2)[:, ::-1, :], anno['keypoints'][1:, 1:].reshape(-1, 2, 2)))
+
+----------
+
+
+
+Test Class Name: TestTransformAnnotations

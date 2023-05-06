@@ -1,0 +1,18 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command, return_value', [(Command('vim', 'vim: command not found'), PKGFILE_OUTPUT_VIM), (Command('sudo vim', 'sudo: vim: command not found'), PKGFILE_OUTPUT_VIM)])
+@patch('thefuck.specific.archlinux.subprocess')
+@patch.multiple(pacman, create=True, pacman=pacman_cmd)
+def test_match_mocked(subp_mock, command, return_value):
+    subp_mock.check_output.return_value = return_value
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

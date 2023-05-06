@@ -1,0 +1,33 @@
+def raise_exc_info(exc_info: Tuple[Optional[type], Optional[BaseException], Optional['TracebackType']]) -> typing.NoReturn:
+    try:
+        if exc_info[1] is not None:
+            raise exc_info[1].with_traceback(exc_info[2])
+        else:
+            raise TypeError('raise_exc_info called with no exception')
+    finally:
+        exc_info = (None, None, None)
+
+----------
+
+def test_two_arg_exception(self):
+
+    class TwoArgException(Exception):
+
+        def __init__(self, a, b):
+            super().__init__()
+            (self.a, self.b) = (a, b)
+    try:
+        raise TwoArgException(1, 2)
+    except TwoArgException:
+        exc_info = sys.exc_info()
+    try:
+        raise_exc_info(exc_info)
+        self.fail("didn't get expected exception")
+    except TwoArgException as e:
+        self.assertIs(e, exc_info[1])
+
+----------
+
+
+
+Test Class Name: RaiseExcInfoTest

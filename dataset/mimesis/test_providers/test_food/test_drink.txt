@@ -1,0 +1,21 @@
+def drink(self) -> str:
+    """Get a random drink.
+
+        :return: Alcoholic drink.
+
+        :Example:
+            Vodka.
+        """
+    return self._choice_from('drinks')
+
+----------
+
+def test_drink(self, food):
+    result = food.drink()
+    assert result in food._data['drinks']
+
+----------
+
+
+
+Test Class Name: TestFood

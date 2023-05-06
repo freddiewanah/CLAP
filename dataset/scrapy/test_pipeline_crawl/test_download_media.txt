@@ -1,0 +1,50 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_download_media(self):
+    crawler = self._create_crawler(MediaDownloadSpider)
+    with LogCapture() as log:
+        yield crawler.crawl(self.mockserver.url('/files/images/'), media_key=self.media_key, media_urls_key=self.media_urls_key)
+    self._assert_files_downloaded(self.items, str(log))
+
+----------
+
+def _create_crawler(self, spider_class, runner=None, **kwargs):
+    if runner is None:
+        runner = self.runner
+    crawler = runner.create_crawler(spider_class, **kwargs)
+    crawler.signals.connect(self._on_item_scraped, signals.item_scraped)
+    return crawler
+def _assert_files_downloaded(self, items, logs):
+    self.assertEqual(len(items), 1)
+    self.assertIn(self.media_key, items[0])
+    file_dl_success = 'File (downloaded): Downloaded file from'
+    self.assertEqual(logs.count(file_dl_success), 3)
+    for item in items:
+        for i in item[self.media_key]:
+            self.assertEqual(i['status'], 'downloaded')
+    if self.expected_checksums is not None:
+        checksums = set((i['checksum'] for item in items for i in item[self.media_key]))
+        self.assertEqual(checksums, self.expected_checksums)
+    for item in items:
+        for i in item[self.media_key]:
+            self.assertTrue((self.tmpmediastore / i['path']).exists())
+
+Test Class Name: FileDownloadCrawlTestCase

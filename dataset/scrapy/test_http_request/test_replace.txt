@@ -1,0 +1,34 @@
+def replace(self, *args, **kwargs) -> Request:
+    body_passed = kwargs.get('body', None) is not None
+    data = kwargs.pop('data', None)
+    data_passed = data is not None
+    if body_passed and data_passed:
+        warnings.warn('Both body and data passed. data will be ignored')
+    elif not body_passed and data_passed:
+        kwargs['body'] = self._dumps(data)
+    return super().replace(*args, **kwargs)
+
+----------
+
+def test_replace(self):
+    """Test Request.replace() method"""
+    r1 = self.request_class('http://www.example.com', method='GET')
+    hdrs = Headers(r1.headers)
+    hdrs[b'key'] = b'value'
+    r2 = r1.replace(method='POST', body='New body', headers=hdrs)
+    self.assertEqual(r1.url, r2.url)
+    self.assertEqual((r1.method, r2.method), ('GET', 'POST'))
+    self.assertEqual((r1.body, r2.body), (b'', b'New body'))
+    self.assertEqual((r1.headers, r2.headers), (self.default_headers, hdrs))
+    r3 = self.request_class('http://www.example.com', meta={'a': 1}, dont_filter=True)
+    r4 = r3.replace(url='http://www.example.com/2', body=b'', meta={}, dont_filter=False)
+    self.assertEqual(r4.url, 'http://www.example.com/2')
+    self.assertEqual(r4.body, b'')
+    self.assertEqual(r4.meta, {})
+    assert r4.dont_filter is False
+
+----------
+
+
+
+Test Class Name: CustomRequest

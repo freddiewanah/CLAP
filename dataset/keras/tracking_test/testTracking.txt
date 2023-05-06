@@ -1,0 +1,81 @@
+@keras_export('keras.backend.zeros')
+@doc_controls.do_not_generate_docs
+def zeros(shape, dtype=None, name=None):
+    """Instantiates an all-zeros variable and returns it.
+
+    Args:
+        shape: Tuple or list of integers, shape of returned Keras variable
+        dtype: data type of returned Keras variable
+        name: name of returned Keras variable
+
+    Returns:
+        A variable (including Keras metadata), filled with `0.0`.
+        Note that if `shape` was symbolic, we cannot return a variable,
+        and will return a dynamically-shaped tensor instead.
+
+    Example:
+
+    >>> kvar = tf.keras.backend.zeros((3,4))
+    >>> tf.keras.backend.eval(kvar)
+    array([[0.,  0.,  0.,  0.],
+           [0.,  0.,  0.,  0.],
+           [0.,  0.,  0.,  0.]], dtype=float32)
+    >>> A = tf.constant([1,2,3])
+    >>> kvar2 = tf.keras.backend.zeros(A.shape) # [0., 0., 0.]
+    >>> tf.keras.backend.eval(kvar2)
+    array([0., 0., 0.], dtype=float32)
+    >>> kvar3 = tf.keras.backend.zeros(A.shape,dtype=tf.int32)
+    >>> tf.keras.backend.eval(kvar3)
+    array([0, 0, 0], dtype=int32)
+    >>> kvar4 = tf.keras.backend.zeros([2,3])
+    >>> tf.keras.backend.eval(kvar4)
+    array([[0., 0., 0.],
+           [0., 0., 0.]], dtype=float32)
+
+    """
+    with tf.init_scope():
+        if dtype is None:
+            dtype = floatx()
+        tf_dtype = tf.as_dtype(dtype)
+        v = tf.zeros(shape=shape, dtype=tf_dtype, name=name)
+        if py_all(v.shape.as_list()):
+            return variable(v, dtype=dtype, name=name)
+        return v
+
+----------
+
+@test_combinations.generate(test_combinations.combine(mode=['graph', 'eager']))
+def testTracking(self):
+    with self.test_session():
+        model = HasList()
+        output = model(tf.ones([32, 2]))
+        self.assertAllEqual([32, 12], output.shape)
+        self.assertEqual(11, len(model.layers))
+        self.assertEqual(10, len(model.layer_list.layers))
+        self.assertEqual(len(model.layers), len(model.layer_list.layers + model.layers_with_updates))
+        for index in range(10):
+            self.assertEqual(3 + index, model.layer_list.layers[index].units)
+        children = model._trackable_children()
+        self.assertLen(children, 2)
+        self.assertIs(model.layer_list, children['layer_list'])
+        self.assertIs(model.layers_with_updates, children['layers_with_updates'])
+        self.assertLen(children['layer_list']._trackable_children(), 10)
+        self.evaluate([v.initializer for v in model.variables])
+        self.evaluate(model.variables[0].assign([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]))
+        save_path = os.path.join(self.get_temp_dir(), 'ckpt')
+        model.save_weights(save_path)
+        self.evaluate(model.variables[0].assign(tf.zeros([2, 3])))
+        model.load_weights(save_path)
+        self.assertAllEqual([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], self.evaluate(model.variables[0]))
+        v = tf.Variable(1.0)
+        model.var_list = [v]
+    self.assertTrue(any((v is t for t in model.variables)))
+    self.assertTrue(any((v is t for t in model.trainable_variables)))
+    self.assertFalse(any((v is t for t in model.non_trainable_variables)))
+    self.assertTrue(any((model.layer_list[0].trainable_weights[0] is t for t in model.trainable_weights)))
+
+----------
+
+
+
+Test Class Name: ListTests

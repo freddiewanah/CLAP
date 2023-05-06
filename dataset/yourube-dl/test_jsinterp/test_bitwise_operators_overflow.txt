@@ -1,0 +1,16 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_bitwise_operators_overflow(self):
+    jsi = JSInterpreter('function x(){return -524999584 << 5}')
+    self.assertEqual(jsi.call_function('x'), 379882496)
+    jsi = JSInterpreter('function x(){return 1236566549 << 5}')
+    self.assertEqual(jsi.call_function('x'), 915423904)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

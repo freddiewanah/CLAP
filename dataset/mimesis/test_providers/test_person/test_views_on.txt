@@ -1,0 +1,22 @@
+def views_on(self) -> str:
+    """Get a random views on.
+
+        :return: Views on.
+
+        :Example:
+            Negative.
+        """
+    views: t.List[str] = self.extract(['views_on'])
+    return self.random.choice(views)
+
+----------
+
+def test_views_on(self, person):
+    result = person.views_on()
+    assert result in person._data['views_on']
+
+----------
+
+
+
+Test Class Name: TestPerson

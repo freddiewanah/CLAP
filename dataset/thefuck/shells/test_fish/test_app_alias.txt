@@ -1,0 +1,23 @@
+def app_alias(self, alias_name):
+    if settings.alter_history:
+        alter_history = '    builtin history delete --exact --case-sensitive -- $fucked_up_command\n    builtin history merge\n'
+    else:
+        alter_history = ''
+    return 'function {0} -d "Correct your previous console command"\n  set -l fucked_up_command $history[1]\n  env TF_SHELL=fish TF_ALIAS={0} PYTHONIOENCODING=utf-8 thefuck $fucked_up_command {2} $argv | read -l unfucked_command\n  if [ "$unfucked_command" != "" ]\n    eval $unfucked_command\n{1}  end\nend'.format(alias_name, alter_history, ARGUMENT_PLACEHOLDER)
+
+----------
+
+def test_app_alias(self, shell):
+    assert 'function fuck' in shell.app_alias('fuck')
+    assert 'function FUCK' in shell.app_alias('FUCK')
+    assert 'thefuck' in shell.app_alias('fuck')
+    assert 'TF_SHELL=fish' in shell.app_alias('fuck')
+    assert 'TF_ALIAS=fuck PYTHONIOENCODING' in shell.app_alias('fuck')
+    assert 'PYTHONIOENCODING=utf-8 thefuck' in shell.app_alias('fuck')
+    assert ARGUMENT_PLACEHOLDER in shell.app_alias('fuck')
+
+----------
+
+
+
+Test Class Name: TestFish

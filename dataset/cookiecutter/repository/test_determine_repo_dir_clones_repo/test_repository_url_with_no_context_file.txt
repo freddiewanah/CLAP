@@ -1,0 +1,56 @@
+def determine_repo_dir(template, abbreviations, clone_to_dir, checkout, no_input, password=None, directory=None):
+    """
+    Locate the repository directory from a template reference.
+
+    Applies repository abbreviations to the template reference.
+    If the template refers to a repository URL, clone it.
+    If the template is a path to a local repository, use it.
+
+    :param template: A directory containing a project template directory,
+        or a URL to a git repository.
+    :param abbreviations: A dictionary of repository abbreviation
+        definitions.
+    :param clone_to_dir: The directory to clone the repository into.
+    :param checkout: The branch, tag or commit ID to checkout after clone.
+    :param no_input: Do not prompt for user input and eventually force a refresh of
+        cached resources.
+    :param password: The password to use when extracting the repository.
+    :param directory: Directory within repo where cookiecutter.json lives.
+    :return: A tuple containing the cookiecutter template directory, and
+        a boolean describing whether that directory should be cleaned up
+        after the template has been instantiated.
+    :raises: `RepositoryNotFound` if a repository directory could not be found.
+    """
+    template = expand_abbreviations(template, abbreviations)
+    if is_zip_file(template):
+        unzipped_dir = unzip(zip_uri=template, is_url=is_repo_url(template), clone_to_dir=clone_to_dir, no_input=no_input, password=password)
+        repository_candidates = [unzipped_dir]
+        cleanup = True
+    elif is_repo_url(template):
+        cloned_repo = clone(repo_url=template, checkout=checkout, clone_to_dir=clone_to_dir, no_input=no_input)
+        repository_candidates = [cloned_repo]
+        cleanup = False
+    else:
+        repository_candidates = [template, os.path.join(clone_to_dir, template)]
+        cleanup = False
+    if directory:
+        repository_candidates = [os.path.join(s, directory) for s in repository_candidates]
+    for repo_candidate in repository_candidates:
+        if repository_has_cookiecutter_json(repo_candidate):
+            return (repo_candidate, cleanup)
+    raise RepositoryNotFound('A valid repository for "{}" could not be found in the following locations:\n{}'.format(template, '\n'.join(repository_candidates)))
+
+----------
+
+def test_repository_url_with_no_context_file(mocker, template_url, user_config_data):
+    """Verify cloned repository without `cookiecutter.json` file raises error."""
+    mocker.patch('cookiecutter.repository.clone', return_value='tests/fake-repo-bad', autospec=True)
+    with pytest.raises(exceptions.RepositoryNotFound) as err:
+        repository.determine_repo_dir(template_url, abbreviations={}, clone_to_dir=None, checkout=None, no_input=True)
+    assert str(err.value) == 'A valid repository for "{}" could not be found in the following locations:\n{}'.format(template_url, 'tests/fake-repo-bad')
+
+----------
+
+
+
+Test Class Name: default

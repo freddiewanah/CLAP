@@ -1,0 +1,23 @@
+def apply_coords(self, coords):
+    """
+        coords should be a N * 2 array-like, containing N couples of (x, y) points
+        """
+    coords = np.asarray(coords, dtype=float)
+    if len(coords) == 0 or self.angle % 360 == 0:
+        return coords
+    return cv2.transform(coords[:, np.newaxis, :], self.rm_coords)[:, 0, :]
+
+----------
+
+def test90(self):
+    (image, coords, h, w) = self.randomData()
+    rot = RotationTransform(h, w, 90, expand=False, center=None)
+    self.assertEqualsArrays(rot.apply_image(image), image.T[::-1])
+    rotated_coords = [[c[1], w - c[0]] for c in coords]
+    self.assertEqualsArrays(rot.apply_coords(coords), rotated_coords)
+
+----------
+
+
+
+Test Class Name: TestRotationTransform

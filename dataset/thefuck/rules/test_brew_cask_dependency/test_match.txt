@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+def test_match():
+    command = Command('brew install sshfs', output)
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

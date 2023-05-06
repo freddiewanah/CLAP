@@ -1,0 +1,31 @@
+def assertPathNotExists(self, *parts):
+    path = os.path.join(*parts)
+    if os.path.exists(path):
+        msg = self._formatMessage(None, f"The path '{path}' does exist")
+        raise self.failureException(msg)
+
+----------
+
+@tempdir(files={'index.md': 'page content'})
+@tempdir()
+def test_copy_theme_files(self, site_dir, docs_dir):
+    cfg = load_config(docs_dir=docs_dir, site_dir=site_dir)
+    build.build(cfg)
+    self.assertPathIsFile(site_dir, 'index.html')
+    self.assertPathIsFile(site_dir, '404.html')
+    self.assertPathIsDir(site_dir, 'js')
+    self.assertPathIsDir(site_dir, 'css')
+    self.assertPathIsDir(site_dir, 'img')
+    self.assertPathIsDir(site_dir, 'fonts')
+    self.assertPathNotExists(site_dir, '__init__.py')
+    self.assertPathNotExists(site_dir, '__init__.pyc')
+    self.assertPathNotExists(site_dir, 'base.html')
+    self.assertPathNotExists(site_dir, 'content.html')
+    self.assertPathNotExists(site_dir, 'main.html')
+    self.assertPathNotExists(site_dir, 'locales')
+
+----------
+
+
+
+Test Class Name: BuildTests

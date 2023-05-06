@@ -1,0 +1,24 @@
+def get_http_port(self) -> int:
+    """Returns the port used by the server.
+
+        A new port is chosen for each test.
+        """
+    return self.__port
+
+----------
+
+@gen_test
+def test_read_until_close(self: typing.Any):
+    stream = self._make_client_iostream()
+    yield stream.connect(('127.0.0.1', self.get_http_port()))
+    stream.write(b'GET / HTTP/1.0\r\n\r\n')
+    data = (yield stream.read_until_close())
+    self.assertTrue(data.startswith(b'HTTP/1.1 200'))
+    self.assertTrue(data.endswith(b'Hello'))
+
+----------
+
+def _make_client_iostream(self):
+    raise NotImplementedError()
+
+Test Class Name: TestIOStreamWebMixin

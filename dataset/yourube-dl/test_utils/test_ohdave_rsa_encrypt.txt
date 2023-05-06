@@ -1,0 +1,27 @@
+def ohdave_rsa_encrypt(data, exponent, modulus):
+    """
+    Implement OHDave's RSA algorithm. See http://www.ohdave.com/rsa/
+
+    Input:
+        data: data to encrypt, bytes-like object
+        exponent, modulus: parameter e and N of RSA algorithm, both integer
+    Output: hex string of encrypted data
+
+    Limitation: supports one block encryption only
+    """
+    payload = int(binascii.hexlify(data[::-1]), 16)
+    encrypted = pow(payload, exponent, modulus)
+    return '%x' % encrypted
+
+----------
+
+def test_ohdave_rsa_encrypt(self):
+    N = 8983556970082806072261113298370959076142893170423488416059191100210358114802049032983889493302173157165863643606239492524847800665553743035328512591065037
+    e = 65537
+    self.assertEqual(ohdave_rsa_encrypt(b'aa111222', e, N), '726664bd9a23fd0c70f9f1b84aab5e3905ce1e45a584e9cbcf9bcc7510338fc1986d6c599ff990d923aa43c51c0d9013cd572e13bc58f4ae48f2ed8c0b0ba881')
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,15 @@
+def site_directory_contains_stale_files(site_directory: str) -> bool:
+    """Check if the site directory contains stale files from a previous build."""
+    return True if os.path.exists(site_directory) and os.listdir(site_directory) else False
+
+----------
+
+@tempdir(files=['index.html'])
+def test_site_dir_contains_stale_files(self, site_dir):
+    self.assertTrue(build.site_directory_contains_stale_files(site_dir))
+
+----------
+
+
+
+Test Class Name: BuildTests

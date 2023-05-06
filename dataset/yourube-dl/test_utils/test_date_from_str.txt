@@ -1,0 +1,41 @@
+def date_from_str(date_str):
+    """
+    Return a datetime object from a string in the format YYYYMMDD or
+    (now|today)[+-][0-9](day|week|month|year)(s)?"""
+    today = datetime.date.today()
+    if date_str in ('now', 'today'):
+        return today
+    if date_str == 'yesterday':
+        return today - datetime.timedelta(days=1)
+    match = re.match('(now|today)(?P<sign>[+-])(?P<time>\\d+)(?P<unit>day|week|month|year)(s)?', date_str)
+    if match is not None:
+        sign = match.group('sign')
+        time = int(match.group('time'))
+        if sign == '-':
+            time = -time
+        unit = match.group('unit')
+        if unit == 'month':
+            unit = 'day'
+            time *= 30
+        elif unit == 'year':
+            unit = 'day'
+            time *= 365
+        unit += 's'
+        delta = datetime.timedelta(**{unit: time})
+        return today + delta
+    return datetime.datetime.strptime(date_str, '%Y%m%d').date()
+
+----------
+
+def test_date_from_str(self):
+    self.assertEqual(date_from_str('yesterday'), date_from_str('now-1day'))
+    self.assertEqual(date_from_str('now+7day'), date_from_str('now+1week'))
+    self.assertEqual(date_from_str('now+14day'), date_from_str('now+2week'))
+    self.assertEqual(date_from_str('now+365day'), date_from_str('now+1year'))
+    self.assertEqual(date_from_str('now+30day'), date_from_str('now+1month'))
+
+----------
+
+
+
+Test Class Name: TestUtil

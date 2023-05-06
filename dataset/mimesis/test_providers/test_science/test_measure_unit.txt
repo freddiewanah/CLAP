@@ -1,0 +1,26 @@
+def measure_unit(self, name: t.Optional[MeasureUnit]=None, symbol: bool=False) -> str:
+    """Get unit name from International System of Units.
+
+        :param name: Enum object UnitName.
+        :param symbol: Return only symbol
+        :return: Unit.
+        """
+    result: t.Tuple[str, str] = self.validate_enum(item=name, enum=MeasureUnit)
+    if symbol:
+        return result[1]
+    return result[0]
+
+----------
+
+@pytest.mark.parametrize('name', [MeasureUnit.MASS, MeasureUnit.INFORMATION, MeasureUnit.THERMODYNAMIC_TEMPERATURE, MeasureUnit.AMOUNT_OF_SUBSTANCE, MeasureUnit.ANGLE, MeasureUnit.SOLID_ANGLE, MeasureUnit.FREQUENCY, MeasureUnit.FORCE, MeasureUnit.PRESSURE, MeasureUnit.ENERGY, MeasureUnit.POWER, MeasureUnit.ELECTRIC_CHARGE, MeasureUnit.VOLTAGE, MeasureUnit.ELECTRIC_CAPACITANCE, MeasureUnit.ELECTRIC_RESISTANCE, MeasureUnit.ELECTRICAL_CONDUCTANCE, MeasureUnit.MAGNETIC_FLUX, MeasureUnit.MAGNETIC_FLUX_DENSITY, MeasureUnit.INDUCTANCE, MeasureUnit.TEMPERATURE, MeasureUnit.RADIOACTIVITY])
+def test_measure_unit(self, science, name):
+    result = science.measure_unit(name)
+    assert result in name.value
+    symbol = science.measure_unit(name, symbol=True)
+    assert symbol in name.value
+
+----------
+
+
+
+Test Class Name: TestScience

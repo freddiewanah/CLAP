@@ -1,0 +1,29 @@
+def get_code(self, fullname):
+    if self._compiled_code:
+        return self._compiled_code
+    filename = self.get_filename(fullname)
+    if not filename:
+        filename = '<string>'
+    source_code = self.get_source(fullname)
+    if source_code is None:
+        return None
+    self._compiled_code = compile(source=source_code, filename=filename, mode='exec', flags=0, dont_inherit=True)
+    return self._compiled_code
+
+----------
+
+def test_empty_vs_no_code():
+    finder = get_default_finder()
+    reset_collections_loader_state(finder)
+    from ansible_collections.testns import testcoll
+    from ansible_collections.testns.testcoll.plugins import module_utils
+    assert testcoll.__loader__.get_source(testcoll.__name__) is None
+    assert testcoll.__loader__.get_code(testcoll.__name__) is None
+    assert module_utils.__loader__.get_source(module_utils.__name__) == b''
+    assert module_utils.__loader__.get_code(module_utils.__name__) is not None
+
+----------
+
+
+
+Test Class Name: default

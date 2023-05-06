@@ -1,0 +1,26 @@
+def is_template(self, data):
+    """lets us know if data has a template"""
+    if isinstance(data, string_types):
+        return is_template(data, self.environment)
+    elif isinstance(data, (list, tuple)):
+        for v in data:
+            if self.is_template(v):
+                return True
+    elif isinstance(data, dict):
+        for k in data:
+            if self.is_template(k) or self.is_template(data[k]):
+                return True
+    return False
+
+----------
+
+def test_is_template_true(self):
+    tests = ['{{ foo }}', '{% foo %}', '{# foo #}', '{# {{ foo }} #}', '{# {{ nothing }} {# #}', '{# {{ nothing }} {# #} #}', '{% raw %}{{ foo }}{% endraw %}']
+    for test in tests:
+        self.assertTrue(self.templar.is_template(test))
+
+----------
+
+
+
+Test Class Name: TestTemplarTemplate

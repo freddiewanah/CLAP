@@ -1,0 +1,46 @@
+def load_weights(model, filepath, skip_mismatch=False, **kwargs):
+    if str(filepath).endswith('.keras') and zipfile.is_zipfile(filepath):
+        saving_lib.load_weights_only(model, filepath, skip_mismatch=skip_mismatch)
+    elif str(filepath).endswith('.weights.h5'):
+        saving_lib.load_weights_only(model, filepath, skip_mismatch=skip_mismatch)
+    else:
+        return legacy_sm_saving_lib.load_weights(model, filepath, skip_mismatch=skip_mismatch, **kwargs)
+
+----------
+
+def test_saving(self):
+    num_classes = (2, 3)
+    num_samples = 100
+    input_dim = 50
+    x1 = np.ones((num_samples, input_dim))
+    x2 = np.ones((num_samples, input_dim))
+    y1 = np.zeros((num_samples, num_classes[0]))
+    y2 = np.zeros((num_samples, num_classes[1]))
+    model = model_util.get_multi_io_subclass_model(num_classes=num_classes, use_bn=True)
+    model.compile(loss='mse', optimizer='rmsprop', run_eagerly=test_utils.should_run_eagerly())
+    model.fit([x1, x2], [y1, y2], epochs=2, batch_size=32, verbose=0)
+    (y_ref_1, y_ref_2) = model.predict([x1, x2])
+    tf_format_name = os.path.join(self.get_temp_dir(), 'ckpt')
+    model.save_weights(tf_format_name)
+    if h5py is not None:
+        hdf5_format_name = os.path.join(self.get_temp_dir(), 'weights.h5')
+        model.save_weights(hdf5_format_name)
+    model = model_util.get_multi_io_subclass_model(num_classes=num_classes, use_bn=True)
+    if h5py is not None:
+        with self.assertRaises(ValueError):
+            model.load_weights(hdf5_format_name)
+    model.load_weights(tf_format_name)
+    (y1, y2) = model.predict([x1, x2])
+    self.assertAllClose(y_ref_1, y1, atol=1e-05)
+    self.assertAllClose(y_ref_2, y2, atol=1e-05)
+    if h5py is not None:
+        model.load_weights(hdf5_format_name)
+        (y1, y2) = model.predict([x1, x2])
+        self.assertAllClose(y_ref_1, y1, atol=1e-05)
+        self.assertAllClose(y_ref_2, y2, atol=1e-05)
+
+----------
+
+
+
+Test Class Name: default

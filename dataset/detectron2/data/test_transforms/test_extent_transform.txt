@@ -1,0 +1,29 @@
+def apply_image(self, img, interp=None):
+    (h, w) = self.output_size
+    if len(img.shape) > 2 and img.shape[2] == 1:
+        pil_image = Image.fromarray(img[:, :, 0], mode='L')
+    else:
+        pil_image = Image.fromarray(img)
+    pil_image = pil_image.transform(size=(w, h), method=Image.EXTENT, data=self.src_rect, resample=interp if interp else self.interp, fill=self.fill)
+    ret = np.asarray(pil_image)
+    if len(img.shape) > 2 and img.shape[2] == 1:
+        ret = np.expand_dims(ret, -1)
+    return ret
+
+----------
+
+def test_extent_transform(self):
+    input_shapes = [(100, 100), (100, 100, 1), (100, 100, 3)]
+    src_rect = (20, 20, 80, 80)
+    output_shapes = [(200, 200), (200, 200, 1), (200, 200, 3)]
+    for (in_shape, out_shape) in zip(input_shapes, output_shapes):
+        in_img = np.random.randint(0, 255, size=in_shape, dtype=np.uint8)
+        tfm = T.ExtentTransform(src_rect, out_shape[:2])
+        out_img = tfm.apply_image(in_img)
+        self.assertTrue(out_img.shape == out_shape)
+
+----------
+
+
+
+Test Class Name: default

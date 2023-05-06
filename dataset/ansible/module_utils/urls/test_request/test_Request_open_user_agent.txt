@@ -1,0 +1,22 @@
+def get(self, url, **kwargs):
+    """Sends a GET request. Returns :class:`HTTPResponse` object.
+
+        :arg url: URL to request
+        :kwarg \\*\\*kwargs: Optional arguments that ``open`` takes.
+        :returns: HTTPResponse
+        """
+    return self.open('GET', url, **kwargs)
+
+----------
+
+def test_Request_open_user_agent(urlopen_mock, install_opener_mock):
+    r = Request().open('GET', 'https://ansible.com/', http_agent='ansible-tests')
+    args = urlopen_mock.call_args[0]
+    req = args[0]
+    assert req.headers.get('User-agent') == 'ansible-tests'
+
+----------
+
+
+
+Test Class Name: default

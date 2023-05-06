@@ -1,0 +1,32 @@
+def telephone(self, mask: str='', placeholder: str='#') -> str:
+    """Generate a random phone number.
+
+        :param mask: Mask for formatting number.
+        :param placeholder: A placeholder for a mask (default is #).
+        :return: Phone number.
+
+        :Example:
+            +7-(963)-409-11-22.
+        """
+    if not mask:
+        code = self.random.choice(CALLING_CODES)
+        default = f'{code}-(###)-###-####'
+        masks = self.extract(['telephone_fmt'], default=[default])
+        mask = self.random.choice(masks)
+    return self.random.custom_code(mask=mask, digit=placeholder)
+
+----------
+
+def test_telephone(self, person):
+    result = person.telephone()
+    assert result is not None
+    mask = '+5 (###)-###-##-##'
+    result = person.telephone(mask=mask)
+    head = result.split(' ')[0]
+    assert head == '+5'
+
+----------
+
+
+
+Test Class Name: TestPerson

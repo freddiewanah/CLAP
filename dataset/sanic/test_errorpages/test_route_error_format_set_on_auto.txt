@@ -1,0 +1,42 @@
+def html(body: Union[str, bytes, HTMLProtocol], status: int=200, headers: Optional[Dict[str, str]]=None) -> HTTPResponse:
+    """
+    Returns response object with body in html format.
+
+    :param body: str or bytes-ish, or an object with __html__ or _repr_html_.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    """
+    if not isinstance(body, (str, bytes)):
+        if hasattr(body, '__html__'):
+            body = body.__html__()
+        elif hasattr(body, '_repr_html_'):
+            body = body._repr_html_()
+    return HTTPResponse(body, status=status, headers=headers, content_type='text/html; charset=utf-8')
+
+----------
+
+def test_route_error_format_set_on_auto(app):
+
+    @app.get('/text')
+    def text_response(request):
+        return text(request.route.extra.error_format)
+
+    @app.get('/json')
+    def json_response(request):
+        return json({'format': request.route.extra.error_format})
+
+    @app.get('/html')
+    def html_response(request):
+        return html(request.route.extra.error_format)
+    (_, response) = app.test_client.get('/text')
+    assert response.text == 'text'
+    (_, response) = app.test_client.get('/json')
+    assert response.json['format'] == 'json'
+    (_, response) = app.test_client.get('/html')
+    assert response.text == 'html'
+
+----------
+
+
+
+Test Class Name: default

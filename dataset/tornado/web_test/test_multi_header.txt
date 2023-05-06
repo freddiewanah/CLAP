@@ -1,0 +1,25 @@
+def fetch(self, request: Union['HTTPRequest', str], **kwargs: Any) -> 'HTTPResponse':
+    """Executes a request, returning an `HTTPResponse`.
+
+        The request may be either a string URL or an `HTTPRequest` object.
+        If it is a string, we construct an `HTTPRequest` using any additional
+        kwargs: ``HTTPRequest(request, **kwargs)``
+
+        If an error occurs during the fetch, we raise an `HTTPError` unless
+        the ``raise_error`` keyword argument is set to False.
+        """
+    response = self._io_loop.run_sync(functools.partial(self._async_client.fetch, request, **kwargs))
+    return response
+
+----------
+
+def test_multi_header(self):
+    response = self.fetch('/multi_header')
+    self.assertEqual(response.headers['x-overwrite'], '2')
+    self.assertEqual(response.headers.get_list('x-multi'), ['3', '4'])
+
+----------
+
+
+
+Test Class Name: WSGISafeWebTest

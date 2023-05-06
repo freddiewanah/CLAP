@@ -1,0 +1,20 @@
+def encode(v):
+    from .utils import get_filesystem_encoding
+    return v.encode(get_filesystem_encoding()) if isinstance(v, compat_str) else v
+
+----------
+
+def test_rsa_verify(self):
+    UPDATES_RSA_KEY = (110515036678624498633222953073032078298735521709391402589764408049151437941646067982326004021332910668081004672848858224906496836524826936897585010290551444372549693428709563945506445224567736791107240888089589002990173235666605590312871472859021661974080261015911409126475913199256336006843052712065006763667, 65537)
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'versions.json'), 'rb') as f:
+        versions_info = f.read().decode()
+    versions_info = json.loads(versions_info)
+    signature = versions_info['signature']
+    del versions_info['signature']
+    self.assertTrue(rsa_verify(json.dumps(versions_info, sort_keys=True).encode('utf-8'), signature, UPDATES_RSA_KEY))
+
+----------
+
+
+
+Test Class Name: TestUpdate

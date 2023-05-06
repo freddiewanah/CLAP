@@ -1,0 +1,31 @@
+def check_type_bool(value):
+    """Verify that the value is a bool or convert it to a bool and return it.
+
+    Raises :class:`TypeError` if unable to convert to a bool
+
+    :arg value: String, int, or float to convert to bool. Valid booleans include:
+         '1', 'on', 1, '0', 0, 'n', 'f', 'false', 'true', 'y', 't', 'yes', 'no', 'off'
+
+    :returns: Boolean True or False
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, string_types) or isinstance(value, (int, float)):
+        return boolean(value)
+    raise TypeError('%s cannot be converted to a bool' % type(value))
+
+----------
+
+def test_check_type_bool_fail():
+    default_test_msg = 'cannot be converted to a bool'
+    test_cases = (({'k1': 'v1'}, 'is not a valid bool'), (3.14159, default_test_msg), (-1, default_test_msg), (-90810398401982340981023948192349081, default_test_msg), (90810398401982340981023948192349081, default_test_msg))
+    for case in test_cases:
+        with pytest.raises(TypeError) as e:
+            check_type_bool(case)
+        assert 'cannot be converted to a bool' in to_native(e.value)
+
+----------
+
+
+
+Test Class Name: default

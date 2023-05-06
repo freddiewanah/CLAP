@@ -1,0 +1,19 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_attr_list_required_empty_string(self):
+    string_list = ['']
+    ds = {'test_attr_list_required': string_list}
+    bsc = self.ClassUnderTest()
+    bsc.load_data(ds)
+    fake_loader = DictDataLoader({})
+    templar = Templar(loader=fake_loader)
+    self.assertRaisesRegex(AnsibleParserError, 'cannot have empty values', bsc.post_validate, templar)
+
+----------
+
+
+
+Test Class Name: TestBaseSubClass

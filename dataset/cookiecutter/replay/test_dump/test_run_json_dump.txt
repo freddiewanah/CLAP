@@ -1,0 +1,33 @@
+def dump(replay_dir: 'os.PathLike[str]', template_name: str, context: dict):
+    """Write json data to file."""
+    make_sure_path_exists(replay_dir)
+    if not isinstance(template_name, str):
+        raise TypeError('Template name is required to be of type str')
+    if not isinstance(context, dict):
+        raise TypeError('Context is required to be of type dict')
+    if 'cookiecutter' not in context:
+        raise ValueError('Context is required to contain a cookiecutter key')
+    replay_file = get_file_name(replay_dir, template_name)
+    with open(replay_file, 'w') as outfile:
+        json.dump(context, outfile, indent=2)
+
+----------
+
+def test_run_json_dump(mocker, mock_ensure_success, mock_user_config, template_name, context, replay_test_dir, replay_file):
+    """Test that replay.dump runs json.dump under the hood and that the context     is correctly written to the expected file in the replay_dir."""
+    spy_get_replay_file = mocker.spy(replay, 'get_file_name')
+    mock_json_dump = mocker.patch('json.dump', side_effect=json.dump)
+    replay.dump(replay_test_dir, template_name, context)
+    assert not mock_user_config.called
+    mock_ensure_success.assert_called_once_with(replay_test_dir)
+    spy_get_replay_file.assert_called_once_with(replay_test_dir, template_name)
+    assert mock_json_dump.call_count == 1
+    ((dumped_context, outfile_handler), kwargs) = mock_json_dump.call_args
+    assert outfile_handler.name == replay_file
+    assert dumped_context == context
+
+----------
+
+
+
+Test Class Name: default

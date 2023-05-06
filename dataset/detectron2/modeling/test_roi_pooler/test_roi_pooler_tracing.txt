@@ -1,0 +1,49 @@
+def random_boxes(num_boxes, max_coord=100, device='cpu'):
+    """
+    Create a random Nx4 boxes tensor, with coordinates < max_coord.
+    """
+    boxes = torch.rand(num_boxes, 4, device=device) * (max_coord * 0.5)
+    boxes.clamp_(min=1.0)
+    boxes[:, 2:] += boxes[:, :2]
+    return boxes
+
+----------
+
+def test_roi_pooler_tracing(self):
+
+    class Model(torch.nn.Module):
+
+        def __init__(self, roi):
+            super(Model, self).__init__()
+            self.roi = roi
+
+        def forward(self, x, boxes):
+            return self.roi(x, [Boxes(boxes)])
+    pooler_resolution = 14
+    canonical_level = 4
+    canonical_scale_factor = 2 ** canonical_level
+    pooler_scales = (1.0 / canonical_scale_factor, 0.5 / canonical_scale_factor)
+    sampling_ratio = 0
+    (N, C, H, W) = (1, 4, 10, 8)
+    N_rois = 10
+    std = 11
+    mean = 0
+    feature = (torch.rand(N, C, H, W) - 0.5) * 2 * std + mean
+    feature = [feature, feature]
+    rois = random_boxes(N_rois, W * canonical_scale_factor)
+    rois = torch.cat([rois, torch.tensor([[0, 0, 448, 448]])])
+    model = Model(ROIPooler(output_size=pooler_resolution, scales=pooler_scales, sampling_ratio=sampling_ratio, pooler_type='ROIAlign'))
+    with torch.no_grad():
+        func = torch.jit.trace(model, (feature, rois))
+        o = func(feature, rois)
+        self.assertEqual(o.shape, (11, 4, 14, 14))
+        o = func(feature, rois[:5])
+        self.assertEqual(o.shape, (5, 4, 14, 14))
+        o = func(feature, random_boxes(20, W * canonical_scale_factor))
+        self.assertEqual(o.shape, (20, 4, 14, 14))
+
+----------
+
+
+
+Test Class Name: TestROIPooler

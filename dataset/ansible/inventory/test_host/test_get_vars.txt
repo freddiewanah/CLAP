@@ -1,0 +1,14 @@
+def get_vars(self):
+    return combine_vars(self.vars, self.get_magic_vars())
+
+----------
+
+def test_get_vars(self):
+    host_vars = self.hostA.get_vars()
+    self.assertIsInstance(host_vars, dict)
+
+----------
+
+
+
+Test Class Name: TestHost

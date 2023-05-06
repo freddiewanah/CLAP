@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, output', [('pyenv global', 'system'), ('pyenv versions', '  3.7.0\n  3.7.1\n* 3.7.2\n'), ('pyenv install --list', '  3.7.0\n  3.7.1\n  3.7.2\n')])
+def test_not_match(script, output):
+    assert not match(Command(script, output=output))
+
+----------
+
+
+
+Test Class Name: default

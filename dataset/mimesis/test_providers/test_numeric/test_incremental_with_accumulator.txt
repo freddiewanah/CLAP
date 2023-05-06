@@ -1,0 +1,41 @@
+def increment(self, accumulator: t.Optional[str]=None) -> int:
+    """Generate incremental number.
+
+        Each call of this method returns an incrementing number (with the step of +1).
+
+        If **accumulator** passed then increments number associated with it.
+
+        Example:
+            >>> self.increment()
+            1
+            >>> self.increment(accumulator="a")
+            1
+            >>> self.increment()
+            2
+            >>> self.increment(accumulator="a")
+            2
+            >>> self.increment(accumulator="b")
+            1
+            >>> self.increment(accumulator="a")
+            3
+
+        :param accumulator: Accumulator (used to create associative incrementation).
+        :return: Integer.
+        """
+    if not accumulator:
+        accumulator = self.__default_accumulator_value
+    self.__increment_dict[accumulator] += 1
+    return self.__increment_dict[accumulator]
+
+----------
+
+def test_incremental_with_accumulator(self, numeric):
+    for i in range(1, 50):
+        for key in ('a', 'b', 'c'):
+            assert numeric.increment(accumulator=key) == i
+
+----------
+
+
+
+Test Class Name: TestNumbers

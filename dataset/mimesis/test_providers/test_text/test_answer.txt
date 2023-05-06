@@ -1,0 +1,23 @@
+def answer(self) -> str:
+    """Get a random answer in current language.
+
+        :return: An answer.
+
+        :Example:
+            No
+        """
+    answers: t.List[str] = self.extract(['answers'])
+    return self.random.choice(answers)
+
+----------
+
+def test_answer(self, text):
+    result = text.answer()
+    assert result is not None
+    assert isinstance(result, str)
+
+----------
+
+
+
+Test Class Name: TestText

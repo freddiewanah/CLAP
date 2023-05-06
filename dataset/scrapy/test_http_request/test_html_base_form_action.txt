@@ -1,0 +1,28 @@
+@classmethod
+def from_response(cls: Type[FormRequestTypeVar], response: TextResponse, formname: Optional[str]=None, formid: Optional[str]=None, formnumber: Optional[int]=0, formdata: FormdataType=None, clickdata: Optional[dict]=None, dont_click: bool=False, formxpath: Optional[str]=None, formcss: Optional[str]=None, **kwargs) -> FormRequestTypeVar:
+    kwargs.setdefault('encoding', response.encoding)
+    if formcss is not None:
+        from parsel.csstranslator import HTMLTranslator
+        formxpath = HTMLTranslator().css_to_xpath(formcss)
+    form = _get_form(response, formname, formid, formnumber, formxpath)
+    formdata = _get_inputs(form, formdata, dont_click, clickdata)
+    url = _get_form_url(form, kwargs.pop('url', None))
+    method = kwargs.pop('method', form.method)
+    if method is not None:
+        method = method.upper()
+        if method not in cls.valid_form_methods:
+            method = 'GET'
+    return cls(url=url, method=method, formdata=formdata, **kwargs)
+
+----------
+
+def test_html_base_form_action(self):
+    response = _buildresponse('\n            <html>\n                <head>\n                    <base href=" http://b.com/">\n                </head>\n                <body>\n                    <form action="test_form">\n                    </form>\n                </body>\n            </html>\n            ', url='http://a.com/')
+    req = self.request_class.from_response(response)
+    self.assertEqual(req.url, 'http://b.com/test_form')
+
+----------
+
+
+
+Test Class Name: FormRequestTest

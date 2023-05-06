@@ -1,0 +1,35 @@
+@tf.function(input_signature=[tf.TensorSpec((None, 3))])
+def predict(inputs):
+    return {'predictions': model(inputs)}
+
+----------
+
+def test_token_classification(self):
+
+    def densify(x, y):
+        return (x.to_tensor(), y.to_tensor())
+    utils.set_random_seed(1337)
+    data = tf.ragged.stack([np.random.randint(low=0, high=16, size=random.randint(4, 16)) for _ in range(100)])
+    labels = tf.ragged.stack([np.random.randint(low=0, high=3, size=len(arr)) for arr in data])
+    features_dataset = tf.data.Dataset.from_tensor_slices(data)
+    labels_dataset = tf.data.Dataset.from_tensor_slices(labels)
+    dataset = tf.data.Dataset.zip((features_dataset, labels_dataset))
+    dataset = dataset.batch(batch_size=10)
+    dataset = dataset.map(densify)
+    layers = [keras.layers.Embedding(16, 4), keras.layers.Conv1D(4, 5, padding='same', activation='relu'), keras.layers.Conv1D(8, 5, padding='same'), keras.layers.BatchNormalization(), keras.layers.Conv1D(3, 5, padding='same', activation='softmax')]
+    model = test_utils.get_model_from_layers(layers, input_shape=(None,))
+    model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['acc'])
+    history = model.fit(dataset, epochs=10, validation_data=dataset, verbose=2)
+    self.assertGreater(history.history['val_acc'][-1], 0.5)
+    (_, val_acc) = model.evaluate(dataset)
+    self.assertAlmostEqual(history.history['val_acc'][-1], val_acc)
+    predictions = model.predict(dataset)
+    self.assertIsInstance(predictions, tf.RaggedTensor)
+    self.assertEqual(predictions.shape[0], len(dataset) * 10)
+    self.assertEqual(predictions.shape[-1], 3)
+
+----------
+
+
+
+Test Class Name: TokenClassificationIntegrationTest

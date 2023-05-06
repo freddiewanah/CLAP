@@ -1,0 +1,27 @@
+def notify(self, n: int=1) -> None:
+    """Wake ``n`` waiters."""
+    waiters = []
+    while n and self._waiters:
+        waiter = self._waiters.popleft()
+        if not waiter.done():
+            n -= 1
+            waiters.append(waiter)
+    for waiter in waiters:
+        future_set_result_unless_cancelled(waiter, True)
+
+----------
+
+@gen_test
+def test_nested_notify(self):
+    c = locks.Condition()
+    futures = [asyncio.ensure_future(c.wait()) for _ in range(3)]
+    futures[1].add_done_callback(lambda _: c.notify())
+    c.notify(2)
+    yield
+    self.assertTrue(all((f.done() for f in futures)))
+
+----------
+
+
+
+Test Class Name: ConditionTest

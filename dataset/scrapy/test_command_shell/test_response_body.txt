@@ -1,0 +1,15 @@
+def url(self, path):
+    return urljoin(self.baseurl, path)
+
+----------
+
+@defer.inlineCallbacks
+def test_response_body(self):
+    (_, out, _) = (yield self.execute([self.url('/text'), '-c', 'response.body']))
+    assert b'Works' in out
+
+----------
+
+
+
+Test Class Name: ShellTest

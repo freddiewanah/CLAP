@@ -1,0 +1,34 @@
+def get_all(self) -> Iterable[Tuple[str, str]]:
+    """Returns an iterable of all (name, value) pairs.
+
+        If a header has multiple values, multiple pairs will be
+        returned with the same name.
+        """
+    for (name, values) in self._as_list.items():
+        for value in values:
+            yield (name, value)
+
+----------
+
+def test_unicode_newlines(self):
+    newlines = ['\x1b', '\x1c', '\x1d', '\x1e', '\x85', '\u2028', '\u2029']
+    for newline in newlines:
+        for encoding in ['utf8', 'latin1']:
+            try:
+                try:
+                    encoded = newline.encode(encoding)
+                except UnicodeEncodeError:
+                    continue
+                data = b'Cookie: foo=' + encoded + b'bar'
+                headers = HTTPHeaders.parse(native_str(data.decode('latin1')))
+                expected = [('Cookie', 'foo=' + native_str(encoded.decode('latin1')) + 'bar')]
+                self.assertEqual(expected, list(headers.get_all()))
+            except Exception:
+                gen_log.warning('failed while trying %r in %s', newline, encoding)
+                raise
+
+----------
+
+
+
+Test Class Name: HTTPHeadersTest

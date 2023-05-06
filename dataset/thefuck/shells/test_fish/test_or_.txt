@@ -1,0 +1,13 @@
+def or_(self, *commands):
+    return u'; or '.join(commands)
+
+----------
+
+def test_or_(self, shell):
+    assert shell.or_('foo', 'bar') == 'foo; or bar'
+
+----------
+
+
+
+Test Class Name: TestFish

@@ -1,0 +1,45 @@
+def get(self, timeout: Optional[Union[float, datetime.timedelta]]=None) -> Awaitable[_T]:
+    """Remove and return an item from the queue.
+
+        Returns an awaitable which resolves once an item is available, or raises
+        `tornado.util.TimeoutError` after a timeout.
+
+        ``timeout`` may be a number denoting a time (on the same
+        scale as `tornado.ioloop.IOLoop.time`, normally `time.time`), or a
+        `datetime.timedelta` object for a deadline relative to the
+        current time.
+
+        .. note::
+
+           The ``timeout`` argument of this method differs from that
+           of the standard library's `queue.Queue.get`. That method
+           interprets numeric values as relative timeouts; this one
+           interprets them as absolute deadlines and requires
+           ``timedelta`` objects for relative timeouts (consistent
+           with other timeouts in Tornado).
+
+        """
+    future = Future()
+    try:
+        future.set_result(self.get_nowait())
+    except QueueEmpty:
+        self._getters.append(future)
+        _set_timeout(future, timeout)
+    return future
+
+----------
+
+@gen_test
+def test_blocking_get_wait(self):
+    q = queues.Queue()
+    q.put(0)
+    self.io_loop.call_later(0.01, q.put_nowait, 1)
+    self.io_loop.call_later(0.02, q.put_nowait, 2)
+    self.assertEqual(0, (yield q.get(timeout=timedelta(seconds=1))))
+    self.assertEqual(1, (yield q.get(timeout=timedelta(seconds=1))))
+
+----------
+
+
+
+Test Class Name: QueueGetTest

@@ -1,0 +1,21 @@
+def dropped(self, item, exception, response, spider):
+    """Logs a message when an item is dropped while it is passing through the item pipeline."""
+    return {'level': logging.WARNING, 'msg': DROPPEDMSG, 'args': {'exception': exception, 'item': item}}
+
+----------
+
+def test_dropped(self):
+    item = {}
+    exception = Exception('‘')
+    response = Response('http://www.example.com')
+    logkws = self.formatter.dropped(item, exception, response, self.spider)
+    logline = logkws['msg'] % logkws['args']
+    lines = logline.splitlines()
+    assert all((isinstance(x, str) for x in lines))
+    self.assertEqual(lines, ['Dropped: ‘', '{}'])
+
+----------
+
+
+
+Test Class Name: LogFormatterTestCase

@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_strange_chars(self):
+    jsi = JSInterpreter('function $_xY1 ($_axY1) { var $_axY2 = $_axY1 + 1; return $_axY2; }')
+    self.assertEqual(jsi.call_function('$_xY1', 20), 21)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

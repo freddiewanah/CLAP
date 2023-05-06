@@ -1,0 +1,17 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('script, output, exists, callable', [('./gradlew build', 'gradlew: Permission denied', True, True), ('./gradlew build', 'gradlew: Permission denied', False, False), ('./gradlew build', 'gradlew: error', True, False), ('gradlew build', 'gradlew: Permission denied', True, False)])
+def test_not_match(file_exists, file_access, script, output, exists, callable):
+    file_exists.return_value = exists
+    file_access.return_value = callable
+    assert not match(Command(script, output))
+
+----------
+
+
+
+Test Class Name: default

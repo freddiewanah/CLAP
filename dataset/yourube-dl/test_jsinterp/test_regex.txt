@@ -1,0 +1,32 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_regex(self):
+    jsi = JSInterpreter('\n        function x() { let a=/,,[/,913,/](,)}/; }\n        ')
+    self.assertIs(jsi.call_function('x'), None)
+    jsi = JSInterpreter('\n        function x() { let a=/,,[/,913,/](,)}/; "".replace(a, ""); return a; }\n        ')
+    attrs = set(('findall', 'finditer', 'flags', 'groupindex', 'groups', 'match', 'pattern', 'scanner', 'search', 'split', 'sub', 'subn'))
+    self.assertTrue(set(dir(jsi.call_function('x'))) > attrs)
+    jsi = JSInterpreter('\n        function x() { let a=/,,[/,913,/](,)}/i; return a; }\n        ')
+    self.assertEqual(jsi.call_function('x').flags & ~re.U, re.I)
+    jsi = JSInterpreter('\n        function x() { let a="data-name".replace("data-", ""); return a }\n        ')
+    self.assertEqual(jsi.call_function('x'), 'name')
+    jsi = JSInterpreter('\n        function x() { let a="data-name".replace(new RegExp("^.+-"), ""); return a; }\n        ')
+    self.assertEqual(jsi.call_function('x'), 'name')
+    jsi = JSInterpreter('\n        function x() { let a="data-name".replace(/^.+-/, ""); return a; }\n        ')
+    self.assertEqual(jsi.call_function('x'), 'name')
+    jsi = JSInterpreter('\n        function x() { let a="data-name".replace(/a/g, "o"); return a; }\n        ')
+    self.assertEqual(jsi.call_function('x'), 'doto-nome')
+    jsi = JSInterpreter('\n        function x() { let a="data-name".replaceAll("a", "o"); return a; }\n        ')
+    self.assertEqual(jsi.call_function('x'), 'doto-nome')
+    jsi = JSInterpreter('\n        function x() { let a=[/[)\\\\]/]; return a[0]; }\n        ')
+    self.assertEqual(jsi.call_function('x').pattern, '[)\\\\]')
+    "  # fails\n        jsi = JSInterpreter(r'''\n        function x() { let a=100; a/=/[0-9]+/.exec('divide by 20 today')[0]; }\n        ''')\n        self.assertEqual(jsi.call_function('x'), 5)\n        "
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

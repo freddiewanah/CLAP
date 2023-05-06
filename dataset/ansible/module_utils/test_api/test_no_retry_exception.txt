@@ -1,0 +1,47 @@
+def retry_with_delays_and_condition(backoff_iterator, should_retry_error=None):
+    """Generic retry decorator.
+
+    :param backoff_iterator: An iterable of delays in seconds.
+    :param should_retry_error: A callable that takes an exception of the decorated function and decides whether to retry or not (returns a bool).
+    """
+    if should_retry_error is None:
+        should_retry_error = retry_never
+
+    def function_wrapper(function):
+
+        @functools.wraps(function)
+        def run_function(*args, **kwargs):
+            """This assumes the function has not already been called.
+            If backoff_iterator is empty, we should still run the function a single time with no delay.
+            """
+            call_retryable_function = functools.partial(function, *args, **kwargs)
+            for delay in backoff_iterator:
+                try:
+                    return call_retryable_function()
+                except Exception as e:
+                    if not should_retry_error(e):
+                        raise
+                time.sleep(delay)
+            return call_retryable_function()
+        return run_function
+    return function_wrapper
+
+----------
+
+def test_no_retry_exception(self):
+
+    @retry_with_delays_and_condition(backoff_iterator=[1], should_retry_error=lambda x: False)
+    def login_database():
+        login_database.counter += 1
+        if login_database.counter == 1:
+            raise CustomException('Error')
+    login_database.counter = 0
+    with pytest.raises(CustomException, match='Error'):
+        login_database()
+    assert login_database.counter == 1
+
+----------
+
+
+
+Test Class Name: TestRetryWithDelaysAndCondition

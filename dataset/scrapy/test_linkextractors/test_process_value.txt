@@ -1,0 +1,42 @@
+def extract_links(self, response):
+    """Returns a list of :class:`~scrapy.link.Link` objects from the
+        specified :class:`response <scrapy.http.Response>`.
+
+        Only links that match the settings passed to the ``__init__`` method of
+        the link extractor are returned.
+
+        Duplicate links are omitted if the ``unique`` attribute is set to ``True``,
+        otherwise they are returned.
+        """
+    base_url = get_base_url(response)
+    if self.restrict_xpaths:
+        docs = [subdoc for x in self.restrict_xpaths for subdoc in response.xpath(x)]
+    else:
+        docs = [response.selector]
+    all_links = []
+    for doc in docs:
+        links = self._extract_links(doc, response.url, response.encoding, base_url)
+        all_links.extend(self._process_links(links))
+    if self.link_extractor.unique:
+        return unique_list(all_links)
+    return all_links
+
+----------
+
+def test_process_value(self):
+    """Test restrict_xpaths with encodings"""
+    html = b'\n<a href="javascript:goToPage(\'../other/page.html\',\'photo\',\'width=600,height=540,scrollbars\'); return false">Text</a>\n<a href="/about.html">About us</a>\n            '
+    response = HtmlResponse('http://example.org/somepage/index.html', body=html, encoding='windows-1252')
+
+    def process_value(value):
+        m = re.search("javascript:goToPage\\('(.*?)'", value)
+        if m:
+            return m.group(1)
+    lx = self.extractor_cls(process_value=process_value)
+    self.assertEqual(lx.extract_links(response), [Link(url='http://example.org/other/page.html', text='Text')])
+
+----------
+
+
+
+Test Class Name: LinkExtractorTestCase

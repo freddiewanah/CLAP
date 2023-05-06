@@ -1,0 +1,16 @@
+def is_entity_header(header):
+    """Checks if the given header is an Entity Header"""
+    return header.lower() in _ENTITY_HEADERS
+
+----------
+
+def test_is_entity_header():
+    tests = (('allow', True), ('extension-header', True), ('', False), ('test', False))
+    for (header, expected) in tests:
+        assert helpers.is_entity_header(header) is expected
+
+----------
+
+
+
+Test Class Name: default

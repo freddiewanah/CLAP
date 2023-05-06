@@ -1,0 +1,36 @@
+def get(self, key, def_val=None):
+    return dict.get(self, self.normkey(key), self.normvalue(def_val))
+
+----------
+
+def test_normvalue(self):
+
+    class MyDict(CaselessDict):
+
+        def normvalue(self, value):
+            if value is not None:
+                return value + 1
+    d = MyDict({'key': 1})
+    self.assertEqual(d['key'], 2)
+    self.assertEqual(d.get('key'), 2)
+    d = MyDict()
+    d['key'] = 1
+    self.assertEqual(d['key'], 2)
+    self.assertEqual(d.get('key'), 2)
+    d = MyDict()
+    d.setdefault('key', 1)
+    self.assertEqual(d['key'], 2)
+    self.assertEqual(d.get('key'), 2)
+    d = MyDict()
+    d.update({'key': 1})
+    self.assertEqual(d['key'], 2)
+    self.assertEqual(d.get('key'), 2)
+    d = MyDict.fromkeys(('key',), 1)
+    self.assertEqual(d['key'], 2)
+    self.assertEqual(d.get('key'), 2)
+
+----------
+
+
+
+Test Class Name: MyDict

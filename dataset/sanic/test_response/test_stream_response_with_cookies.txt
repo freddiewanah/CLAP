@@ -1,0 +1,25 @@
+def respond(self, response: BaseHTTPResponse) -> BaseHTTPResponse:
+    raise NotImplementedError('Not implemented')
+
+----------
+
+def test_stream_response_with_cookies(app):
+
+    @app.route('/')
+    async def test(request: Request):
+        headers = Header()
+        cookies = CookieJar(headers)
+        cookies['test'] = 'modified'
+        cookies['test'] = 'pass'
+        response = await request.respond(content_type='text/csv', headers=headers)
+        await response.send('foo,')
+        await asyncio.sleep(0.001)
+        await response.send('bar')
+    (request, response) = app.test_client.get('/')
+    assert response.cookies['test'] == 'pass'
+
+----------
+
+
+
+Test Class Name: default

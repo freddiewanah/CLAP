@@ -1,0 +1,20 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_basic(self):
+    jsi = JSInterpreter('function x(){;}')
+    self.assertEqual(jsi.call_function('x'), None)
+    jsi = JSInterpreter('function x3(){return 42;}')
+    self.assertEqual(jsi.call_function('x3'), 42)
+    jsi = JSInterpreter('function x3(){42}')
+    self.assertEqual(jsi.call_function('x3'), None)
+    jsi = JSInterpreter('var x5 = function(){return 42;}')
+    self.assertEqual(jsi.call_function('x5'), 42)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

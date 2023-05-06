@@ -1,0 +1,20 @@
+def imei(self) -> str:
+    """Generate a random IMEI.
+
+        :return: IMEI.
+        """
+    num = self.random.choice(IMEI_TACS)
+    num += str(self.random.randint(100000, 999999))
+    return num + luhn_checksum(num)
+
+----------
+
+def test_imei(self, code):
+    result = code.imei()
+    assert len(result) <= 15
+
+----------
+
+
+
+Test Class Name: TestCode

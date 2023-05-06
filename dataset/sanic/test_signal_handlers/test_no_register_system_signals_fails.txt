@@ -1,0 +1,31 @@
+def empty(status: int=204, headers: Optional[Dict[str, str]]=None) -> HTTPResponse:
+    """
+    Returns an empty response to the client.
+
+    :param status Response code.
+    :param headers Custom Headers.
+    """
+    return HTTPResponse(body=b'', status=status, headers=headers)
+
+----------
+
+@pytest.mark.skipif(os.name == 'nt', reason='May hang CI on py38/windows')
+def test_no_register_system_signals_fails(app):
+    """Test if sanic don't register system signals"""
+
+    @app.route('/hello')
+    async def hello_route(request):
+        return HTTPResponse()
+    app.listener('after_server_start')(stop)
+    app.listener('before_server_start')(set_loop)
+    app.listener('after_server_stop')(after)
+    message = 'Cannot run Sanic.serve with register_sys_signals=False. Use either Sanic.serve_single or Sanic.serve_legacy.'
+    with pytest.raises(RuntimeError, match=message):
+        app.prepare(HOST, PORT, register_sys_signals=False)
+    assert calledq.empty()
+
+----------
+
+
+
+Test Class Name: default

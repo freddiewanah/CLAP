@@ -1,0 +1,54 @@
+def process_request(self, request: Request, spider: Spider) -> Optional[Response]:
+    if request.meta.get('dont_cache', False):
+        return None
+    if not self.policy.should_cache_request(request):
+        request.meta['_dont_cache'] = True
+        return None
+    cachedresponse = self.storage.retrieve_response(spider, request)
+    if cachedresponse is None:
+        self.stats.inc_value('httpcache/miss', spider=spider)
+        if self.ignore_missing:
+            self.stats.inc_value('httpcache/ignore', spider=spider)
+            raise IgnoreRequest(f'Ignored request not in cache: {request}')
+        return None
+    cachedresponse.flags.append('cached')
+    if self.policy.is_cached_response_fresh(cachedresponse, request):
+        self.stats.inc_value('httpcache/hit', spider=spider)
+        return cachedresponse
+    request.meta['cached_response'] = cachedresponse
+    return None
+
+----------
+
+def test_process_exception(self):
+    with self._middleware() as mw:
+        res0 = Response(self.request.url, headers={'Expires': self.yesterday})
+        req0 = Request(self.request.url)
+        self._process_requestresponse(mw, req0, res0)
+        for e in mw.DOWNLOAD_EXCEPTIONS:
+            assert mw.process_request(req0, self.spider) is None
+            res1 = mw.process_exception(req0, e('foo'), self.spider)
+            assert 'cached' in res1.flags
+            self.assertEqualResponse(res0, res1)
+        mw.process_request(req0, self.spider)
+        assert mw.process_exception(req0, Exception('foo'), self.spider) is None
+
+----------
+
+def _process_requestresponse(self, mw, request, response):
+    result = None
+    try:
+        result = mw.process_request(request, self.spider)
+        if result:
+            assert isinstance(result, (Request, Response))
+            return result
+        result = mw.process_response(request, response, self.spider)
+        assert isinstance(result, Response)
+        return result
+    except Exception:
+        print('Request', request)
+        print('Response', response)
+        print('Result', result)
+        raise
+
+Test Class Name: RFC2616PolicyTest

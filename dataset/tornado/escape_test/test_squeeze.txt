@@ -1,0 +1,14 @@
+def squeeze(value: str) -> str:
+    """Replace all sequences of whitespace chars with a single space."""
+    return re.sub('[\\x00-\\x20]+', ' ', value).strip()
+
+----------
+
+def test_squeeze(self):
+    self.assertEqual(squeeze('sequences     of    whitespace   chars'), 'sequences of whitespace chars')
+
+----------
+
+
+
+Test Class Name: EscapeTestCase

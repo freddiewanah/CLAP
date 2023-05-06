@@ -1,0 +1,42 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_unix_connection():
+    app = Sanic(name='test')
+
+    @app.get('/')
+    def handler(request: Request):
+        return text(f'{request.conn_info.server}')
+
+    @app.after_server_start
+    async def client(app: Sanic):
+        if httpx_version >= (0, 20):
+            transport = httpx.AsyncHTTPTransport(uds=SOCKPATH)
+        else:
+            transport = httpcore.AsyncConnectionPool(uds=SOCKPATH)
+        try:
+            async with httpx.AsyncClient(transport=transport) as client:
+                r = await client.get('http://myhost.invalid/')
+                assert r.status_code == 200
+                assert r.text == os.path.abspath(SOCKPATH)
+        finally:
+            app.stop()
+    app.run(host='myhost.invalid', unix=SOCKPATH, single_process=True)
+
+----------
+
+
+
+Test Class Name: default

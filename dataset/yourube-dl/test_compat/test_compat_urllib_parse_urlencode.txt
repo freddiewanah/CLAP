@@ -1,0 +1,36 @@
+def compat_urllib_parse_urlencode(query, doseq=0, encoding='utf-8'):
+
+    def encode_elem(e):
+        if isinstance(e, dict):
+            e = encode_dict(e)
+        elif isinstance(e, (list, tuple)):
+            list_e = encode_list(e)
+            e = tuple(list_e) if isinstance(e, tuple) else list_e
+        elif isinstance(e, compat_str):
+            e = e.encode(encoding)
+        return e
+
+    def encode_dict(d):
+        return dict(((encode_elem(k), encode_elem(v)) for (k, v) in d.items()))
+
+    def encode_list(l):
+        return [encode_elem(e) for e in l]
+    return compat_urllib_parse._urlencode(encode_elem(query), doseq=doseq)
+
+----------
+
+def test_compat_urllib_parse_urlencode(self):
+    self.assertEqual(compat_urllib_parse_urlencode({'abc': 'def'}), 'abc=def')
+    self.assertEqual(compat_urllib_parse_urlencode({'abc': b'def'}), 'abc=def')
+    self.assertEqual(compat_urllib_parse_urlencode({b'abc': 'def'}), 'abc=def')
+    self.assertEqual(compat_urllib_parse_urlencode({b'abc': b'def'}), 'abc=def')
+    self.assertEqual(compat_urllib_parse_urlencode([('abc', 'def')]), 'abc=def')
+    self.assertEqual(compat_urllib_parse_urlencode([('abc', b'def')]), 'abc=def')
+    self.assertEqual(compat_urllib_parse_urlencode([(b'abc', 'def')]), 'abc=def')
+    self.assertEqual(compat_urllib_parse_urlencode([(b'abc', b'def')]), 'abc=def')
+
+----------
+
+
+
+Test Class Name: TestCompat

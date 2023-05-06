@@ -1,0 +1,15 @@
+def intlist_to_bytes(xs):
+    if not xs:
+        return b''
+    return compat_struct_pack('%dB' % len(xs), *xs)
+
+----------
+
+def test_intlist_to_bytes(self):
+    self.assertEqual(intlist_to_bytes([0, 1, 127, 128, 255]), b'\x00\x01\x7f\x80\xff')
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,18 @@
+def join_nonempty(*values, **kwargs):
+    delim = kwargs.get('delim', '-')
+    from_dict = kwargs.get('from_dict')
+    if from_dict is not None:
+        values = (traverse_obj(from_dict, variadic(v)) for v in values)
+    return delim.join(map(compat_str, filter(None, values)))
+
+----------
+
+def test_join_nonempty(self):
+    self.assertEqual(join_nonempty('a', 'b'), 'a-b')
+    self.assertEqual(join_nonempty('a', 'b', 'c', 'd', from_dict={'a': 'c', 'c': [], 'b': 'd', 'd': None}), 'c-d')
+
+----------
+
+
+
+Test Class Name: TestUtil

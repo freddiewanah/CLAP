@@ -1,0 +1,21 @@
+def emoji(self) -> str:
+    """Get a random emoji shortcut code.
+
+        :return: Emoji code.
+
+        :Example:
+            :kissing:
+        """
+    return self.random.choice(EMOJI)
+
+----------
+
+def test_emoji(self, net):
+    result = net.emoji()
+    assert result in data.EMOJI
+
+----------
+
+
+
+Test Class Name: TestInternet

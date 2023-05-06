@@ -1,0 +1,20 @@
+def get_case_path(subdir_name: str, name: str, data: bool=True, suffix: str=PYTHON_SUFFIX) -> Path:
+    """Get case path from name"""
+    case_path = get_base_dir(data) / subdir_name / name
+    if not name.endswith(ALLOWED_SUFFIXES):
+        case_path = case_path.with_suffix(suffix)
+    assert case_path.is_file(), f'{case_path} is not a file.'
+    return case_path
+
+----------
+
+def test_ipynb_diff_with_change() -> None:
+    result = runner.invoke(main, [str(get_case_path('jupyter', 'notebook_trailing_newline.ipynb')), '--diff', f'--config={EMPTY_CONFIG}'])
+    expected = '@@ -1,3 +1,3 @@\n %%time\n \n-print(\'foo\')\n+print("foo")\n'
+    assert expected in result.output
+
+----------
+
+
+
+Test Class Name: default

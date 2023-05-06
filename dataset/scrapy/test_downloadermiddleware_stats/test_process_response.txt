@@ -1,0 +1,18 @@
+def process_response(self, request, response, spider):
+    self.stats.inc_value('downloader/response_count', spider=spider)
+    self.stats.inc_value(f'downloader/response_status_count/{response.status}', spider=spider)
+    reslen = len(response.body) + get_header_size(response.headers) + get_status_size(response.status) + 4
+    self.stats.inc_value('downloader/response_bytes', reslen, spider=spider)
+    return response
+
+----------
+
+def test_process_response(self):
+    self.mw.process_response(self.req, self.res, self.spider)
+    self.assertStatsEqual('downloader/response_count', 1)
+
+----------
+
+
+
+Test Class Name: TestDownloaderStats

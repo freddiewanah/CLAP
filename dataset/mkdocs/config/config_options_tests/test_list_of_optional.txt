@@ -1,0 +1,23 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_list_of_optional(self) -> None:
+
+    class Schema(Config):
+        option = c.ListOfItems(c.Optional(c.Type(int)), default=[])
+    conf = self.get_config(Schema, {})
+    assert_type(conf.option, List[Optional[int]])
+    self.assertEqual(conf.option, [])
+    conf = self.get_config(Schema, {'option': [4, None]})
+    self.assertEqual(conf.option, [4, None])
+    with self.expect_error(option="Expected type: <class 'int'> but received: <class 'str'>"):
+        conf = self.get_config(Schema, {'option': ['foo']})
+        self.assertEqual(conf.option, ['foo'])
+
+----------
+
+
+
+Test Class Name: default

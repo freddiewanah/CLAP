@@ -1,0 +1,26 @@
+def url_escape(value: Union[str, bytes], plus: bool=True) -> str:
+    """Returns a URL-encoded version of the given value.
+
+    If ``plus`` is true (the default), spaces will be represented
+    as "+" instead of "%20".  This is appropriate for query strings
+    but not for the path component of a URL.  Note that this default
+    is the reverse of Python's urllib module.
+
+    .. versionadded:: 3.1
+        The ``plus`` argument
+    """
+    quote = urllib.parse.quote_plus if plus else urllib.parse.quote
+    return quote(utf8(value))
+
+----------
+
+def test_url_escape_unicode(self):
+    tests = [('é'.encode('utf8'), '%C3%A9'), ('é'.encode('latin1'), '%E9'), ('é', '%C3%A9')]
+    for (unescaped, escaped) in tests:
+        self.assertEqual(url_escape(unescaped), escaped)
+
+----------
+
+
+
+Test Class Name: EscapeTestCase

@@ -1,0 +1,21 @@
+def dish(self) -> str:
+    """Get a random dish.
+
+        :return: Dish name.
+
+        :Example:
+            Ratatouille.
+        """
+    return self._choice_from('dishes')
+
+----------
+
+def test_dish(self, food):
+    result = food.dish()
+    assert result in food._data['dishes']
+
+----------
+
+
+
+Test Class Name: TestFood

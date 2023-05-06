@@ -1,0 +1,51 @@
+def url_relative_to(self, other: File) -> str:
+    """Return url for file relative to other file."""
+    return utils.get_relative_url(self.url, other.url if isinstance(other, File) else other)
+
+----------
+
+def test_get_relative_url(self):
+    to_files = ['index.md', 'foo/index.md', 'foo/bar/index.md', 'foo/bar/baz/index.md', 'foo.md', 'foo/bar.md', 'foo/bar/baz.md']
+    to_file_urls = ['index.html', 'foo/index.html', 'foo/bar/index.html', 'foo/bar/baz/index.html', 'foo.html', 'foo/bar.html', 'foo/bar/baz.html']
+    from_file = File('img.jpg', '/path/to/docs', '/path/to/site', use_directory_urls=False)
+    expected = ['img.jpg', '../img.jpg', '../../img.jpg', '../../../img.jpg', 'img.jpg', '../img.jpg', '../../img.jpg']
+    for (i, filename) in enumerate(to_files):
+        with self.subTest(from_file=from_file.src_path, to_file=filename):
+            file = File(filename, '/path/to/docs', '/path/to/site', use_directory_urls=False)
+            self.assertEqual(from_file.url, 'img.jpg')
+            self.assertEqual(file.url, to_file_urls[i])
+            self.assertEqual(from_file.url_relative_to(file.url), expected[i])
+            self.assertEqual(from_file.url_relative_to(file), expected[i])
+    from_file = File('foo/img.jpg', '/path/to/docs', '/path/to/site', use_directory_urls=False)
+    expected = ['foo/img.jpg', 'img.jpg', '../img.jpg', '../../img.jpg', 'foo/img.jpg', 'img.jpg', '../img.jpg']
+    for (i, filename) in enumerate(to_files):
+        with self.subTest(from_file=from_file.src_path, to_file=filename):
+            file = File(filename, '/path/to/docs', '/path/to/site', use_directory_urls=False)
+            self.assertEqual(from_file.url, 'foo/img.jpg')
+            self.assertEqual(file.url, to_file_urls[i])
+            self.assertEqual(from_file.url_relative_to(file.url), expected[i])
+            self.assertEqual(from_file.url_relative_to(file), expected[i])
+    from_file = File('index.html', '/path/to/docs', '/path/to/site', use_directory_urls=False)
+    expected = ['index.html', '../index.html', '../../index.html', '../../../index.html', 'index.html', '../index.html', '../../index.html']
+    for (i, filename) in enumerate(to_files):
+        with self.subTest(from_file=from_file.src_path, to_file=filename):
+            file = File(filename, '/path/to/docs', '/path/to/site', use_directory_urls=False)
+            self.assertEqual(from_file.url, 'index.html')
+            self.assertEqual(file.url, to_file_urls[i])
+            self.assertEqual(from_file.url_relative_to(file.url), expected[i])
+            self.assertEqual(from_file.url_relative_to(file), expected[i])
+    from_file = File('file.html', '/path/to/docs', '/path/to/site', use_directory_urls=False)
+    expected = ['file.html', '../file.html', '../../file.html', '../../../file.html', 'file.html', '../file.html', '../../file.html']
+    for (i, filename) in enumerate(to_files):
+        with self.subTest(from_file=from_file.src_path, to_file=filename):
+            file = File(filename, '/path/to/docs', '/path/to/site', use_directory_urls=False)
+            self.assertEqual(from_file.url, 'file.html')
+            self.assertEqual(file.url, to_file_urls[i])
+            self.assertEqual(from_file.url_relative_to(file.url), expected[i])
+            self.assertEqual(from_file.url_relative_to(file), expected[i])
+
+----------
+
+
+
+Test Class Name: TestFiles

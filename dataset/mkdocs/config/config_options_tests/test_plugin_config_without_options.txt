@@ -1,0 +1,26 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_plugin_config_without_options(self, mock_class) -> None:
+
+    class Schema(Config):
+        plugins = c.Plugins()
+    cfg = {'plugins': ['sample']}
+    conf = self.get_config(Schema, cfg)
+    assert_type(conf.plugins, PluginCollection)
+    self.assertIsInstance(conf.plugins, PluginCollection)
+    self.assertIn('sample', conf.plugins)
+    plugin = conf.plugins['sample']
+    assert_type(plugin, BasePlugin)
+    self.assertIsInstance(plugin, FakePlugin)
+    self.assertIsInstance(plugin.config, _FakePluginConfig)
+    expected = {'foo': 'default foo', 'bar': 0, 'dir': None}
+    self.assertEqual(plugin.config, expected)
+
+----------
+
+
+
+Test Class Name: PluginsTest

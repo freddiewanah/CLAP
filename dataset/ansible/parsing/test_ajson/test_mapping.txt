@@ -1,0 +1,30 @@
+def default(self, o):
+    if getattr(o, '__ENCRYPTED__', False):
+        if self._vault_to_text:
+            value = to_text(o, errors='surrogate_or_strict')
+        else:
+            value = {'__ansible_vault': to_text(o._ciphertext, errors='surrogate_or_strict', nonstring='strict')}
+    elif getattr(o, '__UNSAFE__', False):
+        value = {'__ansible_unsafe': to_text(o, errors='surrogate_or_strict', nonstring='strict')}
+    elif isinstance(o, Mapping):
+        value = dict(o)
+    elif isinstance(o, (datetime.date, datetime.datetime)):
+        value = o.isoformat()
+    else:
+        value = super(AnsibleJSONEncoder, self).default(o)
+    return value
+
+----------
+
+@pytest.mark.parametrize('mapping,expected', [({1: 1}, {1: 1}), ({2: 2}, {2: 2}), ({1: 2}, {1: 2}), ({2: 1}, {2: 1})], indirect=['mapping'])
+def test_mapping(self, ansible_json_encoder, mapping, expected):
+    """
+        Test for passing Mapping object to AnsibleJSONEncoder.default().
+        """
+    assert ansible_json_encoder.default(mapping) == expected
+
+----------
+
+
+
+Test Class Name: M

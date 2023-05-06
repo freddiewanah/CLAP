@@ -1,0 +1,27 @@
+def from_args(self, headers=None, url=None, filename=None, body=None):
+    """Guess the most appropriate Response class based on
+        the given arguments."""
+    cls = Response
+    if headers is not None:
+        cls = self.from_headers(headers)
+    if cls is Response and url is not None:
+        cls = self.from_filename(url)
+    if cls is Response and filename is not None:
+        cls = self.from_filename(filename)
+    if cls is Response and body is not None:
+        cls = self.from_body(body)
+    return cls
+
+----------
+
+def test_from_args(self):
+    mappings = [({'url': 'http://www.example.com/data.csv'}, TextResponse), ({'headers': Headers({'Content-Type': ['text/html; charset=utf-8']}), 'url': 'http://www.example.com/item/'}, HtmlResponse), ({'headers': Headers({'Content-Disposition': ['attachment; filename="data.xml.gz"']}), 'url': 'http://www.example.com/page/'}, Response)]
+    for (source, cls) in mappings:
+        retcls = responsetypes.from_args(**source)
+        assert retcls is cls, f'{source} ==> {retcls} != {cls}'
+
+----------
+
+
+
+Test Class Name: ResponseTypesTest

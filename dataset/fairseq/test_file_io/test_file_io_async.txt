@@ -1,0 +1,28 @@
+@staticmethod
+def async_close() -> bool:
+    """
+        Wait for files to be written and clean up asynchronous PathManager.
+        NOTE: `PathManager.async_close()` must be called at the end of any
+        script that uses `PathManager.opena(...)`.
+        """
+    global IOPathManager
+    if IOPathManager:
+        return IOPathManager.async_close()
+    return False
+
+----------
+
+def test_file_io_async(self):
+    try:
+        from fairseq.file_io import PathManager
+        _asyncfile = os.path.join(self._tmpdir, 'async.txt')
+        f = PathManager.opena(_asyncfile, 'wb')
+        f.close()
+    finally:
+        self.assertTrue(PathManager.async_close())
+
+----------
+
+
+
+Test Class Name: TestFileIO

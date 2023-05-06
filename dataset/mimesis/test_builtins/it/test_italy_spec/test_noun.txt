@@ -1,0 +1,36 @@
+def fiscal_code(self, gender: t.Optional[Gender]=None) -> str:
+    """Return a random fiscal code.
+
+        :param gender: Gender's enum object.
+        :return: Fiscal code.
+
+        Example:
+            RSSMRA66R05D612U
+        """
+    code = ''.join(self.random.choices(string.ascii_uppercase, k=6))
+    code += self.random.custom_code(mask='##')
+    month_codes = self.extract(['fiscal_code', 'month_codes'])
+    code += self.random.choice(month_codes)
+    birth_day = self.random.randint(101, 131)
+    self.validate_enum(gender, Gender)
+    if gender == Gender.FEMALE:
+        birth_day += 40
+    code += str(birth_day)[1:]
+    city_letters = self.extract(['fiscal_code', 'city_letters'])
+    code += self.random.choice(city_letters)
+    code += self.random.custom_code(mask='###@')
+    return code
+
+----------
+
+def test_noun(italy):
+    result = italy.fiscal_code(gender=Gender.MALE)
+    assert re.fullmatch('^[A-Z]{6}\\d{2}[A-EHLMPR-T][0123][0-9][A-MZ]\\d{3}[A-Z]$', result)
+    result = italy.fiscal_code(gender=Gender.FEMALE)
+    assert re.fullmatch('^[A-Z]{6}\\d{2}[A-EHLMPR-T][4567][0-9][A-MZ]\\d{3}[A-Z]$', result)
+
+----------
+
+
+
+Test Class Name: default

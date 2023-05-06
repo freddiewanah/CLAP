@@ -1,0 +1,69 @@
+@keras_export('keras.backend.ones')
+@tf.__internal__.dispatch.add_dispatch_support
+@doc_controls.do_not_generate_docs
+def ones(shape, dtype=None, name=None):
+    """Instantiates an all-ones variable and returns it.
+
+    Args:
+        shape: Tuple of integers, shape of returned Keras variable.
+        dtype: String, data type of returned Keras variable.
+        name: String, name of returned Keras variable.
+
+    Returns:
+        A Keras variable, filled with `1.0`.
+        Note that if `shape` was symbolic, we cannot return a variable,
+        and will return a dynamically-shaped tensor instead.
+
+    Example:
+
+
+    >>> kvar = tf.keras.backend.ones((3,4))
+    >>> tf.keras.backend.eval(kvar)
+    array([[1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.]], dtype=float32)
+
+    """
+    with tf.init_scope():
+        if dtype is None:
+            dtype = floatx()
+        tf_dtype = tf.as_dtype(dtype)
+        v = tf.ones(shape=shape, dtype=tf_dtype, name=name)
+        if py_all(v.shape.as_list()):
+            return variable(v, dtype=dtype, name=name)
+        return v
+
+----------
+
+def test_summary(self):
+
+    class ToString:
+
+        def __init__(self):
+            self.contents = ''
+
+        def __call__(self, msg):
+            self.contents += msg + '\n'
+    model = test_utils.SmallSubclassMLP(num_hidden=32, num_classes=4, use_bn=True, use_dp=True)
+    model(np.ones((3, 4)))
+    print_fn = ToString()
+    model.summary(print_fn=print_fn)
+    self.assertIn('Trainable params: 356', print_fn.contents)
+    model = model_util.get_multi_io_subclass_model(num_classes=(5, 6), use_bn=True, use_dp=True)
+    model([np.ones((3, 4)), np.ones((3, 4))])
+    print_fn = ToString()
+    model.summary(print_fn=print_fn)
+    self.assertIn('Trainable params: 587', print_fn.contents)
+    model = test_utils.SmallSubclassMLP(num_hidden=32, num_classes=4, use_bn=True, use_dp=True)
+    model.unused_layer = keras.layers.Dense(10)
+    model(np.ones((3, 4)))
+    print_fn = ToString()
+    model.summary(print_fn=print_fn)
+    self.assertIn('Trainable params: 356', print_fn.contents)
+    self.assertIn('0 (unused)', print_fn.contents)
+
+----------
+
+
+
+Test Class Name: default

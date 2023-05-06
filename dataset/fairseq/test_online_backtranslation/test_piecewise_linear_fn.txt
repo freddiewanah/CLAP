@@ -1,0 +1,36 @@
+@staticmethod
+def from_string(configuration: str) -> 'PiecewiseLinearFn':
+    """
+        Parse the configuration of lambda coefficient (for scheduling).
+        x = "3"                  # lambda will be a constant equal to x
+        x = "0:1,1000:0"         # lambda will start from 1 and linearly decrease
+                                 # to 0 during the first 1000 iterations
+        x = "0:0,1000:0,2000:1"  # lambda will be equal to 0 for the first 1000
+                                 # iterations, then will linearly increase to 1 until iteration 2000
+        """
+    if isinstance(configuration, float):
+        return PiecewiseLinearFn([(0, configuration)])
+    try:
+        parts = configuration.split(',')
+        if len(parts) == 1:
+            v = float(configuration)
+            return PiecewiseLinearFn([(0, v)])
+        split = [s.split(':') for s in parts]
+        pieces = [(int(t), float(v)) for (t, v) in split]
+        return PiecewiseLinearFn(pieces)
+    except Exception:
+        raise ValueError(f'Invalid PiecewiseLinearFn configuration: {configuration!r}')
+
+----------
+
+def test_piecewise_linear_fn(self):
+    self.assertFnMatch(obt.PiecewiseLinearFn.from_string('1.0'), {0: 1, 100: 1, 500: 1, 1000: 1})
+    self.assertFnMatch(obt.PiecewiseLinearFn.from_string('0:1,1000:0'), {0: 1, 500: 0.5, 1000: 0, 2000: 0})
+    self.assertFnMatch(obt.PiecewiseLinearFn.from_string('0:0,1000:1'), {0: 0, 500: 0.5, 1000: 1, 2000: 1})
+    self.assertFnMatch(obt.PiecewiseLinearFn.from_string('0:0,1000:1,2000:0'), {0: 0, 500: 0.5, 1000: 1, 1500: 0.5, 2000: 0, 3000: 0})
+
+----------
+
+
+
+Test Class Name: OnlineBacktranslationTest

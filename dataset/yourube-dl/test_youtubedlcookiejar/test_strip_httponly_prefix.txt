@@ -1,0 +1,51 @@
+def load(self, filename=None, ignore_discard=False, ignore_expires=False):
+    """Load cookies from a file."""
+    if filename is None:
+        if self.filename is not None:
+            filename = self.filename
+        else:
+            raise ValueError(compat_cookiejar.MISSING_FILENAME_TEXT)
+
+    def prepare_line(line):
+        if line.startswith(self._HTTPONLY_PREFIX):
+            line = line[len(self._HTTPONLY_PREFIX):]
+        if line.startswith('#') or not line.strip():
+            return line
+        cookie_list = line.split('\t')
+        if len(cookie_list) != self._ENTRY_LEN:
+            raise compat_cookiejar.LoadError('invalid length %d' % len(cookie_list))
+        cookie = self._CookieFileEntry(*cookie_list)
+        if cookie.expires_at and (not cookie.expires_at.isdigit()):
+            raise compat_cookiejar.LoadError('invalid expires at %s' % cookie.expires_at)
+        return line
+    cf = io.StringIO()
+    with io.open(filename, encoding='utf-8') as f:
+        for line in f:
+            try:
+                cf.write(prepare_line(line))
+            except compat_cookiejar.LoadError as e:
+                write_string('WARNING: skipping cookie file entry due to %s: %r\n' % (e, line), sys.stderr)
+                continue
+    cf.seek(0)
+    self._really_load(cf, filename, ignore_discard, ignore_expires)
+    for cookie in self:
+        if cookie.expires == 0:
+            cookie.expires = None
+            cookie.discard = True
+
+----------
+
+def test_strip_httponly_prefix(self):
+    cookiejar = YoutubeDLCookieJar('./test/testdata/cookies/httponly_cookies.txt')
+    cookiejar.load(ignore_discard=True, ignore_expires=True)
+
+    def assert_cookie_has_value(key):
+        self.assertEqual(cookiejar._cookies['www.foobar.foobar']['/'][key].value, key + '_VALUE')
+    assert_cookie_has_value('HTTPONLY_COOKIE')
+    assert_cookie_has_value('JS_ACCESSIBLE_COOKIE')
+
+----------
+
+
+
+Test Class Name: TestYoutubeDLCookieJar

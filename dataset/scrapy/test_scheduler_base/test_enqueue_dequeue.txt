@@ -1,0 +1,41 @@
+@abstractmethod
+def enqueue_request(self, request: Request) -> bool:
+    """
+        Process a request received by the engine.
+
+        Return ``True`` if the request is stored correctly, ``False`` otherwise.
+
+        If ``False``, the engine will fire a ``request_dropped`` signal, and
+        will not make further attempts to schedule the request at a later time.
+        For reference, the default Scrapy scheduler returns ``False`` when the
+        request is rejected by the dupefilter.
+        """
+    raise NotImplementedError()
+
+----------
+
+@defer.inlineCallbacks
+def test_enqueue_dequeue(self):
+    open_result = (yield self.scheduler.open(Spider('foo')))
+    self.assertEqual(open_result, 'open')
+    self.assertFalse(self.scheduler.has_pending_requests())
+    for url in URLS:
+        self.assertTrue(self.scheduler.enqueue_request(Request(url)))
+        self.assertFalse(self.scheduler.enqueue_request(Request(url)))
+    self.assertTrue(self.scheduler.has_pending_requests())
+    self.assertEqual(len(self.scheduler), len(URLS))
+    dequeued = []
+    while self.scheduler.has_pending_requests():
+        request = self.scheduler.next_request()
+        dequeued.append(request.url)
+    self.assertEqual(set(dequeued), set(URLS))
+    self.assertFalse(self.scheduler.has_pending_requests())
+    self.assertEqual(len(self.scheduler), 0)
+    close_result = (yield self.scheduler.close(''))
+    self.assertEqual(close_result, 'close')
+
+----------
+
+
+
+Test Class Name: SimpleSchedulerTest

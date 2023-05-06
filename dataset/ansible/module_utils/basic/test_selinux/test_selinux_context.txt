@@ -1,0 +1,38 @@
+def selinux_context(self, path):
+    context = self.selinux_initial_context()
+    if not self.selinux_enabled():
+        return context
+    try:
+        ret = selinux.lgetfilecon_raw(to_native(path, errors='surrogate_or_strict'))
+    except OSError as e:
+        if e.errno == errno.ENOENT:
+            self.fail_json(path=path, msg='path %s does not exist' % path)
+        else:
+            self.fail_json(path=path, msg='failed to retrieve selinux context')
+    if ret[0] == -1:
+        return context
+    context = ret[1].split(':', 3)
+    return context
+
+----------
+
+def test_selinux_context(self):
+    with patch.object(basic, 'HAVE_SELINUX', False):
+        assert no_args_module().selinux_context(path='/foo/bar') == [None, None, None]
+    am = no_args_module(selinux_enabled=True, selinux_mls_enabled=True)
+    with patch('ansible.module_utils.compat.selinux.lgetfilecon_raw', return_value=[0, 'unconfined_u:object_r:default_t:s0']):
+        assert am.selinux_context(path='/foo/bar') == ['unconfined_u', 'object_r', 'default_t', 's0']
+    with patch('ansible.module_utils.compat.selinux.lgetfilecon_raw', return_value=[-1, '']):
+        assert am.selinux_context(path='/foo/bar') == [None, None, None, None]
+    with patch('ansible.module_utils.compat.selinux.lgetfilecon_raw', side_effect=OSError(errno.ENOENT, 'NotFound')):
+        with pytest.raises(SystemExit):
+            am.selinux_context(path='/foo/bar')
+    with patch('ansible.module_utils.compat.selinux.lgetfilecon_raw', side_effect=OSError()):
+        with pytest.raises(SystemExit):
+            am.selinux_context(path='/foo/bar')
+
+----------
+
+
+
+Test Class Name: TestSELinuxMU

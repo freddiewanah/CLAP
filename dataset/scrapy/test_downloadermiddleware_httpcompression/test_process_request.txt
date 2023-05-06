@@ -1,0 +1,16 @@
+def process_request(self, request, spider):
+    request.headers.setdefault('Accept-Encoding', b', '.join(ACCEPTED_ENCODINGS))
+
+----------
+
+def test_process_request(self):
+    request = Request('http://scrapytest.org')
+    assert 'Accept-Encoding' not in request.headers
+    self.mw.process_request(request, self.spider)
+    self.assertEqual(request.headers.get('Accept-Encoding'), b', '.join(ACCEPTED_ENCODINGS))
+
+----------
+
+
+
+Test Class Name: HttpCompressionTest

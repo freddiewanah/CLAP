@@ -1,0 +1,21 @@
+def vegetable(self) -> str:
+    """Get a random vegetable.
+
+        :return: Vegetable name.
+
+        :Example:
+            Tomato.
+        """
+    return self._choice_from('vegetables')
+
+----------
+
+def test_vegetable(self, food):
+    result = food.vegetable()
+    assert result in food._data['vegetables']
+
+----------
+
+
+
+Test Class Name: TestFood

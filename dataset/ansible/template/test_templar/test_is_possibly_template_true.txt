@@ -1,0 +1,15 @@
+def is_possibly_template(self, data):
+    return is_possibly_template(data, self.environment)
+
+----------
+
+def test_is_possibly_template_true(self):
+    tests = ['{{ foo }}', '{% foo %}', '{# foo #}', '{# {{ foo }} #}', '{# {{ nothing }} {# #}', '{# {{ nothing }} {# #} #}', '{% raw %}{{ foo }}{% endraw %}', '{{', '{%', '{#', '{% raw']
+    for test in tests:
+        self.assertTrue(self.templar.is_possibly_template(test))
+
+----------
+
+
+
+Test Class Name: TestTemplarTemplate

@@ -1,0 +1,35 @@
+def run_hook(hook_name, project_dir, context):
+    """
+    Try to find and execute a hook from the specified project directory.
+
+    :param hook_name: The hook to execute.
+    :param project_dir: The directory to execute the script from.
+    :param context: Cookiecutter project context.
+    """
+    scripts = find_hook(hook_name)
+    if not scripts:
+        logger.debug('No %s hook found', hook_name)
+        return
+    logger.debug('Running hook %s', hook_name)
+    for script in scripts:
+        run_script_with_context(script, project_dir, context)
+
+----------
+
+def test_run_failing_hook(self):
+    """Test correct exception raise if hook exit code is not zero."""
+    hook_path = os.path.join(self.hooks_path, 'pre_gen_project.py')
+    tests_dir = os.path.join(self.repo_path, 'input{{hooks}}')
+    with Path(hook_path).open('w') as f:
+        f.write('#!/usr/bin/env python\n')
+        f.write('import sys; sys.exit(1)\n')
+    with utils.work_in(self.repo_path):
+        with pytest.raises(exceptions.FailedHookException) as excinfo:
+            hooks.run_hook('pre_gen_project', tests_dir, {})
+        assert 'Hook script failed' in str(excinfo.value)
+
+----------
+
+
+
+Test Class Name: TestExternalHooks

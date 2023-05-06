@@ -1,0 +1,16 @@
+@classmethod
+def parse(cls, raw: str) -> Matched:
+    media_type = MediaType._parse(raw)
+    return cls(raw, media_type)
+
+----------
+
+@pytest.mark.parametrize('value,other,outcome', (('foo/bar', 'foo/bar', True), ('foo/bar', headers.Matched.parse('foo/bar'), True), ('foo/bar', 'foo/*', True), ('foo/bar', headers.Matched.parse('foo/*'), True), ('foo/bar', '*/*', True), ('foo/bar', headers.Matched.parse('*/*'), True), ('foo/*', 'foo/bar', True), ('foo/*', headers.Matched.parse('foo/bar'), True), ('foo/*', 'foo/*', True), ('foo/*', headers.Matched.parse('foo/*'), True), ('foo/*', '*/*', True), ('foo/*', headers.Matched.parse('*/*'), True), ('*/*', 'foo/bar', True), ('*/*', headers.Matched.parse('foo/bar'), True), ('*/*', 'foo/*', True), ('*/*', headers.Matched.parse('foo/*'), True), ('*/*', '*/*', True), ('*/*', headers.Matched.parse('*/*'), True)))
+def test_accept_matching(value, other, outcome):
+    assert bool(headers.Matched.parse(value).match(other)) is outcome
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,25 @@
+@classmethod
+def extract_id(cls, url):
+    mobj = re.match(cls._VALID_URL, url, re.VERBOSE)
+    if mobj is None:
+        raise ExtractorError('Invalid URL: %s' % url)
+    video_id = mobj.group(2)
+    return video_id
+
+----------
+
+def test_youtube_playlist_noplaylist(self):
+    dl = FakeYDL()
+    dl.params['noplaylist'] = True
+    dl.params['format'] = 'best'
+    ie = YoutubePlaylistIE(dl)
+    result = ie.extract('https://www.youtube.com/watch?v=FXxLjLQi3Fg&list=PLwiyx1dc3P2JR9N8gQaQN_BCvlSlap7re')
+    self.assertEqual(result['_type'], 'url')
+    result = dl.extract_info(result['url'], download=False, ie_key=result.get('ie_key'), process=False)
+    self.assertEqual(YoutubeIE().extract_id(result['url']), 'FXxLjLQi3Fg')
+
+----------
+
+
+
+Test Class Name: TestYoutubeLists

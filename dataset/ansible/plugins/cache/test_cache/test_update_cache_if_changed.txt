@@ -1,0 +1,16 @@
+def keys(self):
+    return self._plugin.keys()
+
+----------
+
+def test_update_cache_if_changed(self):
+    assert len(self.cache.keys()) == 2
+    assert len(self.cache._plugin.keys()) == 0
+    self.cache.update_cache_if_changed()
+    assert len(self.cache._plugin.keys()) == 2
+
+----------
+
+
+
+Test Class Name: TestCachePluginAdjudicator

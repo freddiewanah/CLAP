@@ -1,0 +1,23 @@
+def getlist(self, name: str, default: Optional[Any]=None) -> Optional[Any]:
+    """
+        Return the entire list
+        """
+    return super().get(name, default)
+
+----------
+
+def test_form_with_multiple_values(app):
+
+    @app.route('/', methods=['POST'])
+    async def handler(request):
+        return text('OK')
+    payload = 'selectedItems=v1&selectedItems=v2&selectedItems=v3'
+    headers = {'content-type': 'application/x-www-form-urlencoded'}
+    (request, response) = app.test_client.post('/', data=payload, headers=headers)
+    assert request.form.getlist('selectedItems') == ['v1', 'v2', 'v3']
+
+----------
+
+
+
+Test Class Name: Bar

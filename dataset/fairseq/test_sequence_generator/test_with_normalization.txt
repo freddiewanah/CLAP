@@ -1,0 +1,24 @@
+def eos(self):
+    """Helper to get index of end-of-sentence symbol"""
+    return self.eos_index
+
+----------
+
+def test_with_normalization(self):
+    generator = SequenceGenerator([self.model], self.tgt_dict, beam_size=2)
+    hypos = generator.forward(self.sample)
+    (eos, w1, w2) = (self.tgt_dict.eos(), self.w1, self.w2)
+    self.assertHypoTokens(hypos[0][0], [w1, eos])
+    self.assertHypoScore(hypos[0][0], [0.9, 1.0])
+    self.assertHypoTokens(hypos[0][1], [w2, w1, w2, eos])
+    self.assertHypoScore(hypos[0][1], [0.1, 0.9, 0.9, 1.0])
+    self.assertHypoTokens(hypos[1][0], [w1, w2, w1, eos])
+    self.assertHypoScore(hypos[1][0], [0.7, 0.4, 0.4, 1.0])
+    self.assertHypoTokens(hypos[1][1], [w1, w2, eos])
+    self.assertHypoScore(hypos[1][1], [0.7, 0.4, 0.6])
+
+----------
+
+
+
+Test Class Name: TestSequenceGenerator

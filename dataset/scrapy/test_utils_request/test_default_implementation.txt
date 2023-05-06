@@ -1,0 +1,17 @@
+def fingerprint(self, request: Request):
+    return self._fingerprint(request)
+
+----------
+
+def test_default_implementation(self):
+    with warnings.catch_warnings(record=True) as logged_warnings:
+        crawler = get_crawler(prevent_warnings=False)
+    request = Request('https://example.com')
+    self.assertEqual(crawler.request_fingerprinter.fingerprint(request), _request_fingerprint_as_bytes(request))
+    self.assertTrue(logged_warnings)
+
+----------
+
+
+
+Test Class Name: RequestFingerprinterTestCase

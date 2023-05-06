@@ -1,0 +1,29 @@
+def token_counts(self) -> Counter:
+    """Returns a counter of the number of times each token is used
+        in a constraint.
+        """
+    token_counts = Counter()
+    kids = list(self.children.values())
+    while len(kids) > 0:
+        kid = kids.pop()
+        token_counts[kid.id] += kid.num_constraints
+        kids += list(kid.children.values())
+    return token_counts
+
+----------
+
+def test_graphs(self):
+    """
+        Test whether unordered graph systems are created correctly.
+        """
+    for example in self.examples:
+        (constraints, expected, gold_counts) = example
+        c = ConstraintNode.create(constraints)
+        assert ConstraintNode.print_graph(c) == expected, f'got {ConstraintNode.print_graph(c)}, expected {expected}'
+        assert c.token_counts() == gold_counts, f'{c} got {c.token_counts()} wanted {gold_counts}'
+
+----------
+
+
+
+Test Class Name: TestUnorderedConstraintState

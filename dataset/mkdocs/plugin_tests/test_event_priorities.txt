@@ -1,0 +1,63 @@
+def event_priority(priority: float) -> Callable[[T], T]:
+    """A decorator to set an event priority for an event handler method.
+
+    Recommended priority values:
+    `100` "first", `50` "early", `0` "default", `-50` "late", `-100` "last".
+    As different plugins discover more precise relations to each other, the values should be further tweaked.
+
+    ```python
+    @plugins.event_priority(-100)  # Wishing to run this after all other plugins' `on_files` events.
+    def on_files(self, files, config, **kwargs):
+        ...
+    ```
+
+    New in MkDocs 1.4.
+    Recommended shim for backwards compatibility:
+
+    ```python
+    try:
+        from mkdocs.plugins import event_priority
+    except ImportError:
+        event_priority = lambda priority: lambda f: f  # No-op fallback
+    ```
+    """
+
+    def decorator(event_method):
+        event_method.mkdocs_priority = priority
+        return event_method
+    return decorator
+
+----------
+
+def test_event_priorities(self):
+
+    class PrioPlugin(plugins.BasePlugin):
+        config_scheme = base.get_schema(_DummyPluginConfig)
+
+        @plugins.event_priority(100)
+        def on_pre_page(self, content, **kwargs):
+            pass
+
+        @plugins.event_priority(-100)
+        def on_nav(self, item, **kwargs):
+            pass
+
+        def on_page_read_source(self, **kwargs):
+            pass
+
+        @plugins.event_priority(-50)
+        def on_post_build(self, **kwargs):
+            pass
+    collection = plugins.PluginCollection()
+    collection['dummy'] = dummy = DummyPlugin()
+    collection['prio'] = prio = PrioPlugin()
+    self.assertEqual(collection.events['pre_page'], [prio.on_pre_page, dummy.on_pre_page])
+    self.assertEqual(collection.events['nav'], [dummy.on_nav, prio.on_nav])
+    self.assertEqual(collection.events['page_read_source'], [dummy.on_page_read_source, prio.on_page_read_source])
+    self.assertEqual(collection.events['post_build'], [prio.on_post_build])
+
+----------
+
+
+
+Test Class Name: TestPluginCollection

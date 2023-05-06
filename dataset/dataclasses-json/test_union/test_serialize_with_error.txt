@@ -1,0 +1,23 @@
+def dump(self, obj, *, many=None):
+    many = self.many if many is None else bool(many)
+    dumped = Schema.dump(self, obj, many=many)
+    if many:
+        for (i, _obj) in enumerate(obj):
+            dumped[i].update(_handle_undefined_parameters_safe(cls=_obj, kvs={}, usage='dump'))
+    else:
+        dumped.update(_handle_undefined_parameters_safe(cls=obj, kvs={}, usage='dump'))
+    return dumped
+
+----------
+
+@pytest.mark.parametrize('obj', [C2(f1={'str1': 'str1'}), C3(f1=[0.12, 0.13, 'str1'])])
+def test_serialize_with_error(obj):
+    s = obj.schema()
+    with pytest.raises(ValueError):
+        assert s.dump(obj)
+
+----------
+
+
+
+Test Class Name: C9

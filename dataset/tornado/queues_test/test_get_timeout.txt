@@ -1,0 +1,33 @@
+def put_nowait(self, item: _T) -> None:
+    """Put an item into the queue without blocking.
+
+        If no free slot is immediately available, raise `QueueFull`.
+        """
+    self._consume_expired()
+    if self._getters:
+        assert self.empty(), 'queue non-empty, why are getters waiting?'
+        getter = self._getters.popleft()
+        self.__put_internal(item)
+        future_set_result_unless_cancelled(getter, self._get())
+    elif self.full():
+        raise QueueFull
+    else:
+        self.__put_internal(item)
+
+----------
+
+@gen_test
+def test_get_timeout(self):
+    q = queues.Queue()
+    get_timeout = q.get(timeout=timedelta(seconds=0.01))
+    get = q.get()
+    with self.assertRaises(TimeoutError):
+        yield get_timeout
+    q.put_nowait(0)
+    self.assertEqual(0, (yield get))
+
+----------
+
+
+
+Test Class Name: QueueGetTest

@@ -1,0 +1,23 @@
+def get_ancestors(self):
+    return self._walk_relationship('parent_groups')
+
+----------
+
+def test_ancestor_example(self):
+    groups = {}
+    for name in ['A', 'B', 'C', 'D', 'E', 'F']:
+        groups[name] = Group(name)
+    groups['A'].add_child_group(groups['D'])
+    groups['B'].add_child_group(groups['D'])
+    groups['B'].add_child_group(groups['E'])
+    groups['C'].add_child_group(groups['D'])
+    groups['D'].add_child_group(groups['E'])
+    groups['D'].add_child_group(groups['F'])
+    groups['E'].add_child_group(groups['F'])
+    self.assertEqual(set(groups['F'].get_ancestors()), set([groups['A'], groups['B'], groups['C'], groups['D'], groups['E']]))
+
+----------
+
+
+
+Test Class Name: TestGroup

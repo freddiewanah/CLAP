@@ -1,0 +1,16 @@
+def get(self, key, def_val=None):
+    return dict.get(self, self.normkey(key), self.normvalue(def_val))
+
+----------
+
+def test_getdefault(self):
+    d = CaselessDict()
+    self.assertEqual(d.get('c', 5), 5)
+    d['c'] = 10
+    self.assertEqual(d.get('c', 5), 10)
+
+----------
+
+
+
+Test Class Name: MyMutableMapping

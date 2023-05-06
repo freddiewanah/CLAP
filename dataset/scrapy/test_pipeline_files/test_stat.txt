@@ -1,0 +1,33 @@
+def stat_file(self, path: str, info):
+    absolute_path = self._get_filesystem_path(path)
+    try:
+        last_modified = absolute_path.stat().st_mtime
+    except os.error:
+        return {}
+    with absolute_path.open('rb') as f:
+        checksum = md5sum(f)
+    return {'last_modified': last_modified, 'checksum': checksum}
+
+----------
+
+@defer.inlineCallbacks
+def test_stat(self):
+    skip_if_no_boto()
+    bucket = 'mybucket'
+    key = 'export.csv'
+    uri = f's3://{bucket}/{key}'
+    checksum = '3187896a9657a28163abb31667df64c8'
+    last_modified = datetime(2019, 12, 1)
+    store = S3FilesStore(uri)
+    from botocore.stub import Stubber
+    with Stubber(store.s3_client) as stub:
+        stub.add_response('head_object', expected_params={'Bucket': bucket, 'Key': key}, service_response={'ETag': f'"{checksum}"', 'LastModified': last_modified})
+        file_stats = (yield store.stat_file('', info=None))
+        self.assertEqual(file_stats, {'checksum': checksum, 'last_modified': last_modified.timestamp()})
+        stub.assert_no_pending_responses()
+
+----------
+
+
+
+Test Class Name: TestS3FilesStore

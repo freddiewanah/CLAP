@@ -1,0 +1,52 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_bp_group(app: Sanic):
+    deep_0 = Blueprint('deep_0', url_prefix='/deep')
+    deep_1 = Blueprint('deep_1', url_prefix='/deep1')
+
+    @deep_0.route('/')
+    def handler(request):
+        return text('D0_OK')
+
+    @deep_1.route('/bottom')
+    def bottom_handler(request):
+        return text('D1B_OK')
+    mid_0 = Blueprint.group(deep_0, deep_1, url_prefix='/mid')
+    mid_1 = Blueprint('mid_tier', url_prefix='/mid1')
+
+    @mid_1.route('/')
+    def handler1(request):
+        return text('M1_OK')
+    top = Blueprint.group(mid_0, mid_1)
+    app.blueprint(top)
+
+    @app.route('/')
+    def handler2(request):
+        return text('TOP_OK')
+    (request, response) = app.test_client.get('/')
+    assert response.text == 'TOP_OK'
+    (request, response) = app.test_client.get('/mid1')
+    assert response.text == 'M1_OK'
+    (request, response) = app.test_client.get('/mid/deep')
+    assert response.text == 'D0_OK'
+    (request, response) = app.test_client.get('/mid/deep1/bottom')
+    assert response.text == 'D1B_OK'
+
+----------
+
+
+
+Test Class Name: Error

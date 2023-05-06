@@ -1,0 +1,19 @@
+def zip_code(self) -> str:
+    """Generate a zip code.
+
+        An alias for :meth:`~Address.postal_code()`.
+
+        :return: Zip code.
+        """
+    return self.postal_code()
+
+----------
+
+def test_zip_code(self, address):
+    assert address.zip_code()
+
+----------
+
+
+
+Test Class Name: TestAddress

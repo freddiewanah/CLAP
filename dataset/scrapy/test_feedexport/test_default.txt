@@ -1,0 +1,30 @@
+def open_spider(self, spider):
+    for (uri, feed_options) in self.feeds.items():
+        uri_params = self._get_uri_params(spider, feed_options['uri_params'])
+        self.slots.append(self._start_new_batch(batch_id=1, uri=uri % uri_params, feed_options=feed_options, spider=spider, uri_template=uri))
+
+----------
+
+def test_default(self):
+    settings = self.build_settings(uri='file:///tmp/%(name)s')
+    (crawler, feed_exporter) = self._crawler_feed_exporter(settings)
+    spider = scrapy.Spider(self.spider_name)
+    spider.crawler = crawler
+    with warnings.catch_warnings():
+        warnings.simplefilter('error', ScrapyDeprecationWarning)
+        feed_exporter.open_spider(spider)
+    self.assertEqual(feed_exporter.slots[0].uri, f'file:///tmp/{self.spider_name}')
+
+----------
+
+def _crawler_feed_exporter(self, settings):
+    if self.deprecated_options:
+        with pytest.warns(ScrapyDeprecationWarning, match='The `FEED_URI` and `FEED_FORMAT` settings have been deprecated'):
+            crawler = get_crawler(settings_dict=settings)
+            feed_exporter = FeedExporter.from_crawler(crawler)
+    else:
+        crawler = get_crawler(settings_dict=settings)
+        feed_exporter = FeedExporter.from_crawler(crawler)
+    return (crawler, feed_exporter)
+
+Test Class Name: URIParamsTest

@@ -1,0 +1,19 @@
+def prepend_extension(filename, ext, expected_real_ext=None):
+    (name, real_ext) = os.path.splitext(filename)
+    return '{0}.{1}{2}'.format(name, ext, real_ext) if not expected_real_ext or real_ext[1:] == expected_real_ext else '{0}.{1}'.format(filename, ext)
+
+----------
+
+def test_prepend_extension(self):
+    self.assertEqual(prepend_extension('abc.ext', 'temp'), 'abc.temp.ext')
+    self.assertEqual(prepend_extension('abc.ext', 'temp', 'ext'), 'abc.temp.ext')
+    self.assertEqual(prepend_extension('abc.unexpected_ext', 'temp', 'ext'), 'abc.unexpected_ext.temp')
+    self.assertEqual(prepend_extension('abc', 'temp'), 'abc.temp')
+    self.assertEqual(prepend_extension('.abc', 'temp'), '.abc.temp')
+    self.assertEqual(prepend_extension('.abc.ext', 'temp'), '.abc.temp.ext')
+
+----------
+
+
+
+Test Class Name: TestUtil

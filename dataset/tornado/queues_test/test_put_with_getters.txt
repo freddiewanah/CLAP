@@ -1,0 +1,38 @@
+def put(self, item: _T, timeout: Optional[Union[float, datetime.timedelta]]=None) -> 'Future[None]':
+    """Put an item into the queue, perhaps waiting until there is room.
+
+        Returns a Future, which raises `tornado.util.TimeoutError` after a
+        timeout.
+
+        ``timeout`` may be a number denoting a time (on the same
+        scale as `tornado.ioloop.IOLoop.time`, normally `time.time`), or a
+        `datetime.timedelta` object for a deadline relative to the
+        current time.
+        """
+    future = Future()
+    try:
+        self.put_nowait(item)
+    except QueueFull:
+        self._putters.append((item, future))
+        _set_timeout(future, timeout)
+    else:
+        future.set_result(None)
+    return future
+
+----------
+
+@gen_test
+def test_put_with_getters(self):
+    q = queues.Queue()
+    get0 = q.get()
+    get1 = q.get()
+    yield q.put(0)
+    self.assertEqual(0, (yield get0))
+    yield q.put(1)
+    self.assertEqual(1, (yield get1))
+
+----------
+
+
+
+Test Class Name: QueuePutTest

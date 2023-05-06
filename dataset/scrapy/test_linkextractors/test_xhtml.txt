@@ -1,0 +1,39 @@
+def extract_links(self, response):
+    """Returns a list of :class:`~scrapy.link.Link` objects from the
+        specified :class:`response <scrapy.http.Response>`.
+
+        Only links that match the settings passed to the ``__init__`` method of
+        the link extractor are returned.
+
+        Duplicate links are omitted if the ``unique`` attribute is set to ``True``,
+        otherwise they are returned.
+        """
+    base_url = get_base_url(response)
+    if self.restrict_xpaths:
+        docs = [subdoc for x in self.restrict_xpaths for subdoc in response.xpath(x)]
+    else:
+        docs = [response.selector]
+    all_links = []
+    for doc in docs:
+        links = self._extract_links(doc, response.url, response.encoding, base_url)
+        all_links.extend(self._process_links(links))
+    if self.link_extractor.unique:
+        return unique_list(all_links)
+    return all_links
+
+----------
+
+def test_xhtml(self):
+    xhtml = b'\n    <?xml version="1.0"?>\n    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">\n    <head>\n        <title>XHTML document title</title>\n    </head>\n    <body>\n        <div class=\'links\'>\n        <p><a href="/about.html">About us</a></p>\n        </div>\n        <div>\n        <p><a href="/follow.html">Follow this link</a></p>\n        </div>\n        <div>\n        <p><a href="/nofollow.html" rel="nofollow">Dont follow this one</a></p>\n        </div>\n        <div>\n        <p><a href="/nofollow2.html" rel="blah">Choose to follow or not</a></p>\n        </div>\n        <div>\n        <p><a href="http://google.com/something" rel="external nofollow">External link not to follow</a></p>\n        </div>\n    </body>\n    </html>\n            '
+    response = HtmlResponse('http://example.com/index.xhtml', body=xhtml)
+    lx = self.extractor_cls()
+    self.assertEqual(lx.extract_links(response), [Link(url='http://example.com/about.html', text='About us', fragment='', nofollow=False), Link(url='http://example.com/follow.html', text='Follow this link', fragment='', nofollow=False), Link(url='http://example.com/nofollow.html', text='Dont follow this one', fragment='', nofollow=True), Link(url='http://example.com/nofollow2.html', text='Choose to follow or not', fragment='', nofollow=False), Link(url='http://google.com/something', text='External link not to follow', nofollow=True)])
+    response = XmlResponse('http://example.com/index.xhtml', body=xhtml)
+    lx = self.extractor_cls()
+    self.assertEqual(lx.extract_links(response), [Link(url='http://example.com/about.html', text='About us', fragment='', nofollow=False), Link(url='http://example.com/follow.html', text='Follow this link', fragment='', nofollow=False), Link(url='http://example.com/nofollow.html', text='Dont follow this one', fragment='', nofollow=True), Link(url='http://example.com/nofollow2.html', text='Choose to follow or not', fragment='', nofollow=False), Link(url='http://google.com/something', text='External link not to follow', nofollow=True)])
+
+----------
+
+
+
+Test Class Name: LinkExtractorTestCase

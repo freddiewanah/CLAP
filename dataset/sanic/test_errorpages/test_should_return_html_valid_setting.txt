@@ -1,0 +1,29 @@
+def exception_response(request: Request, exception: Exception, debug: bool, fallback: str, base: t.Type[BaseRenderer], renderer: t.Type[t.Optional[BaseRenderer]]=None) -> HTTPResponse:
+    """
+    Render a response for the default FALLBACK exception handler.
+    """
+    if not renderer:
+        mt = guess_mime(request, fallback)
+        renderer = RENDERERS_BY_CONTENT_TYPE.get(mt, base)
+    renderer = t.cast(t.Type[BaseRenderer], renderer)
+    return renderer(request, exception, debug).render()
+
+----------
+
+@pytest.mark.parametrize('fallback,content_type, exception, status', ((None, 'text/plain; charset=utf-8', Exception, 500), ('html', 'text/html; charset=utf-8', Exception, 500), ('auto', 'text/plain; charset=utf-8', Exception, 500), ('text', 'text/plain; charset=utf-8', Exception, 500), ('json', 'application/json', Exception, 500), (None, 'text/plain; charset=utf-8', NotFound, 404), ('html', 'text/html; charset=utf-8', NotFound, 404), ('auto', 'text/plain; charset=utf-8', NotFound, 404), ('text', 'text/plain; charset=utf-8', NotFound, 404), ('json', 'application/json', NotFound, 404)))
+def test_should_return_html_valid_setting(fake_request, fallback, content_type, exception, status):
+    if fallback:
+        fake_request.app.config.FALLBACK_ERROR_FORMAT = fallback
+    try:
+        raise exception('bad stuff')
+    except Exception as e:
+        response = exception_response(fake_request, e, True, base=TextRenderer, fallback=fake_request.app.config.FALLBACK_ERROR_FORMAT)
+    assert isinstance(response, HTTPResponse)
+    assert response.status == status
+    assert response.content_type == content_type
+
+----------
+
+
+
+Test Class Name: default

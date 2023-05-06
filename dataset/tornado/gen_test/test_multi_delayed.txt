@@ -1,0 +1,22 @@
+@gen.coroutine
+def delay(self, iterations, arg):
+    """Returns arg after a number of IOLoop iterations."""
+    for i in range(iterations):
+        yield gen.moment
+    raise gen.Return(arg)
+
+----------
+
+def test_multi_delayed(self):
+
+    @gen.coroutine
+    def f():
+        responses = (yield gen.multi_future([self.delay(3, 'v1'), self.delay(1, 'v2')]))
+        self.assertEqual(responses, ['v1', 'v2'])
+    self.io_loop.run_sync(f)
+
+----------
+
+
+
+Test Class Name: GenBasicTest

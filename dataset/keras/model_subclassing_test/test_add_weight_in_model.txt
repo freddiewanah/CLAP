@@ -1,0 +1,75 @@
+@keras_export('keras.backend.ones')
+@tf.__internal__.dispatch.add_dispatch_support
+@doc_controls.do_not_generate_docs
+def ones(shape, dtype=None, name=None):
+    """Instantiates an all-ones variable and returns it.
+
+    Args:
+        shape: Tuple of integers, shape of returned Keras variable.
+        dtype: String, data type of returned Keras variable.
+        name: String, name of returned Keras variable.
+
+    Returns:
+        A Keras variable, filled with `1.0`.
+        Note that if `shape` was symbolic, we cannot return a variable,
+        and will return a dynamically-shaped tensor instead.
+
+    Example:
+
+
+    >>> kvar = tf.keras.backend.ones((3,4))
+    >>> tf.keras.backend.eval(kvar)
+    array([[1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.]], dtype=float32)
+
+    """
+    with tf.init_scope():
+        if dtype is None:
+            dtype = floatx()
+        tf_dtype = tf.as_dtype(dtype)
+        v = tf.ones(shape=shape, dtype=tf_dtype, name=name)
+        if py_all(v.shape.as_list()):
+            return variable(v, dtype=dtype, name=name)
+        return v
+
+----------
+
+def test_add_weight_in_model(self):
+
+    class MyModel(keras.Model):
+
+        def __init__(self):
+            super().__init__()
+            self.b = self.add_weight('bias', (10,))
+            self.c = self.add_weight('bias2', (10,), trainable=False)
+
+        def call(self, inputs):
+            return inputs + self.b + self.c
+    x = tf.convert_to_tensor(np.ones((10, 10), 'float32'))
+    model = MyModel()
+    model(x)
+    self.assertEqual(1, len(model.trainable_weights))
+    self.assertEqual(1, len(model.non_trainable_weights))
+    self.assertEqual(2, len(model.weights))
+
+    class MyModelCustomBuild(keras.Model):
+
+        def build(self, input_shape):
+            self.b = self.add_weight('bias', (10,))
+            self.c = self.add_weight('bias2', (10,), trainable=False)
+
+        def call(self, inputs):
+            return inputs + self.b + self.c
+    x = tf.convert_to_tensor(np.ones((10, 10), 'float32'))
+    model = MyModelCustomBuild()
+    model(x)
+    self.assertEqual(1, len(model.trainable_weights))
+    self.assertEqual(1, len(model.non_trainable_weights))
+    self.assertEqual(2, len(model.weights))
+
+----------
+
+
+
+Test Class Name: default

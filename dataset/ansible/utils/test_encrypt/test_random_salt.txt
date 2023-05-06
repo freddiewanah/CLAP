@@ -1,0 +1,20 @@
+def random_salt(length=8):
+    """Return a text string suitable for use as a salt for the hash functions we use to encrypt passwords.
+    """
+    salt_chars = string.ascii_letters + string.digits + u'./'
+    return random_password(length=length, chars=salt_chars)
+
+----------
+
+def test_random_salt():
+    res = encrypt.random_salt()
+    expected_salt_candidate_chars = u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./'
+    assert len(res) == 8
+    for res_char in res:
+        assert res_char in expected_salt_candidate_chars
+
+----------
+
+
+
+Test Class Name: passlib_off

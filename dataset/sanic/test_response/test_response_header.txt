@@ -1,0 +1,26 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_response_header(app):
+
+    @app.get('/')
+    async def test(request: Request):
+        return json({'ok': True}, headers={'CONTENT-TYPE': 'application/json'})
+    (request, response) = app.test_client.get('/')
+    for (key, value) in {'connection': 'keep-alive', 'content-length': '11', 'content-type': 'application/json'}.items():
+        assert response.headers[key] == value
+
+----------
+
+
+
+Test Class Name: default

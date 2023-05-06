@@ -1,0 +1,17 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_attr_dict_string(self):
+    test_value = 'just_some_random_string'
+    ds = {'test_attr_dict': test_value}
+    self.assertRaisesRegex(AnsibleParserError, 'is not a dictionary', self._base_validate, ds)
+
+----------
+
+def _base_validate(self, ds):
+    ds['test_attr_list_required'] = []
+    return super(TestBaseSubClass, self)._base_validate(ds)
+
+Test Class Name: TestBaseSubClass

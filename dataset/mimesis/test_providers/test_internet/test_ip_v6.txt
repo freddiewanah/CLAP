@@ -1,0 +1,21 @@
+def ip_v6(self) -> str:
+    """Generate a random IPv6 address as string.
+
+        :return: IPv6 address string.
+
+        :Example:
+            2001:c244:cf9d:1fb1:c56d:f52c:8a04:94f3
+        """
+    return str(self.ip_v6_object())
+
+----------
+
+def test_ip_v6(self, net):
+    ip = net.ip_v6()
+    assert re.match(patterns.IP_V6_REGEX, ip)
+
+----------
+
+
+
+Test Class Name: TestInternet

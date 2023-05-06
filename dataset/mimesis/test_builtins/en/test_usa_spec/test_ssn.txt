@@ -1,0 +1,31 @@
+def ssn(self) -> str:
+    """Generate a random, but valid SSN.
+
+        :returns: SSN.
+
+        :Example:
+            569-66-5801
+        """
+    area = self.random.randint(1, 899)
+    if area == 666:
+        area = 665
+    return '{:03}-{:02}-{:04}'.format(area, self.random.randint(1, 99), self.random.randint(1, 9999))
+
+----------
+
+def test_ssn(usa, mocker):
+    result = usa.ssn()
+    assert result is not None
+    assert '666' != result[:3]
+    assert re.match('^\\d{3}-\\d{2}-\\d{4}$', result)
+    assert result.replace('-', '').isdigit()
+    assert len(result.replace('-', '')) == 9
+    mocker.patch.object(usa.random, 'randint', return_value=666)
+    result = usa.ssn()
+    assert '665' == result[:3]
+
+----------
+
+
+
+Test Class Name: default

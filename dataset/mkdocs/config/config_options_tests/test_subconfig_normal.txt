@@ -1,0 +1,23 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_subconfig_normal(self) -> None:
+
+    class Sub(Config):
+        cc = c.Choice(('foo', 'bar'))
+
+    class Schema(Config):
+        option = c.SubConfig(Sub)
+    conf = self.get_config(Schema, {'option': {'cc': 'foo'}})
+    assert_type(conf.option, Sub)
+    self.assertEqual(conf.option, {'cc': 'foo'})
+    assert_type(conf.option.cc, str)
+    self.assertEqual(conf.option.cc, 'foo')
+
+----------
+
+
+
+Test Class Name: default

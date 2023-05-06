@@ -1,0 +1,18 @@
+def cryptocurrency_symbol(self) -> str:
+    """Get a cryptocurrency symbol.
+
+        :return: Symbol of cryptocurrency.
+        """
+    return self.random.choice(CRYPTOCURRENCY_SYMBOLS)
+
+----------
+
+def test_cryptocurrency_symbol(self, finance):
+    result = finance.cryptocurrency_symbol()
+    assert result in CRYPTOCURRENCY_SYMBOLS
+
+----------
+
+
+
+Test Class Name: TestFinance

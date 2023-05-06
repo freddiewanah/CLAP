@@ -1,0 +1,18 @@
+def copy(self):
+    """ Return a primitive copy of the keys and values from the cache. """
+    return dict(self)
+
+----------
+
+def test_copy(self):
+    self.cache['avocado'] = 'fruit'
+    self.cache['daisy'] = 'flower'
+    a_copy = self.cache.copy()
+    self.assertEqual(type(a_copy), dict)
+    self.assertEqual(a_copy, dict(avocado='fruit', daisy='flower'))
+
+----------
+
+
+
+Test Class Name: TestFactCache

@@ -1,0 +1,15 @@
+def css(self, query):
+    return self.selector.css(query)
+
+----------
+
+def test_follow_selector_attribute(self):
+    resp = self._links_response()
+    for src in resp.css('img::attr(src)'):
+        self._assert_followed_url(src, 'http://example.com/sample2.jpg')
+
+----------
+
+
+
+Test Class Name: TextResponseTest

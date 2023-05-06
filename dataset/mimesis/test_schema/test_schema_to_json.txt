@@ -1,0 +1,28 @@
+def to_json(self, file_path: str, iterations: int=100, **kwargs: t.Any) -> None:
+    """Export a schema as a JSON file.
+
+        :param file_path: File path.
+        :param iterations: The required number of rows.
+        :param kwargs: Extra keyword arguments for :py:func:`json.dump` class.
+
+        *New in version 5.3.0*
+        """
+    data = self.create(iterations)
+    with open(file_path, 'w', encoding='utf-8') as fp:
+        json.dump(data, fp, **kwargs)
+
+----------
+
+@pytest.mark.parametrize('iterations', [5, 10])
+def test_schema_to_json(schema, iterations):
+    with tempfile.NamedTemporaryFile('r+') as temp_file:
+        schema.to_json(temp_file.name, iterations, sort_keys=True, ensure_ascii=False)
+        data = json.load(temp_file)
+        assert len(list(data)) == iterations
+        assert 'id' in data[0] and 'id' in data[-1]
+
+----------
+
+
+
+Test Class Name: default

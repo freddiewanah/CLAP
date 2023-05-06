@@ -1,0 +1,13 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_lookup_jinja_list_wantlist_undefined(self):
+    self.assertRaisesRegex(AnsibleUndefinedVariable, "'some_undefined_var' is undefined", self.templar._lookup, 'list', '{{ some_undefined_var }}', wantlist=True)
+
+----------
+
+
+
+Test Class Name: TestTemplarLookup

@@ -1,0 +1,24 @@
+def get_hosts(self):
+    if self._hosts_cache is None:
+        self._hosts_cache = self._get_hosts()
+    return self._hosts_cache
+
+----------
+
+def test_direct_host_ordering(self):
+    """Hosts are returned in order they are added
+        """
+    group = Group('A')
+    host_name_list = ['z', 'b', 'c', 'a', 'p', 'q']
+    expected_hosts = []
+    for host_name in host_name_list:
+        h = Host(host_name)
+        group.add_host(h)
+        expected_hosts.append(h)
+    assert group.get_hosts() == expected_hosts
+
+----------
+
+
+
+Test Class Name: TestGroup

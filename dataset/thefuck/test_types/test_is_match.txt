@@ -1,0 +1,27 @@
+def is_match(self, command):
+    """Returns `True` if rule matches the command.
+
+        :type command: Command
+        :rtype: bool
+
+        """
+    if command.output is None and self.requires_output:
+        return False
+    try:
+        with logs.debug_time(u'Trying rule: {};'.format(self.name)):
+            if self.match(command):
+                return True
+    except Exception:
+        logs.rule_failed(self, sys.exc_info())
+
+----------
+
+def test_is_match(self):
+    rule = Rule('', lambda x: x.script == 'cd ..')
+    assert rule.is_match(Command('cd ..', ''))
+
+----------
+
+
+
+Test Class Name: TestRule

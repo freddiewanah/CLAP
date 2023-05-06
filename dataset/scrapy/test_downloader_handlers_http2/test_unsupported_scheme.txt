@@ -1,0 +1,17 @@
+def download_request(self, request: Request, spider: Spider) -> Deferred:
+    agent = ScrapyH2Agent(context_factory=self._context_factory, pool=self._pool, crawler=self._crawler)
+    return agent.download_request(request, spider)
+
+----------
+
+@defer.inlineCallbacks
+def test_unsupported_scheme(self):
+    request = Request('ftp://unsupported.scheme')
+    d = self.download_request(request, Spider('foo'))
+    yield self.assertFailure(d, SchemeNotSupported)
+
+----------
+
+
+
+Test Class Name: Https2TestCase

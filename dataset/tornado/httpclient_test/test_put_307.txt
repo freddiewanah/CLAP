@@ -1,0 +1,17 @@
+def rethrow(self) -> None:
+    """If there was an error on the request, raise an `HTTPError`."""
+    if self.error:
+        raise self.error
+
+----------
+
+def test_put_307(self):
+    response = self.fetch('/redirect?status=307&url=/put', method='PUT', body=b'hello')
+    response.rethrow()
+    self.assertEqual(response.body, b'Put body: hello')
+
+----------
+
+
+
+Test Class Name: HTTPClientCommonTestCase

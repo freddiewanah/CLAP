@@ -1,0 +1,27 @@
+@classmethod
+def fromkeys(cls, keys, value=None):
+    return cls(((k, value) for k in keys))
+
+----------
+
+def test_fromkeys(self):
+    keys = ('a', 'b')
+    d = CaselessDict.fromkeys(keys)
+    self.assertEqual(d['A'], None)
+    self.assertEqual(d['B'], None)
+    d = CaselessDict.fromkeys(keys, 1)
+    self.assertEqual(d['A'], 1)
+    self.assertEqual(d['B'], 1)
+    instance = CaselessDict()
+    d = instance.fromkeys(keys)
+    self.assertEqual(d['A'], None)
+    self.assertEqual(d['B'], None)
+    d = instance.fromkeys(keys, 1)
+    self.assertEqual(d['A'], 1)
+    self.assertEqual(d['B'], 1)
+
+----------
+
+
+
+Test Class Name: MyMutableMapping

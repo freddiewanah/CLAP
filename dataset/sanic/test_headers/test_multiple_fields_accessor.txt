@@ -1,0 +1,25 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_multiple_fields_accessor(app: Sanic):
+
+    @app.get('')
+    async def handler(request: Request):
+        return json({'field': request.headers.example_field})
+    (_, response) = app.test_client.get('/', headers=(('Example-Field', 'Foo, Bar'), ('Example-Field', 'Baz')))
+    assert response.json['field'] == 'Foo, Bar,Baz'
+
+----------
+
+
+
+Test Class Name: default

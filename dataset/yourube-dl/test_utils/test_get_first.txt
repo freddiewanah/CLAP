@@ -1,0 +1,13 @@
+def get_first(obj, keys, **kwargs):
+    return traverse_obj(obj, (Ellipsis,) + tuple(variadic(keys)), get_all=False, **kwargs)
+
+----------
+
+def test_get_first(self):
+    self.assertEqual(get_first([{'a': None}, {'a': 'spam'}], 'a'), 'spam')
+
+----------
+
+
+
+Test Class Name: TestUtil

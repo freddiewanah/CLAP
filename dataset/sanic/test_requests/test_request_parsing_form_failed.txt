@@ -1,0 +1,32 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_request_parsing_form_failed(app, caplog):
+
+    @app.route('/', methods=['POST'])
+    async def handler(request):
+        return text('OK')
+    payload = 'test=OK'
+    headers = {'content-type': 'multipart/form-data'}
+    (request, response) = app.test_client.post('/', data=payload, headers=headers)
+    with caplog.at_level(logging.ERROR):
+        request.form
+    assert caplog.record_tuples[-1] == ('sanic.error', logging.ERROR, 'Failed when parsing form')
+
+----------
+
+
+
+Test Class Name: Bar

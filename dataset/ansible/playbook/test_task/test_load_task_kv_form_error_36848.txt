@@ -1,0 +1,38 @@
+def count(seq):
+    """Returns a dictionary with the number of appearances of each element of the iterable.
+
+    Resembles the collections.Counter class functionality. It is meant to be used when the
+    code is run on Python 2.6.* where collections.Counter is not available. It should be
+    deprecated and replaced when support for Python < 2.7 is dropped.
+    """
+    if not is_iterable(seq):
+        raise Exception('Argument provided  is not an iterable')
+    counters = dict()
+    for elem in seq:
+        counters[elem] = counters.get(elem, 0) + 1
+    return counters
+
+----------
+
+@patch.object(errors.AnsibleError, '_get_error_lines_from_file')
+def test_load_task_kv_form_error_36848(self, mock_get_err_lines):
+    init_plugin_loader()
+    ds = objects.AnsibleMapping(kv_bad_args_ds)
+    ds.ansible_pos = ('test_task_faux_playbook.yml', 1, 1)
+    mock_get_err_lines.return_value = (kv_bad_args_str, '')
+    with self.assertRaises(errors.AnsibleParserError) as cm:
+        Task.load(ds)
+    self.assertIsInstance(cm.exception, errors.AnsibleParserError)
+    self.assertEqual(cm.exception.obj, ds)
+    self.assertEqual(cm.exception.obj, kv_bad_args_ds)
+    self.assertIn("The error appears to be in 'test_task_faux_playbook.yml", cm.exception.message)
+    self.assertIn(kv_bad_args_str, cm.exception.message)
+    self.assertIn('apk', cm.exception.message)
+    self.assertEqual(cm.exception.message.count('The offending line'), 1)
+    self.assertEqual(cm.exception.message.count('The error appears to be in'), 1)
+
+----------
+
+
+
+Test Class Name: TestTask

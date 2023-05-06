@@ -1,0 +1,13 @@
+def get(self, key):
+    return self._cache.get(key)
+
+----------
+
+def test_get_without_default(self):
+    assert self.cache.get('foo') is None
+
+----------
+
+
+
+Test Class Name: TestCachePluginAdjudicator

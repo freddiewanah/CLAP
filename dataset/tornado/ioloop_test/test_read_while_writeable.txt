@@ -1,0 +1,37 @@
+def time(self) -> float:
+    """Returns the current time according to the `IOLoop`'s clock.
+
+        The return value is a floating-point number relative to an
+        unspecified time in the past.
+
+        Historically, the IOLoop could be customized to use e.g.
+        `time.monotonic` instead of `time.time`, but this is not
+        currently supported and so this method is equivalent to
+        `time.time`.
+
+        """
+    return time.time()
+
+----------
+
+@skipIfNonUnix
+def test_read_while_writeable(self):
+    (client, server) = socket.socketpair()
+    try:
+
+        def handler(fd, events):
+            self.assertEqual(events, IOLoop.READ)
+            self.stop()
+        self.io_loop.add_handler(client.fileno(), handler, IOLoop.READ)
+        self.io_loop.add_timeout(self.io_loop.time() + 0.01, functools.partial(server.send, b'asdf'))
+        self.wait()
+        self.io_loop.remove_handler(client.fileno())
+    finally:
+        client.close()
+        server.close()
+
+----------
+
+
+
+Test Class Name: TestIOLoop

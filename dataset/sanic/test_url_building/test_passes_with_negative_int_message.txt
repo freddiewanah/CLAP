@@ -1,0 +1,35 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_passes_with_negative_int_message(app):
+
+    @app.route('path/<possibly_neg:int>/another-word')
+    def good(request, possibly_neg):
+        assert isinstance(possibly_neg, int)
+        return text(f'this should pass with `{possibly_neg}`')
+    u_plus_3 = app.url_for('good', possibly_neg=3)
+    assert u_plus_3 == '/path/3/another-word', u_plus_3
+    (request, response) = app.test_client.get(u_plus_3)
+    assert response.text == 'this should pass with `3`'
+    u_neg_3 = app.url_for('good', possibly_neg=-3)
+    assert u_neg_3 == '/path/-3/another-word', u_neg_3
+    (request, response) = app.test_client.get(u_neg_3)
+    assert response.text == 'this should pass with `-3`'
+
+----------
+
+
+
+Test Class Name: default

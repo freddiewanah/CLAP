@@ -1,0 +1,19 @@
+def script_is_client(filename):
+    """Determine if a vault secret script is a client script that can be given --vault-id args"""
+    (script_name, dummy) = os.path.splitext(filename)
+    if script_name.endswith('-client'):
+        return True
+    return False
+
+----------
+
+def test_full_path_something_dash_client_py(self):
+    filename = '/foo/bar/something-client.py'
+    res = vault.script_is_client(filename)
+    self.assertTrue(res)
+
+----------
+
+
+
+Test Class Name: TestScriptIsClient

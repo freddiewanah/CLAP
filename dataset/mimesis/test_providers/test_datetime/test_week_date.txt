@@ -1,0 +1,25 @@
+def week_date(self, start: int=2017, end: int=_CURRENT_YEAR) -> str:
+    """Get week number with year.
+
+        :param start: From start.
+        :param end: To end.
+        :return: Week number.
+        """
+    year = self.year(start, end)
+    week = self.random.randint(1, 52)
+    return f'{year}-W{week}'
+
+----------
+
+def test_week_date(self, _datetime):
+    result = _datetime.week_date(start=2017, end=_datetime._CURRENT_YEAR)
+    result = result.replace('-', ' ').replace('W', '')
+    (year, week) = result.split(' ')
+    assert int(year) >= 2017 and int(year) <= _datetime._CURRENT_YEAR
+    assert int(week) <= 52
+
+----------
+
+
+
+Test Class Name: TestDatetime

@@ -1,0 +1,19 @@
+def pin(self, mask: str='####') -> str:
+    """Generate a random PIN code.
+
+        :param mask: Mask of pin code.
+        :return: PIN code.
+        """
+    return self.random.custom_code(mask=mask)
+
+----------
+
+def test_pin(self, code):
+    result = code.pin()
+    assert len(result) == 4
+
+----------
+
+
+
+Test Class Name: TestCode

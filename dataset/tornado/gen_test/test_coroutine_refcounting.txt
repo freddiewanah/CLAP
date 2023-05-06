@@ -1,0 +1,38 @@
+def inner(f: Any) -> None:
+    f = None
+    self.ctx_run(self.run)
+
+----------
+
+@skipNotCPython
+@unittest.skipIf((3,) < sys.version_info < (3, 6), 'asyncio.Future has reference cycles')
+def test_coroutine_refcounting(self):
+
+    @gen.coroutine
+    def inner():
+
+        class Foo(object):
+            pass
+        local_var = Foo()
+        self.local_ref = weakref.ref(local_var)
+
+        def dummy():
+            pass
+        yield gen.coroutine(dummy)()
+        raise ValueError('Some error')
+
+    @gen.coroutine
+    def inner2():
+        try:
+            yield inner()
+        except ValueError:
+            pass
+    self.io_loop.run_sync(inner2, timeout=3)
+    self.assertIs(self.local_ref(), None)
+    self.finished = True
+
+----------
+
+
+
+Test Class Name: LeakedException

@@ -1,0 +1,84 @@
+def perform(self, name: t.Optional[str]=None, key: Key=None, **kwargs: t.Any) -> t.Any:
+    """Performs the value of the field by its name.
+
+        It takes any string which represents the name of any method of
+        any supported data provider and the ``**kwargs`` of this method.
+
+        .. note:: Some data providers have methods with the same names
+            and in such cases, you can explicitly define that the method
+            belongs to data-provider ``name='provider.name'`` otherwise
+            it will return the data from the first provider which
+            has a method ``name``.
+
+            Allowed delimiters: ``.``, ``:``, ``/`` and space:
+
+            - ``provider.name``
+            - ``provider:name``
+            - ``provider/name``
+            - ``provider name``
+
+        You can apply a *key function* to the result returned by
+        the method, by passing a parameter **key** with a callable
+        object which returns the final result.
+
+        :param name: Name of the method.
+        :param key: A key function (or any other callable object)
+            which will be applied to result.
+        :param kwargs: Kwargs of method.
+        :return: Value which represented by method.
+        :raises ValueError: if provider not
+            supported or if field not defined.
+        """
+    if name is None:
+        raise FieldError()
+    name = re.sub('[/:\\s]', '.', name)
+
+    def tail_parser(tails: str, obj: t.Any) -> t.Any:
+        """Return method from end of tail.
+
+            :param tails: Tail string
+            :param obj: Search tail from this object
+            :return last tailed method
+            """
+        (provider_name, method_name) = tails.split('.', 1)
+        if '.' in method_name:
+            raise FieldError(name)
+        attr = getattr(obj, provider_name)
+        if attr is not None:
+            try:
+                return getattr(attr, method_name)
+            except AttributeError:
+                raise FieldError(name)
+    try:
+        if name not in self._table:
+            if '.' not in name:
+                if name == self._gen.choice.Meta.name:
+                    self._table[name] = self._gen.choice
+                else:
+                    for provider in dir(self._gen):
+                        provider = getattr(self._gen, provider)
+                        if name in dir(provider):
+                            self._table[name] = getattr(provider, name)
+            else:
+                self._table[name] = tail_parser(name, self._gen)
+        result = self._table[name](**kwargs)
+        if key and callable(key):
+            return key(result)
+        return result
+    except KeyError:
+        raise FieldError(name)
+
+----------
+
+@pytest.fixture(scope='module', params=list(Locale))
+def test_base_field(request):
+    field = BaseField(request.param)
+    assert field.perform('uuid')
+    assert field.perform('full_name')
+    assert field.perform('street_name')
+
+----------
+
+
+
+Test Class Name: default

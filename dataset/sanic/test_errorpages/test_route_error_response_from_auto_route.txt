@@ -1,0 +1,45 @@
+def html(body: Union[str, bytes, HTMLProtocol], status: int=200, headers: Optional[Dict[str, str]]=None) -> HTTPResponse:
+    """
+    Returns response object with body in html format.
+
+    :param body: str or bytes-ish, or an object with __html__ or _repr_html_.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    """
+    if not isinstance(body, (str, bytes)):
+        if hasattr(body, '__html__'):
+            body = body.__html__()
+        elif hasattr(body, '_repr_html_'):
+            body = body._repr_html_()
+    return HTTPResponse(body, status=status, headers=headers, content_type='text/html; charset=utf-8')
+
+----------
+
+def test_route_error_response_from_auto_route(app):
+
+    @app.get('/text')
+    def text_response(request):
+        raise Exception('oops')
+        return text('Never gonna see this')
+
+    @app.get('/json')
+    def json_response(request):
+        raise Exception('oops')
+        return json({'message': 'Never gonna see this'})
+
+    @app.get('/html')
+    def html_response(request):
+        raise Exception('oops')
+        return html('<h1>Never gonna see this</h1>')
+    (_, response) = app.test_client.get('/text')
+    assert response.content_type == 'text/plain; charset=utf-8'
+    (_, response) = app.test_client.get('/json')
+    assert response.content_type == 'application/json'
+    (_, response) = app.test_client.get('/html')
+    assert response.content_type == 'text/html; charset=utf-8'
+
+----------
+
+
+
+Test Class Name: default

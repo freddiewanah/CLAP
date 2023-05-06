@@ -1,0 +1,28 @@
+def documentation_pages(self) -> Sequence[File]:
+    """Return iterable of all Markdown page file objects."""
+    return [file for file in self if file.is_documentation_page()]
+
+----------
+
+@tempdir()
+@mock.patch('mkdocs.plugins.PluginCollection.run_event', side_effect=PluginError('Error message.'))
+def test_build_page_plugin_error(self, site_dir, mock_write_file):
+    cfg = load_config(site_dir=site_dir, nav=['index.md'], plugins=[])
+    fs = [File('index.md', cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls'])]
+    files = Files(fs)
+    nav = get_navigation(files, cfg)
+    page = files.documentation_pages()[0].page
+    page.title = 'Title'
+    page.markdown = 'page content'
+    page.content = '<p>page content</p>'
+    with self.assertLogs('mkdocs') as cm:
+        with self.assertRaises(PluginError):
+            build._build_page(page, cfg, files, nav, cfg['theme'].get_env())
+    self.assertEqual('\n'.join(cm.output), "ERROR:mkdocs.commands.build:Error building page 'index.md':")
+    mock_write_file.assert_called_once()
+
+----------
+
+
+
+Test Class Name: BuildTests

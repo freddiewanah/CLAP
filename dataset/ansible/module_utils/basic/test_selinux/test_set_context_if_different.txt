@@ -1,0 +1,69 @@
+def set_context_if_different(self, path, context, changed, diff=None):
+    if not self.selinux_enabled():
+        return changed
+    if self.check_file_absent_if_check_mode(path):
+        return True
+    cur_context = self.selinux_context(path)
+    new_context = list(cur_context)
+    (is_special_se, sp_context) = self.is_special_selinux_path(path)
+    if is_special_se:
+        new_context = sp_context
+    else:
+        for i in range(len(cur_context)):
+            if len(context) > i:
+                if context[i] is not None and context[i] != cur_context[i]:
+                    new_context[i] = context[i]
+                elif context[i] is None:
+                    new_context[i] = cur_context[i]
+    if cur_context != new_context:
+        if diff is not None:
+            if 'before' not in diff:
+                diff['before'] = {}
+            diff['before']['secontext'] = cur_context
+            if 'after' not in diff:
+                diff['after'] = {}
+            diff['after']['secontext'] = new_context
+        try:
+            if self.check_mode:
+                return True
+            rc = selinux.lsetfilecon(to_native(path), ':'.join(new_context))
+        except OSError as e:
+            self.fail_json(path=path, msg='invalid selinux context: %s' % to_native(e), new_context=new_context, cur_context=cur_context, input_was=context)
+        if rc != 0:
+            self.fail_json(path=path, msg='set selinux context failed')
+        changed = True
+    return changed
+
+----------
+
+def test_set_context_if_different(self):
+    am = no_args_module(selinux_enabled=False)
+    assert am.set_context_if_different('/path/to/file', ['foo_u', 'foo_r', 'foo_t', 's0'], True) is True
+    assert am.set_context_if_different('/path/to/file', ['foo_u', 'foo_r', 'foo_t', 's0'], False) is False
+    am = no_args_module(selinux_enabled=True, selinux_mls_enabled=True)
+    am.selinux_context = lambda path: ['bar_u', 'bar_r', None, None]
+    am.is_special_selinux_path = lambda path: (False, None)
+    with patch('ansible.module_utils.compat.selinux.lsetfilecon', return_value=0) as m:
+        assert am.set_context_if_different('/path/to/file', ['foo_u', 'foo_r', 'foo_t', 's0'], False) is True
+        m.assert_called_with('/path/to/file', 'foo_u:foo_r:foo_t:s0')
+        m.reset_mock()
+        am.check_mode = True
+        assert am.set_context_if_different('/path/to/file', ['foo_u', 'foo_r', 'foo_t', 's0'], False) is True
+        assert not m.called
+        am.check_mode = False
+    with patch('ansible.module_utils.compat.selinux.lsetfilecon', return_value=1):
+        with pytest.raises(SystemExit):
+            am.set_context_if_different('/path/to/file', ['foo_u', 'foo_r', 'foo_t', 's0'], True)
+    with patch('ansible.module_utils.compat.selinux.lsetfilecon', side_effect=OSError):
+        with pytest.raises(SystemExit):
+            am.set_context_if_different('/path/to/file', ['foo_u', 'foo_r', 'foo_t', 's0'], True)
+    am.is_special_selinux_path = lambda path: (True, ['sp_u', 'sp_r', 'sp_t', 's0'])
+    with patch('ansible.module_utils.compat.selinux.lsetfilecon', return_value=0) as m:
+        assert am.set_context_if_different('/path/to/file', ['foo_u', 'foo_r', 'foo_t', 's0'], False) is True
+        m.assert_called_with('/path/to/file', 'sp_u:sp_r:sp_t:s0')
+
+----------
+
+
+
+Test Class Name: TestSELinuxMU

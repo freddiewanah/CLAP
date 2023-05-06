@@ -1,0 +1,40 @@
+def strip_whitespace(string):
+    return string.replace('\n', '').replace(' ', '')
+
+----------
+
+def test_create_search_index(self):
+    html_content = '\n        <h1 id="heading-1">Heading 1</h1>\n        <p>Content 1</p>\n        <h2 id="heading-2">Heading 2</h1>\n        <p>Content 2</p>\n        <h3 id="heading-3">Heading 3</h1>\n        <p>Content 3</p>\n        '
+    base_cfg = load_config()
+    pages = [Page('Home', File('index.md', base_cfg['docs_dir'], base_cfg['site_dir'], base_cfg['use_directory_urls']), base_cfg), Page('About', File('about.md', base_cfg['docs_dir'], base_cfg['site_dir'], base_cfg['use_directory_urls']), base_cfg)]
+    md = dedent('\n            # Heading 1\n            ## Heading 2\n            ### Heading 3\n            ')
+    toc = get_toc(get_markdown_toc(md))
+    full_content = ''.join((f'Heading{i}Content{i}' for i in range(1, 4)))
+    plugin = search.SearchPlugin()
+    (errors, warnings) = plugin.load_config({})
+    for page in pages:
+        page.markdown = md
+        page.toc = toc
+        page.content = html_content
+        index = search_index.SearchIndex(**plugin.config)
+        index.add_entry_from_context(page)
+        self.assertEqual(len(index._entries), 4)
+        loc = page.url
+        self.assertEqual(index._entries[0]['title'], page.title)
+        self.assertEqual(strip_whitespace(index._entries[0]['text']), full_content)
+        self.assertEqual(index._entries[0]['location'], loc)
+        self.assertEqual(index._entries[1]['title'], 'Heading 1')
+        self.assertEqual(index._entries[1]['text'], 'Content 1')
+        self.assertEqual(index._entries[1]['location'], f'{loc}#heading-1')
+        self.assertEqual(index._entries[2]['title'], 'Heading 2')
+        self.assertEqual(strip_whitespace(index._entries[2]['text']), 'Content2')
+        self.assertEqual(index._entries[2]['location'], f'{loc}#heading-2')
+        self.assertEqual(index._entries[3]['title'], 'Heading 3')
+        self.assertEqual(strip_whitespace(index._entries[3]['text']), 'Content3')
+        self.assertEqual(index._entries[3]['location'], f'{loc}#heading-3')
+
+----------
+
+
+
+Test Class Name: SearchIndexTests

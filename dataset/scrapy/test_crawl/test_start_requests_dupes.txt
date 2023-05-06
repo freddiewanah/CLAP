@@ -1,0 +1,33 @@
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+
+----------
+
+@defer.inlineCallbacks
+def test_start_requests_dupes(self):
+    settings = {'CONCURRENT_REQUESTS': 1}
+    crawler = get_crawler(DuplicateStartRequestsSpider, settings)
+    yield crawler.crawl(dont_filter=True, distinct_urls=2, dupe_factor=3, mockserver=self.mockserver)
+    self.assertEqual(crawler.spider.visited, 6)
+    yield crawler.crawl(dont_filter=False, distinct_urls=3, dupe_factor=4, mockserver=self.mockserver)
+    self.assertEqual(crawler.spider.visited, 3)
+
+----------
+
+
+
+Test Class Name: CrawlTestCase

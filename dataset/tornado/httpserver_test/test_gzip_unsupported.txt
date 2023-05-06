@@ -1,0 +1,19 @@
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+
+----------
+
+def test_gzip_unsupported(self):
+    with ExpectLog(gen_log, 'Unsupported Content-Encoding'):
+        response = self.post_gzip('foo=bar')
+    self.assertEqual(json_decode(response.body), {})
+
+----------
+
+
+
+Test Class Name: GzipUnsupportedTest

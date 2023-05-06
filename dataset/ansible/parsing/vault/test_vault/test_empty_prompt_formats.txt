@@ -1,0 +1,16 @@
+def load(self, data, file_name='<string>', show_content=True, json_only=False):
+    """Backwards compat for now"""
+    return from_yaml(data, file_name, show_content, self._vault.secrets, json_only=json_only)
+
+----------
+
+def test_empty_prompt_formats(self):
+    secret = vault.PromptVaultSecret(vault_id='test_id', prompt_formats=[])
+    secret.load()
+    self.assertIsNone(secret._bytes)
+
+----------
+
+
+
+Test Class Name: TestPromptVaultSecret

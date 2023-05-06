@@ -1,0 +1,39 @@
+def item(tensor):
+    if torch.is_tensor(tensor) and tensor.device.type == 'xla':
+        return tensor.detach()
+    if hasattr(tensor, 'item'):
+        return tensor.item()
+    if hasattr(tensor, '__getitem__'):
+        return tensor[0]
+    return tensor
+
+----------
+
+def test_train_dataset(self):
+    data = self.tmp_path('test_train_dataset')
+    mk_dataset(20, 10, data / 'en' / 'train.bin')
+    mk_dataset(10, 10, data / 'zh' / 'train.bin')
+    (task, model) = self.obt_task(['en', 'zh'], data)
+    task.load_dataset('train')
+    en_bos = obt._lang_token_index(task.common_dict, 'en')
+    zh_bos = obt._lang_token_index(task.common_dict, 'zh')
+    train = task.datasets['train']
+    train.ordered_indices()
+    train.prefetch([0, 19])
+    sample_0 = train[0]
+    sample_19 = train[19]
+    self.assertEqual(set(sample_0.keys()), {'en-BT', 'en-DENOISE', 'zh-BT', 'zh-DENOISE'})
+    for sample in (sample_0, sample_19):
+        self.assertEqual(sample['en-BT']['source'][0], en_bos)
+        self.assertEqual(sample['en-DENOISE']['source'][0], en_bos)
+    for i in range(10):
+        train.prefetch([i, i + 10])
+        self.assertEqual(list(train[i]['zh-DENOISE']['source']), list(train[i + 10]['zh-DENOISE']['source']))
+        self.assertEqual(train[i]['zh-DENOISE']['source'][0].item(), zh_bos)
+    self.assertLess(len(sample_0['en-BT']['source']), len(sample_19['en-BT']['source']))
+
+----------
+
+
+
+Test Class Name: OnlineBacktranslationTest

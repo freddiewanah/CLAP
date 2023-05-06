@@ -1,0 +1,21 @@
+def programming_language(self) -> str:
+    """Get a random programming language from the list.
+
+        :return: Programming language.
+
+        :Example:
+            Erlang.
+        """
+    return self.random.choice(PROGRAMMING_LANGS)
+
+----------
+
+def test_programming_language(self, dev):
+    result = dev.programming_language()
+    assert result in data.PROGRAMMING_LANGS
+
+----------
+
+
+
+Test Class Name: TestDevelopment

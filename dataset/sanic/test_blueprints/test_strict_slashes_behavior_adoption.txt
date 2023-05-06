@@ -1,0 +1,58 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_strict_slashes_behavior_adoption():
+    app = Sanic('app')
+    app.strict_slashes = True
+    bp = Blueprint('bp')
+    bp2 = Blueprint('bp2', strict_slashes=False)
+
+    @app.get('/test')
+    def handler_test(request):
+        return text('Test')
+
+    @app.get('/f1', strict_slashes=False)
+    def f1(request):
+        return text('f1')
+
+    @bp.get('/one', strict_slashes=False)
+    def one(request):
+        return text('one')
+
+    @bp.get('/second')
+    def second(request):
+        return text('second')
+
+    @bp2.get('/third')
+    def third(request):
+        return text('third')
+    app.blueprint(bp)
+    app.blueprint(bp2)
+    assert app.test_client.get('/test')[1].status == 200
+    assert app.test_client.get('/test/')[1].status == 404
+    assert app.test_client.get('/one')[1].status == 200
+    assert app.test_client.get('/one/')[1].status == 200
+    assert app.test_client.get('/second')[1].status == 200
+    assert app.test_client.get('/second/')[1].status == 404
+    assert app.test_client.get('/third')[1].status == 200
+    assert app.test_client.get('/third/')[1].status == 200
+    assert app.test_client.get('/f1')[1].status == 200
+    assert app.test_client.get('/f1/')[1].status == 200
+
+----------
+
+
+
+Test Class Name: Error

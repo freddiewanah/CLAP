@@ -1,0 +1,22 @@
+def get(self, key, def_val=None):
+    try:
+        return super().get(key, def_val)[-1]
+    except IndexError:
+        return None
+
+----------
+
+@defer.inlineCallbacks
+def test_download(self):
+    crawler = get_crawler(SingleRequestSpider, self.settings_dict)
+    yield crawler.crawl(seed=Request(url=self.mockserver.url('')))
+    failure = crawler.spider.meta.get('failure')
+    self.assertTrue(failure is None)
+    reason = crawler.spider.meta['close_reason']
+    self.assertTrue(reason, 'finished')
+
+----------
+
+
+
+Test Class Name: Http11MockServerTestCase

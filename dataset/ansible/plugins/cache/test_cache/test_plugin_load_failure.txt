@@ -1,0 +1,15 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_plugin_load_failure(self):
+    init_plugin_loader()
+    with mock.patch('ansible.constants.CACHE_PLUGIN', 'json'):
+        self.assertRaisesRegex(AnsibleError, 'Unable to load the facts cache plugin.*json.*', FactCache)
+
+----------
+
+
+
+Test Class Name: TestFactCache

@@ -1,0 +1,26 @@
+def index(self, sym):
+    """Returns the index of the specified symbol"""
+    assert isinstance(sym, str)
+    if sym in self.indices:
+        return self.indices[sym]
+    return self.unk_index
+
+----------
+
+def test_overwrite(self):
+    dict_file = io.StringIO('<unk> 999 #fairseq:overwrite\n<s> 999 #fairseq:overwrite\n</s> 999 #fairseq:overwrite\n, 999\n▁de 999\n')
+    d = Dictionary()
+    d.add_from_file(dict_file)
+    self.assertEqual(d.index('<pad>'), 1)
+    self.assertEqual(d.index('foo'), 3)
+    self.assertEqual(d.index('<unk>'), 4)
+    self.assertEqual(d.index('<s>'), 5)
+    self.assertEqual(d.index('</s>'), 6)
+    self.assertEqual(d.index(','), 7)
+    self.assertEqual(d.index('▁de'), 8)
+
+----------
+
+
+
+Test Class Name: TestDictionary

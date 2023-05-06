@@ -1,0 +1,67 @@
+def read_into(self, buf: bytearray, partial: bool=False) -> Awaitable[int]:
+    """Asynchronously read a number of bytes.
+
+        ``buf`` must be a writable buffer into which data will be read.
+
+        If ``partial`` is true, the callback is run as soon as any bytes
+        have been read.  Otherwise, it is run when the ``buf`` has been
+        entirely filled with read data.
+
+        .. versionadded:: 5.0
+
+        .. versionchanged:: 6.0
+
+           The ``callback`` argument was removed. Use the returned
+           `.Future` instead.
+
+        """
+    future = self._start_read()
+    available_bytes = self._read_buffer_size
+    n = len(buf)
+    if available_bytes >= n:
+        buf[:] = memoryview(self._read_buffer)[:n]
+        del self._read_buffer[:n]
+        self._after_user_read_buffer = self._read_buffer
+    elif available_bytes > 0:
+        buf[:available_bytes] = memoryview(self._read_buffer)[:]
+    self._user_read_buffer = True
+    self._read_buffer = buf
+    self._read_buffer_size = available_bytes
+    self._read_bytes = n
+    self._read_partial = partial
+    try:
+        self._try_inline_read()
+    except:
+        future.add_done_callback(lambda f: f.exception())
+        raise
+    return future
+
+----------
+
+@gen_test
+def test_read_into_partial(self: typing.Any):
+    (rs, ws) = (yield self.make_iostream_pair())
+    try:
+        buf = bytearray(10)
+        fut = rs.read_into(buf, partial=True)
+        ws.write(b'hello')
+        data = (yield fut)
+        self.assertFalse(rs.reading())
+        self.assertEqual(data, 5)
+        self.assertEqual(bytes(buf), b'hello\x00\x00\x00\x00\x00')
+        ws.write(b'world!1234567890')
+        data = (yield rs.read_into(buf, partial=True))
+        self.assertEqual(data, 10)
+        self.assertEqual(bytes(buf), b'world!1234')
+        data = (yield rs.read_into(buf, partial=True))
+        self.assertEqual(data, 6)
+        self.assertEqual(bytes(buf), b'5678901234')
+    finally:
+        ws.close()
+        rs.close()
+
+----------
+
+
+
+Test Class Name: IOStreamPairContext

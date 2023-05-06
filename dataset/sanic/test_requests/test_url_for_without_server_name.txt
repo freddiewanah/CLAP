@@ -1,0 +1,43 @@
+def url_for(self, view_name: str, **kwargs) -> str:
+    """
+        Same as :func:`sanic.Sanic.url_for`, but automatically determine
+        `scheme` and `netloc` base on the request. Since this method is aiming
+        to generate correct schema & netloc, `_external` is implied.
+
+        :param kwargs: takes same parameters as in :func:`sanic.Sanic.url_for`
+        :return: an absolute url to the given view
+        :rtype: str
+        """
+    try:
+        if '//' in self.app.config.SERVER_NAME:
+            return self.app.url_for(view_name, _external=True, **kwargs)
+    except AttributeError:
+        pass
+    scheme = self.scheme
+    host = self.server_name
+    port = self.server_port
+    if scheme.lower() in ('http', 'ws') and port == 80 or (scheme.lower() in ('https', 'wss') and port == 443):
+        netloc = host
+    else:
+        netloc = f'{host}:{port}'
+    return self.app.url_for(view_name, _external=True, _scheme=scheme, _server=netloc, **kwargs)
+
+----------
+
+def test_url_for_without_server_name(app):
+
+    @app.route('/sample')
+    def sample(request):
+        return json({'url': request.url_for('url_for')})
+
+    @app.route('/url-for')
+    def url_for(request):
+        return text('url-for')
+    (request, response) = app.test_client.get('/sample')
+    assert response.json['url'] == f'http://127.0.0.1:{request.server_port}/url-for'
+
+----------
+
+
+
+Test Class Name: Bar

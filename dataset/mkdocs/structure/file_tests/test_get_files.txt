@@ -1,0 +1,37 @@
+def get_files(config: Union[MkDocsConfig, Mapping[str, Any]]) -> Files:
+    """Walk the `docs_dir` and return a Files collection."""
+    files = []
+    exclude = ['.*', '/templates']
+    for (source_dir, dirnames, filenames) in os.walk(config['docs_dir'], followlinks=True):
+        relative_dir = os.path.relpath(source_dir, config['docs_dir'])
+        for dirname in list(dirnames):
+            path = os.path.normpath(os.path.join(relative_dir, dirname))
+            if _filter_paths(basename=dirname, path=path, is_dir=True, exclude=exclude):
+                dirnames.remove(dirname)
+        dirnames.sort()
+        for filename in _sort_files(filenames):
+            path = os.path.normpath(os.path.join(relative_dir, filename))
+            if _filter_paths(basename=filename, path=path, is_dir=False, exclude=exclude):
+                continue
+            if filename == 'README.md' and 'index.md' in filenames:
+                log.warning(f'Both index.md and README.md found. Skipping README.md from {source_dir}')
+                continue
+            files.append(File(path, config['docs_dir'], config['site_dir'], config['use_directory_urls']))
+    return Files(files)
+
+----------
+
+@tempdir(files=['index.md', 'readme.md', 'bar.css', 'bar.html', 'bar.jpg', 'bar.js', 'bar.md', '.dotfile', 'templates/foo.html'])
+def test_get_files(self, tdir):
+    config = load_config(docs_dir=tdir, extra_css=['bar.css'], extra_javascript=['bar.js'])
+    files = get_files(config)
+    expected = ['index.md', 'bar.css', 'bar.html', 'bar.jpg', 'bar.js', 'bar.md', 'readme.md']
+    self.assertIsInstance(files, Files)
+    self.assertEqual(len(files), len(expected))
+    self.assertEqual([f.src_path for f in files], expected)
+
+----------
+
+
+
+Test Class Name: TestFiles

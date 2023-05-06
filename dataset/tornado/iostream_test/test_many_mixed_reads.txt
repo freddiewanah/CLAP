@@ -1,0 +1,88 @@
+def read_into(self, buf: bytearray, partial: bool=False) -> Awaitable[int]:
+    """Asynchronously read a number of bytes.
+
+        ``buf`` must be a writable buffer into which data will be read.
+
+        If ``partial`` is true, the callback is run as soon as any bytes
+        have been read.  Otherwise, it is run when the ``buf`` has been
+        entirely filled with read data.
+
+        .. versionadded:: 5.0
+
+        .. versionchanged:: 6.0
+
+           The ``callback`` argument was removed. Use the returned
+           `.Future` instead.
+
+        """
+    future = self._start_read()
+    available_bytes = self._read_buffer_size
+    n = len(buf)
+    if available_bytes >= n:
+        buf[:] = memoryview(self._read_buffer)[:n]
+        del self._read_buffer[:n]
+        self._after_user_read_buffer = self._read_buffer
+    elif available_bytes > 0:
+        buf[:available_bytes] = memoryview(self._read_buffer)[:]
+    self._user_read_buffer = True
+    self._read_buffer = buf
+    self._read_buffer_size = available_bytes
+    self._read_bytes = n
+    self._read_partial = partial
+    try:
+        self._try_inline_read()
+    except:
+        future.add_done_callback(lambda f: f.exception())
+        raise
+    return future
+
+----------
+
+@gen_test
+def test_many_mixed_reads(self):
+    r = random.Random(42)
+    nbytes = 1000000
+    (rs, ws) = (yield self.make_iostream_pair())
+    produce_hash = hashlib.sha1()
+    consume_hash = hashlib.sha1()
+
+    @gen.coroutine
+    def produce():
+        remaining = nbytes
+        while remaining > 0:
+            size = r.randint(1, min(1000, remaining))
+            data = os.urandom(size)
+            produce_hash.update(data)
+            yield ws.write(data)
+            remaining -= size
+        assert remaining == 0
+
+    @gen.coroutine
+    def consume():
+        remaining = nbytes
+        while remaining > 0:
+            if r.random() > 0.5:
+                size = r.randint(1, min(1000, remaining))
+                data = (yield rs.read_bytes(size))
+                consume_hash.update(data)
+                remaining -= size
+            else:
+                size = r.randint(1, min(1000, remaining))
+                buf = bytearray(size)
+                n = (yield rs.read_into(buf))
+                assert n == size
+                consume_hash.update(buf)
+                remaining -= size
+        assert remaining == 0
+    try:
+        yield [produce(), consume()]
+        assert produce_hash.hexdigest() == consume_hash.hexdigest()
+    finally:
+        ws.close()
+        rs.close()
+
+----------
+
+
+
+Test Class Name: IOStreamPairContext

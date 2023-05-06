@@ -1,0 +1,49 @@
+def url_for(self, view_name: str, **kwargs) -> str:
+    """
+        Same as :func:`sanic.Sanic.url_for`, but automatically determine
+        `scheme` and `netloc` base on the request. Since this method is aiming
+        to generate correct schema & netloc, `_external` is implied.
+
+        :param kwargs: takes same parameters as in :func:`sanic.Sanic.url_for`
+        :return: an absolute url to the given view
+        :rtype: str
+        """
+    try:
+        if '//' in self.app.config.SERVER_NAME:
+            return self.app.url_for(view_name, _external=True, **kwargs)
+    except AttributeError:
+        pass
+    scheme = self.scheme
+    host = self.server_name
+    port = self.server_port
+    if scheme.lower() in ('http', 'ws') and port == 80 or (scheme.lower() in ('https', 'wss') and port == 443):
+        netloc = host
+    else:
+        netloc = f'{host}:{port}'
+    return self.app.url_for(view_name, _external=True, _scheme=scheme, _server=netloc, **kwargs)
+
+----------
+
+def test_url_for_with_forwarded_request(app):
+
+    @app.get('/')
+    def handler(request):
+        return text('OK')
+
+    @app.get('/another_view/')
+    def view_name(request):
+        return text('OK')
+    app.config.SERVER_NAME = 'my-server'
+    app.config.PROXIES_COUNT = 1
+    (request, response) = app.test_client.get('/', headers={'X-Forwarded-For': '127.1.2.3', 'X-Forwarded-Proto': 'https', 'X-Forwarded-Port': '6789'})
+    assert app.url_for('view_name') == '/another_view'
+    assert app.url_for('view_name', _external=True) == 'http://my-server/another_view'
+    assert request.url_for('view_name') == 'https://my-server:6789/another_view'
+    (request, response) = app.test_client.get('/', headers={'X-Forwarded-For': '127.1.2.3', 'X-Forwarded-Proto': 'https', 'X-Forwarded-Port': '443'})
+    assert request.url_for('view_name') == 'https://my-server/another_view'
+
+----------
+
+
+
+Test Class Name: Bar

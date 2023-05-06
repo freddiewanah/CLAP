@@ -1,0 +1,54 @@
+@keras_export('keras.backend.ones')
+@tf.__internal__.dispatch.add_dispatch_support
+@doc_controls.do_not_generate_docs
+def ones(shape, dtype=None, name=None):
+    """Instantiates an all-ones variable and returns it.
+
+    Args:
+        shape: Tuple of integers, shape of returned Keras variable.
+        dtype: String, data type of returned Keras variable.
+        name: String, name of returned Keras variable.
+
+    Returns:
+        A Keras variable, filled with `1.0`.
+        Note that if `shape` was symbolic, we cannot return a variable,
+        and will return a dynamically-shaped tensor instead.
+
+    Example:
+
+
+    >>> kvar = tf.keras.backend.ones((3,4))
+    >>> tf.keras.backend.eval(kvar)
+    array([[1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.]], dtype=float32)
+
+    """
+    with tf.init_scope():
+        if dtype is None:
+            dtype = floatx()
+        tf_dtype = tf.as_dtype(dtype)
+        v = tf.ones(shape=shape, dtype=tf_dtype, name=name)
+        if py_all(v.shape.as_list()):
+            return variable(v, dtype=dtype, name=name)
+        return v
+
+----------
+
+def test_single_io_subclass_build(self):
+    num_classes = 2
+    input_dim = 50
+    batch_size = None
+    model = test_utils.SmallSubclassMLP(num_hidden=32, num_classes=num_classes, use_dp=True, use_bn=True)
+    self.assertFalse(model.built, 'Model should not have been built')
+    self.assertFalse(model.weights, 'Model should have no weights since it has not been built.')
+    model.build(input_shape=(batch_size, input_dim))
+    self.assertTrue(model.weights, 'Model should have weights now that it has been properly built.')
+    self.assertTrue(model.built, 'Model should be built after calling `build`.')
+    model(tf.ones((32, input_dim)))
+
+----------
+
+
+
+Test Class Name: default

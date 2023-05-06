@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('wrong', ['git stash opp', 'git stash Some message', 'git stash saev Some message'])
+def test_match(wrong):
+    assert match(Command(wrong, git_stash_err))
+
+----------
+
+
+
+Test Class Name: default

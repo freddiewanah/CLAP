@@ -1,0 +1,21 @@
+def search(value, pattern='', ignorecase=False, multiline=False):
+    """ Perform a `re.search` returning a boolean """
+    return regex(value, pattern, ignorecase, multiline, 'search')
+
+----------
+
+def test_multiple_actions_ping_shell(self):
+    init_plugin_loader()
+    args_dict = {'ping': 'data=hi', 'shell': 'echo hi'}
+    m = ModuleArgsParser(args_dict)
+    with pytest.raises(AnsibleParserError) as err:
+        m.parse()
+    assert err.value.args[0].startswith('conflicting action statements: ')
+    actions = set(re.search('(\\w+), (\\w+)', err.value.args[0]).groups())
+    assert actions == set(['ping', 'shell'])
+
+----------
+
+
+
+Test Class Name: TestModArgsDwim

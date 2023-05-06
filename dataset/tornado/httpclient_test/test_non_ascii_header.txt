@@ -1,0 +1,17 @@
+def rethrow(self) -> None:
+    """If there was an error on the request, raise an `HTTPError`."""
+    if self.error:
+        raise self.error
+
+----------
+
+def test_non_ascii_header(self):
+    response = self.fetch('/set_header?k=foo&v=%E9')
+    response.rethrow()
+    self.assertEqual(response.headers['Foo'], native_str('é'))
+
+----------
+
+
+
+Test Class Name: HTTPClientCommonTestCase

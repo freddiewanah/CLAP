@@ -1,0 +1,35 @@
+def get_distribution():
+    """
+    Return the name of the distribution the module is running on.
+
+    :rtype: NativeString or None
+    :returns: Name of the distribution the module is running on
+
+    This function attempts to determine what distribution the code is running
+    on and return a string representing that value. If the platform is Linux
+    and the distribution cannot be determined, it returns ``OtherLinux``.
+    """
+    distribution = distro.id().capitalize()
+    if platform.system() == 'Linux':
+        if distribution == 'Amzn':
+            distribution = 'Amazon'
+        elif distribution == 'Rhel':
+            distribution = 'Redhat'
+        elif not distribution:
+            distribution = 'OtherLinux'
+    return distribution
+
+----------
+
+@pytest.mark.parametrize(('system', 'dist'), (('Darwin', 'Darwin'), ('SunOS', 'Solaris'), ('FreeBSD', 'Freebsd')))
+def test_get_distribution_not_linux(system, dist, mocker):
+    """For platforms other than Linux, return the distribution"""
+    mocker.patch('platform.system', return_value=system)
+    mocker.patch('ansible.module_utils.common.sys_info.distro.id', return_value=dist)
+    assert get_distribution() == dist
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,23 @@
+def series_and_number(self) -> str:
+    """Generate a random passport number and series.
+
+        :return: Series and number.
+
+        :Example:
+            57 16 805199.
+        """
+    series = self.passport_series()
+    number = self.passport_number()
+    return f'{series} {number}'
+
+----------
+
+def test_series_and_number(russia):
+    result = russia.series_and_number()
+    assert result is not None
+
+----------
+
+
+
+Test Class Name: default

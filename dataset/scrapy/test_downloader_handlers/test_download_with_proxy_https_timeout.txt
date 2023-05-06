@@ -1,0 +1,24 @@
+def download_request(self, request, spider):
+    """Return a deferred for the HTTP download"""
+    agent = ScrapyAgent(contextFactory=self._contextFactory, pool=self._pool, maxsize=getattr(spider, 'download_maxsize', self._default_maxsize), warnsize=getattr(spider, 'download_warnsize', self._default_warnsize), fail_on_dataloss=self._fail_on_dataloss, crawler=self._crawler)
+    return agent.download_request(request)
+
+----------
+
+@defer.inlineCallbacks
+def test_download_with_proxy_https_timeout(self):
+    """ Test TunnelingTCP4ClientEndpoint """
+    if NON_EXISTING_RESOLVABLE:
+        raise SkipTest('Non-existing hosts are resolvable')
+    http_proxy = self.getURL('')
+    domain = 'https://no-such-domain.nosuch'
+    request = Request(domain, meta={'proxy': http_proxy, 'download_timeout': 0.2})
+    d = self.download_request(request, Spider('foo'))
+    timeout = (yield self.assertFailure(d, error.TimeoutError))
+    self.assertIn(domain, timeout.osError)
+
+----------
+
+
+
+Test Class Name: Http11ProxyTestCase

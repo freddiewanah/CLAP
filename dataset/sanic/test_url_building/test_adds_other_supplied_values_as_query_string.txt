@@ -1,0 +1,33 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+def test_adds_other_supplied_values_as_query_string(app):
+
+    @app.route(COMPLEX_PARAM_URL)
+    def passes(request):
+        return text('this should pass')
+    new_kwargs = dict(PASSING_KWARGS)
+    new_kwargs['added_value_one'] = 'one'
+    new_kwargs['added_value_two'] = 'two'
+    url = app.url_for('passes', **new_kwargs)
+    query = dict(parse_qsl(urlsplit(url).query))
+    assert query['added_value_one'] == 'one'
+    assert query['added_value_two'] == 'two'
+
+----------
+
+
+
+Test Class Name: default

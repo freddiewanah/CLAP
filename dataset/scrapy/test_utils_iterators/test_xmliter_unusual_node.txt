@@ -1,0 +1,16 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_xmliter_unusual_node(self):
+    body = b'<?xml version="1.0" encoding="UTF-8"?>\n            <root>\n                <matchme...></matchme...>\n                <matchmenot></matchmenot>\n            </root>\n        '
+    response = XmlResponse(url='http://example.com', body=body)
+    nodenames = [e.xpath('name()').getall() for e in self.xmliter(response, 'matchme...')]
+    self.assertEqual(nodenames, [['matchme...']])
+
+----------
+
+
+
+Test Class Name: XmliterTestCase

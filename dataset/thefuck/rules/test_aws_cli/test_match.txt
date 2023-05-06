@@ -1,0 +1,15 @@
+@git_support
+def match(command):
+    return 'push' in command.script_parts and 'git push --set-upstream' in command.output
+
+----------
+
+@pytest.mark.parametrize('command', [Command('aws dynamdb scan', misspelled_command), Command('aws dynamodb scn', misspelled_subcommand), Command('aws dynamodb t-item', misspelled_subcommand_with_multiple_options)])
+def test_match(command):
+    assert match(command)
+
+----------
+
+
+
+Test Class Name: default

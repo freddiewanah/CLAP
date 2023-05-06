@@ -1,0 +1,61 @@
+def wait(self, condition: Optional[Callable[..., bool]]=None, timeout: Optional[float]=None) -> Any:
+    """Runs the `.IOLoop` until stop is called or timeout has passed.
+
+        In the event of a timeout, an exception will be thrown. The
+        default timeout is 5 seconds; it may be overridden with a
+        ``timeout`` keyword argument or globally with the
+        ``ASYNC_TEST_TIMEOUT`` environment variable.
+
+        If ``condition`` is not ``None``, the `.IOLoop` will be restarted
+        after `stop()` until ``condition()`` returns ``True``.
+
+        .. versionchanged:: 3.1
+           Added the ``ASYNC_TEST_TIMEOUT`` environment variable.
+
+        .. deprecated:: 5.1
+
+           `stop` and `wait` are deprecated; use ``@gen_test`` instead.
+        """
+    if timeout is None:
+        timeout = get_async_test_timeout()
+    if not self.__stopped:
+        if timeout:
+
+            def timeout_func() -> None:
+                try:
+                    raise self.failureException('Async operation timed out after %s seconds' % timeout)
+                except Exception:
+                    self.__failure = sys.exc_info()
+                self.stop()
+            self.__timeout = self.io_loop.add_timeout(self.io_loop.time() + timeout, timeout_func)
+        while True:
+            self.__running = True
+            self.io_loop.start()
+            if self.__failure is not None or condition is None or condition():
+                break
+        if self.__timeout is not None:
+            self.io_loop.remove_timeout(self.__timeout)
+            self.__timeout = None
+    assert self.__stopped
+    self.__stopped = False
+    self.__rethrow()
+    result = self.__stop_args
+    self.__stop_args = None
+    return result
+
+----------
+
+def test_sigchild(self):
+    Subprocess.initialize()
+    self.addCleanup(Subprocess.uninitialize)
+    subproc = Subprocess([sys.executable, '-c', 'pass'])
+    subproc.set_exit_callback(self.stop)
+    ret = self.wait()
+    self.assertEqual(ret, 0)
+    self.assertEqual(subproc.returncode, ret)
+
+----------
+
+
+
+Test Class Name: SubprocessTest

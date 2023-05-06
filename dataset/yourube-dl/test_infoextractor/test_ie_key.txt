@@ -1,0 +1,15 @@
+@classmethod
+def ie_key(cls):
+    """A string for getting the InfoExtractor with get_info_extractor"""
+    return compat_str(cls.__name__[:-2])
+
+----------
+
+def test_ie_key(self):
+    self.assertEqual(get_info_extractor(YoutubeIE.ie_key()), YoutubeIE)
+
+----------
+
+
+
+Test Class Name: TestInfoExtractor

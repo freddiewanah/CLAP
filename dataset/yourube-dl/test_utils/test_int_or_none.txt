@@ -1,0 +1,25 @@
+def int_or_none(v, scale=1, default=None, get_attr=None, invscale=1):
+    if get_attr:
+        if v is not None:
+            v = getattr(v, get_attr, None)
+    if v in (None, ''):
+        return default
+    try:
+        return int(v) * invscale // scale
+    except (ValueError, TypeError, OverflowError):
+        return default
+
+----------
+
+def test_int_or_none(self):
+    self.assertEqual(int_or_none('42'), 42)
+    self.assertEqual(int_or_none(''), None)
+    self.assertEqual(int_or_none(None), None)
+    self.assertEqual(int_or_none([]), None)
+    self.assertEqual(int_or_none(set()), None)
+
+----------
+
+
+
+Test Class Name: TestUtil

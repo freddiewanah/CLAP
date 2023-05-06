@@ -1,0 +1,17 @@
+def get_schema() -> base.PlainConfigSchema:
+    return MkDocsConfig._schema
+
+----------
+
+def test_get_schema(self):
+
+    class FooConfig:
+        z = c.URL()
+        aa = c.Type(int)
+    self.assertEqual(base.get_schema(FooConfig), (('z', FooConfig.z), ('aa', FooConfig.aa)))
+
+----------
+
+
+
+Test Class Name: default

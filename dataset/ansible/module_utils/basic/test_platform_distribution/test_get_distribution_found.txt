@@ -1,0 +1,17 @@
+def load_platform_subclass(cls, *args, **kwargs):
+    """**Deprecated**: Use ansible.module_utils.common.sys_info.get_platform_subclass instead"""
+    platform_cls = get_platform_subclass(cls)
+    return super(cls, platform_cls).__new__(platform_cls)
+
+----------
+
+@pytest.mark.usefixtures('platform_linux')
+def test_get_distribution_found(self):
+    with patch('ansible.module_utils.common.sys_info.get_distribution', return_value='Bar'):
+        assert isinstance(load_platform_subclass(self.LinuxTest), self.Bar)
+
+----------
+
+
+
+Test Class Name: Bar

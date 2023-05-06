@@ -1,0 +1,17 @@
+def assertRaisesRegex(self, *args, **kwargs):
+    return getattr(self, _assertRaisesRegex)(*args, **kwargs)
+
+----------
+
+def test_attr_class_post_validate_wrong_class(self):
+    not_a_esc = 37
+    ds = {'test_attr_class_post_validate': not_a_esc}
+    self.assertRaisesRegex(AnsibleParserError, 'is not a valid.*got a.*int.*instead', self._base_validate, ds)
+
+----------
+
+def _base_validate(self, ds):
+    ds['test_attr_list_required'] = []
+    return super(TestBaseSubClass, self)._base_validate(ds)
+
+Test Class Name: TestBaseSubClass

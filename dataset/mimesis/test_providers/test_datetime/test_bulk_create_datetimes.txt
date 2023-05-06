@@ -1,0 +1,58 @@
+@staticmethod
+def bulk_create_datetimes(date_start: DateTime, date_end: DateTime, **kwargs: t.Any) -> t.List[DateTime]:
+    """Bulk create datetime objects.
+
+        This method creates list of datetime objects from
+        ``date_start`` to ``date_end``.
+
+        You can use the following keyword arguments:
+
+        * ``days``
+        * ``hours``
+        * ``minutes``
+        * ``seconds``
+        * ``microseconds``
+
+        .. warning::
+
+            Empty ``**kwargs`` produces **timedelta(0)** which obviously cannot be used as step,
+            so you have to pass valid ``**kwargs`` for :py:class:`datetime.timedelta` which will be
+            used as a step by which ``date_start`` will be incremented until it reaches ``date_end``
+            to avoid infinite loop which eventually leads to ``OverflowError``.
+
+        See :py:class:`datetime.timedelta` for more details.
+
+        :param date_start: Begin of the range.
+        :param date_end: End of the range.
+        :param kwargs: Keyword arguments for :py:class:`datetime.timedelta`
+        :return: List of datetime objects
+        :raises: ValueError: When ``date_start``/``date_end`` not passed,
+            when ``date_start`` larger than ``date_end`` or when the given
+            keywords for `datetime.timedelta` represent a non-positive timedelta.
+        """
+    dt_objects = []
+    if not date_start and (not date_end):
+        raise ValueError('You must pass date_start and date_end')
+    if date_end < date_start:
+        raise ValueError('date_start can not be larger than date_end')
+    if timedelta(**kwargs) <= timedelta():
+        raise ValueError('timedelta must be positive')
+    while date_start <= date_end:
+        date_start += timedelta(**kwargs)
+        dt_objects.append(date_start)
+    return dt_objects
+
+----------
+
+@pytest.mark.parametrize('days, objects_count', [(7, 169), (14, 337), (28, 673)])
+def test_bulk_create_datetimes(self, _datetime, days, objects_count):
+    date_start = datetime.datetime.now()
+    date_end = date_start + datetime.timedelta(days=days)
+    datetime_objects = _datetime.bulk_create_datetimes(date_start=date_start, date_end=date_end, minutes=60)
+    assert len(datetime_objects) == objects_count
+
+----------
+
+
+
+Test Class Name: TestDatetime

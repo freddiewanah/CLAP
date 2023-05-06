@@ -1,0 +1,37 @@
+def wait(self, timeout: Optional[Union[float, datetime.timedelta]]=None) -> Awaitable[None]:
+    """Block until the internal flag is true.
+
+        Returns an awaitable, which raises `tornado.util.TimeoutError` after a
+        timeout.
+        """
+    fut = Future()
+    if self._value:
+        fut.set_result(None)
+        return fut
+    self._waiters.add(fut)
+    fut.add_done_callback(lambda fut: self._waiters.remove(fut))
+    if timeout is None:
+        return fut
+    else:
+        timeout_fut = gen.with_timeout(timeout, fut)
+        timeout_fut.add_done_callback(lambda tf: fut.cancel() if not fut.done() else None)
+        return timeout_fut
+
+----------
+
+def test_websocket_callbacks(self):
+    websocket_connect('ws://127.0.0.1:%d/echo' % self.get_http_port(), callback=self.stop)
+    ws = self.wait().result()
+    ws.write_message('hello')
+    ws.read_message(self.stop)
+    response = self.wait().result()
+    self.assertEqual(response, 'hello')
+    self.close_future.add_done_callback(lambda f: self.stop())
+    ws.close()
+    self.wait()
+
+----------
+
+
+
+Test Class Name: WebSocketTest

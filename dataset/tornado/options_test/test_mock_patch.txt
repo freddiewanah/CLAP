@@ -1,0 +1,41 @@
+def mockable(self) -> '_Mockable':
+    """Returns a wrapper around self that is compatible with
+        `mock.patch <unittest.mock.patch>`.
+
+        The `mock.patch <unittest.mock.patch>` function (included in
+        the standard library `unittest.mock` package since Python 3.3,
+        or in the third-party ``mock`` package for older versions of
+        Python) is incompatible with objects like ``options`` that
+        override ``__getattr__`` and ``__setattr__``.  This function
+        returns an object that can be used with `mock.patch.object
+        <unittest.mock.patch.object>` to modify option values::
+
+            with mock.patch.object(options.mockable(), 'name', value):
+                assert options.name == value
+        """
+    return _Mockable(self)
+
+----------
+
+def test_mock_patch(self):
+    options = OptionParser()
+    options.define('foo', default=1)
+    options.parse_command_line(['main.py', '--foo=2'])
+    self.assertEqual(options.foo, 2)
+    with mock.patch.object(options.mockable(), 'foo', 3):
+        self.assertEqual(options.foo, 3)
+    self.assertEqual(options.foo, 2)
+    with mock.patch.object(options.mockable(), 'foo', 4):
+        self.assertEqual(options.foo, 4)
+        options.foo = 5
+        self.assertEqual(options.foo, 5)
+        with mock.patch.object(options.mockable(), 'foo', 6):
+            self.assertEqual(options.foo, 6)
+        self.assertEqual(options.foo, 5)
+    self.assertEqual(options.foo, 2)
+
+----------
+
+
+
+Test Class Name: OptionsTest

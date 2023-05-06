@@ -1,0 +1,27 @@
+def get_and_head(self, *args, **kwargs):
+    """Performs a GET and HEAD request and returns the GET response.
+
+        Fails if any ``Content-*`` headers returned by the two requests
+        differ.
+        """
+    head_response = self.fetch(*args, method='HEAD', **kwargs)
+    get_response = self.fetch(*args, method='GET', **kwargs)
+    content_headers = set()
+    for h in itertools.chain(head_response.headers, get_response.headers):
+        if h.startswith('Content-'):
+            content_headers.add(h)
+    for h in content_headers:
+        self.assertEqual(head_response.headers.get(h), get_response.headers.get(h), '%s differs between GET (%s) and HEAD (%s)' % (h, head_response.headers.get(h), get_response.headers.get(h)))
+    return get_response
+
+----------
+
+def test_static_if_modified_since_pre_epoch(self):
+    response = self.get_and_head('/static/robots.txt', headers={'If-Modified-Since': 'Fri, 01 Jan 1960 00:00:00 GMT'})
+    self.assertEqual(response.code, 200)
+
+----------
+
+
+
+Test Class Name: OverrideStaticUrlHandler

@@ -1,0 +1,26 @@
+@contextlib.contextmanager
+def set_default_dataset_from_list_serialize_method(new):
+    """
+    Context manager for using custom serialize function when creating DatasetFromList
+    """
+    global _DEFAULT_DATASET_FROM_LIST_SERIALIZE_METHOD
+    orig = _DEFAULT_DATASET_FROM_LIST_SERIALIZE_METHOD
+    _DEFAULT_DATASET_FROM_LIST_SERIALIZE_METHOD = new
+    yield
+    _DEFAULT_DATASET_FROM_LIST_SERIALIZE_METHOD = orig
+
+----------
+
+def test_change_default_serialize_method(self):
+    dataset = [1, 2, 3]
+    with set_default_dataset_from_list_serialize_method(torch.tensor):
+        dataset_1 = DatasetFromList(dataset, serialize=True)
+        self.assertEqual(dataset_1[2], torch.tensor(3))
+    dataset_2 = DatasetFromList(dataset, serialize=True)
+    self.assertEqual(dataset_2[2], 3)
+
+----------
+
+
+
+Test Class Name: TestDatasetFromList

@@ -1,0 +1,23 @@
+def get_host(self, hostname):
+    """ fetch host object using name deal with implicit localhost """
+    matching_host = self.hosts.get(hostname, None)
+    if matching_host is None and hostname in C.LOCALHOST:
+        matching_host = self._create_implicit_localhost(hostname)
+    return matching_host
+
+----------
+
+def test_keyed_group_exclusive_argument(inventory_module):
+    inventory_module.inventory.add_host('cow')
+    inventory_module.inventory.set_variable('cow', 'nickname', 'betsy')
+    host = inventory_module.inventory.get_host('cow')
+    keyed_groups = [{'key': 'tag', 'separator': '_', 'default_value': 'default_value_name', 'trailing_separator': True}]
+    with pytest.raises(AnsibleParserError) as err_message:
+        inventory_module._add_host_to_keyed_groups(keyed_groups, host.vars, host.name, strict=True)
+        assert 'parameters are mutually exclusive' in err_message
+
+----------
+
+
+
+Test Class Name: default

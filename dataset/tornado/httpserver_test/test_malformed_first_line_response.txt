@@ -1,0 +1,44 @@
+def write(self, chunk: Union[str, bytes, dict]) -> None:
+    """Writes the given chunk to the output buffer.
+
+        To write the output to the network, use the `flush()` method below.
+
+        If the given chunk is a dictionary, we write it as JSON and set
+        the Content-Type of the response to be ``application/json``.
+        (if you want to send JSON as a different ``Content-Type``, call
+        ``set_header`` *after* calling ``write()``).
+
+        Note that lists are not converted to JSON because of a potential
+        cross-site security vulnerability.  All JSON output should be
+        wrapped in a dictionary.  More details at
+        http://haacked.com/archive/2009/06/25/json-hijacking.aspx/ and
+        https://github.com/facebook/tornado/issues/1009
+        """
+    if self._finished:
+        raise RuntimeError('Cannot write() after finish()')
+    if not isinstance(chunk, (bytes, unicode_type, dict)):
+        message = 'write() only accepts bytes, unicode, and dict objects'
+        if isinstance(chunk, list):
+            message += '. Lists not accepted for security reasons; see ' + 'http://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler.write'
+        raise TypeError(message)
+    if isinstance(chunk, dict):
+        chunk = escape.json_encode(chunk)
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
+    chunk = utf8(chunk)
+    self._write_buffer.append(chunk)
+
+----------
+
+def test_malformed_first_line_response(self):
+    with ExpectLog(gen_log, '.*Malformed HTTP request line', level=logging.INFO):
+        self.stream.write(b'asdf\r\n\r\n')
+        (start_line, headers, response) = self.io_loop.run_sync(lambda : read_stream_body(self.stream))
+        self.assertEqual('HTTP/1.1', start_line.version)
+        self.assertEqual(400, start_line.code)
+        self.assertEqual('Bad Request', start_line.reason)
+
+----------
+
+
+
+Test Class Name: HTTPServerRawTest

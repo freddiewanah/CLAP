@@ -1,0 +1,30 @@
+@property
+def json(self) -> Any:
+    """
+        :return: The request body parsed as JSON
+        :rtype: Any
+        """
+    if self.parsed_json is None:
+        self.load_json()
+    return self.parsed_json
+
+----------
+
+def test_handler_overload(app):
+
+    @app.get('/long/sub/route/param_a/<param_a:str>/param_b/<param_b:str>')
+    @app.post('/long/sub/route/')
+    def handler(request, **kwargs):
+        return json(kwargs)
+    (_, response) = app.test_client.get('/long/sub/route/param_a/foo/param_b/bar')
+    assert response.status == 200
+    assert response.json == {'param_a': 'foo', 'param_b': 'bar'}
+    (_, response) = app.test_client.post('/long/sub/route')
+    assert response.status == 200
+    assert response.json == {}
+
+----------
+
+
+
+Test Class Name: Bar

@@ -1,0 +1,52 @@
+def hash_params(params):
+    """
+    Construct a data structure of parameters that is hashable.
+
+    This requires changing any mutable data structures into immutable ones.
+    We chose a frozenset because role parameters have to be unique.
+
+    .. warning::  this does not handle unhashable scalars.  Two things
+        mitigate that limitation:
+
+        1) There shouldn't be any unhashable scalars specified in the yaml
+        2) Our only choice would be to return an error anyway.
+    """
+    if isinstance(params, Container) and (not isinstance(params, (text_type, binary_type))):
+        if isinstance(params, Mapping):
+            try:
+                new_params = frozenset(params.items())
+            except TypeError:
+                new_params = set()
+                for (k, v) in params.items():
+                    new_params.add((k, hash_params(v)))
+                new_params = frozenset(new_params)
+        elif isinstance(params, (Set, Sequence)):
+            try:
+                new_params = frozenset(params)
+            except TypeError:
+                new_params = set()
+                for v in params:
+                    new_params.add(hash_params(v))
+                new_params = frozenset(new_params)
+        else:
+            new_params = frozenset(params)
+        return new_params
+    return frozenset((params,))
+
+----------
+
+def test_param_dict_dupe_values(self):
+    params1 = {'foo': False}
+    params2 = {'bar': False}
+    res1 = hash_params(params1)
+    res2 = hash_params(params2)
+    hash1 = hash(res1)
+    hash2 = hash(res2)
+    self.assertNotEqual(res1, res2)
+    self.assertNotEqual(hash1, hash2)
+
+----------
+
+
+
+Test Class Name: MyContainer

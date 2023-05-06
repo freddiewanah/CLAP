@@ -1,0 +1,115 @@
+@keras_export(v1=['keras.__internal__.legacy.layers.dense'])
+@tf_export(v1=['layers.dense'])
+def dense(inputs, units, activation=None, use_bias=True, kernel_initializer=None, bias_initializer=tf.compat.v1.zeros_initializer(), kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None, trainable=True, name=None, reuse=None):
+    """Functional interface for the densely-connected layer.
+
+    This layer implements the operation:
+    `outputs = activation(inputs * kernel + bias)`
+    where `activation` is the activation function passed as the `activation`
+    argument (if not `None`), `kernel` is a weights matrix created by the layer,
+    and `bias` is a bias vector created by the layer
+    (only if `use_bias` is `True`).
+
+    Args:
+      inputs: Tensor input.
+      units: Integer or Long, dimensionality of the output space.
+      activation: Activation function (callable). Set it to None to maintain a
+        linear activation.
+      use_bias: Boolean, whether the layer uses a bias.
+      kernel_initializer: Initializer function for the weight matrix.
+        If `None` (default), weights are initialized using the default
+        initializer used by `tf.compat.v1.get_variable`.
+      bias_initializer: Initializer function for the bias.
+      kernel_regularizer: Regularizer function for the weight matrix.
+      bias_regularizer: Regularizer function for the bias.
+      activity_regularizer: Regularizer function for the output.
+      kernel_constraint: An optional projection function to be applied to the
+          kernel after being updated by an `Optimizer` (e.g. used to implement
+          norm constraints or value constraints for layer weights). The function
+          must take as input the unprojected variable and must return the
+          projected variable (which must have the same shape). Constraints are
+          not safe to use when doing asynchronous distributed training.
+      bias_constraint: An optional projection function to be applied to the
+          bias after being updated by an `Optimizer`.
+      trainable: Boolean, if `True` also add variables to the graph collection
+        `GraphKeys.TRAINABLE_VARIABLES` (see `tf.Variable`).
+      name: String, the name of the layer.
+      reuse: Boolean, whether to reuse the weights of a previous layer
+        by the same name.
+
+    Returns:
+      Output tensor the same shape as `inputs` except the last dimension is of
+      size `units`.
+
+    Raises:
+      ValueError: if eager execution is enabled.
+
+
+    @compatibility(TF2)
+    This API is a legacy api that is only compatible with eager execution and
+    `tf.function` if you combine it with
+    `tf.compat.v1.keras.utils.track_tf1_style_variables`
+
+    Please refer to [tf.layers model mapping section of the migration guide]
+    (https://www.tensorflow.org/guide/migrate/model_mapping)
+    to learn how to use your TensorFlow v1 model in TF2 with Keras.
+
+    The corresponding TensorFlow v2 layer is `tf.keras.layers.Dense`.
+
+
+    #### Structural Mapping to Native TF2
+
+    None of the supported arguments have changed name.
+
+    Before:
+
+    ```python
+     y = tf.compat.v1.layers.dense(x, units=3)
+    ```
+
+    After:
+
+    To migrate code using TF1 functional layers use the [Keras Functional API]
+    (https://www.tensorflow.org/guide/keras/functional):
+
+    ```python
+     x = tf.keras.Input((28,))
+     y = tf.keras.layers.Dense(units=3)(x)
+     model = tf.keras.Model(x, y)
+    ```
+    @end_compatibility
+
+    """
+    warnings.warn('`tf.layers.dense` is deprecated and will be removed in a future version. Please use `tf.keras.layers.Dense` instead.', stacklevel=2)
+    layer = Dense(units, activation=activation, use_bias=use_bias, kernel_initializer=kernel_initializer, bias_initializer=bias_initializer, kernel_regularizer=kernel_regularizer, bias_regularizer=bias_regularizer, activity_regularizer=activity_regularizer, kernel_constraint=kernel_constraint, bias_constraint=bias_constraint, trainable=trainable, name=name, _scope=name, _reuse=reuse)
+    return layer(inputs)
+
+----------
+
+def test_training_and_inference_behavior(self):
+    num_samples = 100
+    input_dim = 50
+
+    class DPNet(keras.Model):
+
+        def __init__(self):
+            super().__init__()
+            self.dp = keras.layers.Dropout(0.5)
+            self.dense = keras.layers.Dense(1, use_bias=False, kernel_initializer='ones')
+
+        def call(self, inputs):
+            x = self.dp(inputs)
+            return self.dense(x)
+    model = DPNet()
+    x = np.ones((num_samples, input_dim))
+    y = model.predict(x)
+    self.assertEqual(np.sum(y), np.sum(x))
+    model.compile(loss='mse', optimizer='rmsprop', run_eagerly=test_utils.should_run_eagerly())
+    loss = model.train_on_batch(x, y)
+    self.assertGreater(loss, 0.1)
+
+----------
+
+
+
+Test Class Name: default

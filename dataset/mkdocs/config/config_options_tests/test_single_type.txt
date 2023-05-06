@@ -1,0 +1,18 @@
+def assert_type(val, typ):
+    return None
+
+----------
+
+def test_single_type(self) -> None:
+
+    class Schema(Config):
+        option = c.Type(str)
+    conf = self.get_config(Schema, {'option': 'Testing'})
+    assert_type(conf.option, str)
+    self.assertEqual(conf.option, 'Testing')
+
+----------
+
+
+
+Test Class Name: TypeTest

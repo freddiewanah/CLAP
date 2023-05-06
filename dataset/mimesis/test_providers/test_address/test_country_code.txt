@@ -1,0 +1,30 @@
+def country_code(self, code: t.Optional[CountryCode]=CountryCode.A2) -> str:
+    """Get a random code of country.
+
+        Default format is :attr:`~enums.CountryCode.A2` (ISO 3166-1-alpha2),
+        you can change it by passing parameter ``fmt`` with enum object
+        :class:`~enums.CountryCode`.
+
+        :param code: Enum object CountryCode.
+        :return: Country code in selected format.
+        :raises KeyError: if fmt is not supported.
+        """
+    key = self.validate_enum(code, CountryCode)
+    return self.random.choice(COUNTRY_CODES[key])
+
+----------
+
+@pytest.mark.parametrize('code, length', [(CountryCode.A2, 2), (CountryCode.A3, 3), (CountryCode.NUMERIC, 3), (CountryCode.IOC, 3), (CountryCode.FIFA, 3), (None, [2, 3])])
+def test_country_code(self, _address, code, length):
+    iso = _address.country_code(code=code)
+    if code is not None:
+        assert iso in COUNTRY_CODES[code.value]
+    assert len(iso) == length or len(iso) in length
+    with pytest.raises(NonEnumerableError):
+        _address.country_code(code='nil')
+
+----------
+
+
+
+Test Class Name: TestAddress

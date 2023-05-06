@@ -1,0 +1,21 @@
+def cpu(self) -> str:
+    """Get a random CPU name.
+
+        :return: CPU name.
+
+        :Example:
+            Intel\xae Core i7.
+        """
+    return self.random.choice(CPU)
+
+----------
+
+def test_cpu(self, hard):
+    result = hard.cpu()
+    assert result in CPU
+
+----------
+
+
+
+Test Class Name: TestHardware

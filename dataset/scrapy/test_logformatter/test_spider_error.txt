@@ -1,0 +1,22 @@
+def spider_error(self, failure, request, response, spider):
+    """Logs an error message from a spider.
+
+        .. versionadded:: 2.0
+        """
+    return {'level': logging.ERROR, 'msg': SPIDERERRORMSG, 'args': {'request': request, 'referer': referer_str(request)}}
+
+----------
+
+def test_spider_error(self):
+    failure = Failure(Exception())
+    request = Request('http://www.example.com', headers={'Referer': 'http://example.org'})
+    response = Response('http://www.example.com', request=request)
+    logkws = self.formatter.spider_error(failure, request, response, self.spider)
+    logline = logkws['msg'] % logkws['args']
+    self.assertEqual(logline, 'Spider error processing <GET http://www.example.com> (referer: http://example.org)')
+
+----------
+
+
+
+Test Class Name: LogFormatterTestCase

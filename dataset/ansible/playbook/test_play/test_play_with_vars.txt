@@ -1,0 +1,24 @@
+def get_vars(self):
+    all_vars = dict()
+    if self._parent:
+        all_vars |= self._parent.get_vars()
+    all_vars |= self.vars
+    if 'tags' in all_vars:
+        del all_vars['tags']
+    if 'when' in all_vars:
+        del all_vars['when']
+    return all_vars
+
+----------
+
+def test_play_with_vars():
+    play = Play.load({}, vars={'var1': 'val1'})
+    assert play.get_name() == ''
+    assert play.vars == {'var1': 'val1'}
+    assert play.get_vars() == {'var1': 'val1'}
+
+----------
+
+
+
+Test Class Name: default

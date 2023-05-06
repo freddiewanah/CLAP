@@ -1,0 +1,50 @@
+def json(body: Any, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='application/json', dumps: Optional[Callable[..., str]]=None, **kwargs: Any) -> JSONResponse:
+    """
+    Returns response object with body in json format.
+
+    :param body: Response data to be serialized.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param kwargs: Remaining arguments that are passed to the json encoder.
+    """
+    return JSONResponse(body, status=status, headers=headers, content_type=content_type, dumps=dumps, **kwargs)
+
+----------
+
+def test_custom_context(app):
+
+    @app.middleware('request')
+    def store(request):
+        request.ctx.user = 'sanic'
+        request.ctx.session = None
+
+    @app.route('/')
+    def handler(request):
+        try:
+            invalid = request.ctx.missing
+        except AttributeError as e:
+            invalid = str(e)
+        return json({'user': request.ctx.user, 'session': request.ctx.session, 'has_user': hasattr(request.ctx, 'user'), 'has_session': hasattr(request.ctx, 'session'), 'has_missing': hasattr(request.ctx, 'missing'), 'invalid': invalid})
+
+    @app.middleware('response')
+    def modify(request, response):
+        try:
+            user = request.ctx.user
+        except AttributeError as e:
+            user = str(e)
+        try:
+            invalid = request.ctx.missing
+        except AttributeError as e:
+            invalid = str(e)
+        j = loads(response.body)
+        j['response_mw_valid'] = user
+        j['response_mw_invalid'] = invalid
+        return json(j)
+    (request, response) = app.test_client.get('/')
+    assert response.json == {'user': 'sanic', 'session': None, 'has_user': True, 'has_session': True, 'has_missing': False, 'invalid': "'types.SimpleNamespace' object has no attribute 'missing'", 'response_mw_valid': 'sanic', 'response_mw_invalid': "'types.SimpleNamespace' object has no attribute 'missing'"}
+
+----------
+
+
+
+Test Class Name: default

@@ -1,0 +1,18 @@
+def urljoin(self, url):
+    """Join this Response's url with a possible relative url to form an
+        absolute interpretation of the latter."""
+    return urljoin(get_base_url(self), url)
+
+----------
+
+def test_urljoin(self):
+    """Test urljoin shortcut (only for existence, since behavior equals urljoin)"""
+    joined = self.response_class('http://www.example.com').urljoin('/test')
+    absolute = 'http://www.example.com/test'
+    self.assertEqual(joined, absolute)
+
+----------
+
+
+
+Test Class Name: CustomResponse

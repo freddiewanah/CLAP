@@ -1,0 +1,14 @@
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+
+----------
+
+def test_try(self):
+    jsi = JSInterpreter('\n        function x() { try{return 10} catch(e){return 5} }\n        ')
+    self.assertEqual(jsi.call_function('x'), 10)
+
+----------
+
+
+
+Test Class Name: TestJSInterpreter

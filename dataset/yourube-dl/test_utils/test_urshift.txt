@@ -1,0 +1,14 @@
+def urshift(val, n):
+    return val >> n if val >= 0 else val + 4294967296 >> n
+
+----------
+
+def test_urshift(self):
+    self.assertEqual(urshift(3, 1), 1)
+    self.assertEqual(urshift(-3, 1), 2147483646)
+
+----------
+
+
+
+Test Class Name: TestUtil

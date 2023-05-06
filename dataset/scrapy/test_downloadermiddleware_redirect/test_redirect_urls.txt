@@ -1,0 +1,39 @@
+def process_response(self, request, response, spider):
+    if request.meta.get('dont_redirect', False) or response.status in getattr(spider, 'handle_httpstatus_list', []) or response.status in request.meta.get('handle_httpstatus_list', []) or request.meta.get('handle_httpstatus_all', False):
+        return response
+    allowed_status = (301, 302, 303, 307, 308)
+    if 'Location' not in response.headers or response.status not in allowed_status:
+        return response
+    location = safe_url_string(response.headers['Location'])
+    if response.headers['Location'].startswith(b'//'):
+        request_scheme = urlparse(request.url).scheme
+        location = request_scheme + '://' + location.lstrip('/')
+    redirected_url = urljoin(request.url, location)
+    if response.status in (301, 307, 308) or request.method == 'HEAD':
+        redirected = _build_redirect_request(request, url=redirected_url)
+        return self._redirect(redirected, request, spider, response.status)
+    redirected = self._redirect_request_using_get(request, redirected_url)
+    return self._redirect(redirected, request, spider, response.status)
+
+----------
+
+def test_redirect_urls(self):
+    req1 = Request('http://scrapytest.org/first')
+    rsp1 = HtmlResponse(req1.url, body=self._body(url='/redirected'))
+    req2 = self.mw.process_response(req1, rsp1, self.spider)
+    assert isinstance(req2, Request), req2
+    rsp2 = HtmlResponse(req2.url, body=self._body(url='/redirected2'))
+    req3 = self.mw.process_response(req2, rsp2, self.spider)
+    assert isinstance(req3, Request), req3
+    self.assertEqual(req2.url, 'http://scrapytest.org/redirected')
+    self.assertEqual(req2.meta['redirect_urls'], ['http://scrapytest.org/first'])
+    self.assertEqual(req3.url, 'http://scrapytest.org/redirected2')
+    self.assertEqual(req3.meta['redirect_urls'], ['http://scrapytest.org/first', 'http://scrapytest.org/redirected'])
+
+----------
+
+def _body(self, interval=5, url='http://example.org/newpage'):
+    html = f'<html><head><meta http-equiv="refresh" content="{interval};url={url}"/></head></html>'
+    return html.encode('utf-8')
+
+Test Class Name: MetaRefreshMiddlewareTest

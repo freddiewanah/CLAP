@@ -1,0 +1,21 @@
+def credit_card_network(self) -> str:
+    """Generate a random credit card network.
+
+        :return: Credit card network
+
+        :Example:
+            MasterCard
+        """
+    return self.random.choice(CREDIT_CARD_NETWORKS)
+
+----------
+
+def test_credit_card_network(self, payment):
+    result = payment.credit_card_network()
+    assert result in CREDIT_CARD_NETWORKS
+
+----------
+
+
+
+Test Class Name: TestPayment

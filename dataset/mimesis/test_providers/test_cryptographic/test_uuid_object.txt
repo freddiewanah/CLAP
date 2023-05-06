@@ -1,0 +1,18 @@
+@staticmethod
+def uuid_object() -> UUID:
+    """Generate UUID4 object.
+
+        :return: UUID4 object.
+        """
+    return uuid4()
+
+----------
+
+def test_uuid_object(self, crypto):
+    assert isinstance(crypto.uuid_object(), uuid.UUID)
+
+----------
+
+
+
+Test Class Name: TestCryptographic

@@ -1,0 +1,32 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.parametrize('unquote', [True, False, None])
+def test_unquote_add_route(app, unquote):
+
+    async def handler1(_, foo):
+        return text(foo)
+    app.add_route(handler1, '/<foo>', unquote=unquote)
+    value = '啊' if unquote else '%E5%95%8A'
+    (_, response) = app.test_client.get('/啊')
+    assert response.text == value
+    (_, response) = app.test_client.get('/%E5%95%8A')
+    assert response.text == value
+
+----------
+
+
+
+Test Class Name: default

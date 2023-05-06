@@ -1,0 +1,22 @@
+def university(self) -> str:
+    """Get a random university.
+
+        :return: University name.
+
+        :Example:
+            MIT.
+        """
+    universities: t.List[str] = self.extract(['university'])
+    return self.random.choice(universities)
+
+----------
+
+def test_university(self, person):
+    result = person.university()
+    assert result in person._data['university']
+
+----------
+
+
+
+Test Class Name: TestPerson

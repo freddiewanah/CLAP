@@ -1,0 +1,27 @@
+def pkcs1pad(data, length):
+    """
+    Padding input data with PKCS#1 scheme
+
+    @param {int[]} data        input data
+    @param {int}   length      target length
+    @returns {int[]}           padded data
+    """
+    if len(data) > length - 11:
+        raise ValueError('Input data too long for PKCS#1 padding')
+    pseudo_random = [random.randint(0, 254) for _ in range(length - len(data) - 3)]
+    return [0, 2] + pseudo_random + [0] + data
+
+----------
+
+def test_pkcs1pad(self):
+    data = [1, 2, 3]
+    padded_data = pkcs1pad(data, 32)
+    self.assertEqual(padded_data[:2], [0, 2])
+    self.assertEqual(padded_data[28:], [0, 1, 2, 3])
+    self.assertRaises(ValueError, pkcs1pad, data, 8)
+
+----------
+
+
+
+Test Class Name: TestUtil

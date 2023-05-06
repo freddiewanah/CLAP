@@ -1,0 +1,61 @@
+def train_step(self, data):
+    """The logic for one training step.
+
+        This method can be overridden to support custom training logic.
+        For concrete examples of how to override this method see
+        [Customizing what happens in fit](
+        https://www.tensorflow.org/guide/keras/customizing_what_happens_in_fit).
+        This method is called by `Model.make_train_function`.
+
+        This method should contain the mathematical logic for one step of
+        training.  This typically includes the forward pass, loss calculation,
+        backpropagation, and metric updates.
+
+        Configuration details for *how* this logic is run (e.g. `tf.function`
+        and `tf.distribute.Strategy` settings), should be left to
+        `Model.make_train_function`, which can also be overridden.
+
+        Args:
+          data: A nested structure of `Tensor`s.
+
+        Returns:
+          A `dict` containing values that will be passed to
+          `tf.keras.callbacks.CallbackList.on_train_batch_end`. Typically, the
+          values of the `Model`'s metrics are returned. Example:
+          `{'loss': 0.2, 'accuracy': 0.7}`.
+        """
+    (x, y, sample_weight) = data_adapter.unpack_x_y_sample_weight(data)
+    with tf.GradientTape() as tape:
+        y_pred = self(x, training=True)
+        loss = self.compute_loss(x, y, y_pred, sample_weight)
+    self._validate_target_and_loss(y, loss)
+    self.optimizer.minimize(loss, self.trainable_variables, tape=tape)
+    return self.compute_metrics(x, y, y_pred, sample_weight)
+
+----------
+
+@test_combinations.run_all_keras_modes(always_skip_v1=True)
+def test_loss_callable_on_model_ctl(self):
+
+    def get_model_and_train_step():
+        inputs = Input(shape=(1,))
+        targets = Input(shape=(1,))
+        outputs = test_utils.Bias()(inputs)
+        model = Model([inputs, targets], outputs)
+
+        def callable_loss():
+            return tf.reduce_sum(model.weights)
+        model.add_loss(callable_loss)
+        return get_ctl_train_step(model)
+    train_step = get_model_and_train_step()
+    loss = [train_step(self.x, self.y) for _ in range(5)]
+    self.assertAllClose(loss, [0.0, -0.05, -0.1, -0.15, -0.2], 0.001)
+    train_step = tf.function(get_model_and_train_step())
+    loss = [train_step(self.x, self.y) for _ in range(5)]
+    self.assertAllClose(loss, [0.0, -0.05, -0.1, -0.15, -0.2], 0.001)
+
+----------
+
+
+
+Test Class Name: TestAddLossCorrectness

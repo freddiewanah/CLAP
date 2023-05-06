@@ -1,0 +1,19 @@
+def periodicity(self) -> str:
+    """Get a random periodicity string.
+
+        :return: Periodicity.
+        """
+    periodicity: t.List[str] = self.extract(['periodicity'])
+    return self.random.choice(periodicity)
+
+----------
+
+def test_periodicity(self, dt):
+    result = dt.periodicity()
+    assert result in dt._data['periodicity']
+
+----------
+
+
+
+Test Class Name: TestDatetime

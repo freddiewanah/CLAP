@@ -1,0 +1,15 @@
+def remove_end(s, end):
+    return s[:-len(end)] if s is not None and s.endswith(end) else s
+
+----------
+
+def test_remove_end(self):
+    self.assertEqual(remove_end(None, ' - B'), None)
+    self.assertEqual(remove_end('A - B', ' - B'), 'A')
+    self.assertEqual(remove_end('B - A', ' - B'), 'B - A')
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,20 @@
+def price(self, minimum: float=500, maximum: float=1500) -> float:
+    """Generate random price.
+
+        :param minimum: Minimum value of price.
+        :param maximum: Maximum value of price.
+        :return: Price.
+        """
+    return self.random.uniform(minimum, maximum, precision=2)
+
+----------
+
+def test_price(self, finance):
+    result = finance.price(minimum=100.0, maximum=1999.99)
+    assert isinstance(result, float)
+
+----------
+
+
+
+Test Class Name: TestFinance

@@ -1,0 +1,23 @@
+def item_error(self, item, exception, response, spider):
+    """Logs a message when an item causes an error while it is passing
+        through the item pipeline.
+
+        .. versionadded:: 2.0
+        """
+    return {'level': logging.ERROR, 'msg': ITEMERRORMSG, 'args': {'item': item}}
+
+----------
+
+def test_item_error(self):
+    item = {'key': 'value'}
+    exception = Exception()
+    response = Response('http://www.example.com')
+    logkws = self.formatter.item_error(item, exception, response, self.spider)
+    logline = logkws['msg'] % logkws['args']
+    self.assertEqual(logline, "Error processing {'key': 'value'}")
+
+----------
+
+
+
+Test Class Name: LogFormatterTestCase

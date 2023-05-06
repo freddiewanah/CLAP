@@ -1,0 +1,14 @@
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+
+----------
+
+def test_badly_encoded_body(self):
+    r1 = TextResponse('http://www.example.com', body=b'<html><p>an Jos\xe9 de</p><html>', encoding='utf-8')
+    Selector(r1).xpath('//text()').getall()
+
+----------
+
+
+
+Test Class Name: SelectorTestCase

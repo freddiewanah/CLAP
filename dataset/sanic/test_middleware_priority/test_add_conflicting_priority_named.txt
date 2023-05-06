@@ -1,0 +1,49 @@
+def register_named_middleware(self, middleware: MiddlewareType, route_names: Iterable[str], attach_to: str='request', *, priority: Union[Default, int]=_default):
+    """
+        Method for attaching middleware to specific routes. This is mainly an
+        internal tool for use by Blueprints to attach middleware to only its
+        specific routes. But, it could be used in a more generalized fashion.
+
+        :param middleware: the middleware to execute
+        :param route_names: a list of the names of the endpoints
+        :type route_names: Iterable[str]
+        :param attach_to: whether to attach to request or response,
+            defaults to "request"
+        :type attach_to: str, optional
+        """
+    retval = middleware
+    location = MiddlewareLocation[attach_to.upper()]
+    if not isinstance(middleware, Middleware):
+        middleware = Middleware(middleware, location=location, priority=priority if isinstance(priority, int) else 0)
+    elif middleware.priority != priority and isinstance(priority, int):
+        middleware = Middleware(middleware.func, location=middleware.location, priority=priority)
+    if location is MiddlewareLocation.REQUEST:
+        for _rn in route_names:
+            if _rn not in self.named_request_middleware:
+                self.named_request_middleware[_rn] = deque()
+            if middleware not in self.named_request_middleware[_rn]:
+                self.named_request_middleware[_rn].append(middleware)
+    if location is MiddlewareLocation.RESPONSE:
+        for _rn in route_names:
+            if _rn not in self.named_response_middleware:
+                self.named_response_middleware[_rn] = deque()
+            if middleware not in self.named_response_middleware[_rn]:
+                self.named_response_middleware[_rn].appendleft(middleware)
+    return retval
+
+----------
+
+def test_add_conflicting_priority_named(app: Sanic):
+
+    def foo(*_):
+        ...
+    middleware = Middleware(foo, MiddlewareLocation.REQUEST, priority=998)
+    app.register_named_middleware(middleware=middleware, route_names=['foo'], priority=999)
+    assert app.named_request_middleware['foo'][0].priority == 999
+    middleware.priority == 998
+
+----------
+
+
+
+Test Class Name: default

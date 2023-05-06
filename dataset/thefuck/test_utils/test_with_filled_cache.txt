@@ -1,0 +1,23 @@
+def update(self, **kwargs):
+    """Returns new command with replaced fields.
+
+        :rtype: Command
+
+        """
+    kwargs.setdefault('script', self.script)
+    kwargs.setdefault('output', self.output)
+    return Command(**kwargs)
+
+----------
+
+def test_with_filled_cache(self, shelve, fn, key):
+    cache_value = {key: {'etag': '0', 'value': 'new-value'}}
+    shelve.update(cache_value)
+    assert fn() == 'new-value'
+    assert shelve == cache_value
+
+----------
+
+
+
+Test Class Name: _Shelve

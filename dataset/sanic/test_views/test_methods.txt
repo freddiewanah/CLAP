@@ -1,0 +1,49 @@
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+
+----------
+
+@pytest.mark.parametrize('method', HTTP_METHODS)
+def test_methods(app, method):
+
+    class DummyView(HTTPMethodView):
+
+        async def get(self, request):
+            return text('', headers={'method': 'GET'})
+
+        def post(self, request):
+            return text('', headers={'method': 'POST'})
+
+        async def put(self, request):
+            return text('', headers={'method': 'PUT'})
+
+        def head(self, request):
+            return text('', headers={'method': 'HEAD'})
+
+        def options(self, request):
+            return text('', headers={'method': 'OPTIONS'})
+
+        async def patch(self, request):
+            return text('', headers={'method': 'PATCH'})
+
+        def delete(self, request):
+            return text('', headers={'method': 'DELETE'})
+    app.add_route(DummyView.as_view(), '/')
+    (request, response) = getattr(app.test_client, method.lower())('/')
+    assert response.headers['method'] == method
+
+----------
+
+
+
+Test Class Name: default

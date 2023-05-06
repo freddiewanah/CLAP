@@ -1,0 +1,19 @@
+def finish_exporting(self):
+    pass
+
+----------
+
+def test_nonstring_types_item(self):
+    item = self._get_nonstring_types_item()
+    self.ie.start_exporting()
+    self.ie.export_item(item)
+    self.ie.finish_exporting()
+    exported = json.loads(to_unicode(self.output.getvalue()))
+    item['time'] = str(item['time'])
+    self.assertEqual(exported, [item])
+
+----------
+
+
+
+Test Class Name: JsonItemExporterTest

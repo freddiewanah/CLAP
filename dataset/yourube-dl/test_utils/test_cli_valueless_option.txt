@@ -1,0 +1,19 @@
+def cli_valueless_option(params, command_option, param, expected_value=True):
+    param = params.get(param)
+    return [command_option] if param == expected_value else []
+
+----------
+
+def test_cli_valueless_option(self):
+    self.assertEqual(cli_valueless_option({'downloader': 'external'}, '--external-downloader', 'downloader', 'external'), ['--external-downloader'])
+    self.assertEqual(cli_valueless_option({'downloader': 'internal'}, '--external-downloader', 'downloader', 'external'), [])
+    self.assertEqual(cli_valueless_option({'nocheckcertificate': True}, '--no-check-certificate', 'nocheckcertificate'), ['--no-check-certificate'])
+    self.assertEqual(cli_valueless_option({'nocheckcertificate': False}, '--no-check-certificate', 'nocheckcertificate'), [])
+    self.assertEqual(cli_valueless_option({'checkcertificate': True}, '--no-check-certificate', 'checkcertificate', False), [])
+    self.assertEqual(cli_valueless_option({'checkcertificate': False}, '--no-check-certificate', 'checkcertificate', False), ['--no-check-certificate'])
+
+----------
+
+
+
+Test Class Name: TestUtil

@@ -1,0 +1,15 @@
+def version_tuple(version_str):
+    return tuple(map(int, version_str.split('.')))
+
+----------
+
+def test_version_tuple(self):
+    self.assertEqual(version_tuple('1'), (1,))
+    self.assertEqual(version_tuple('10.23.344'), (10, 23, 344))
+    self.assertEqual(version_tuple('10.1-6'), (10, 1, 6))
+
+----------
+
+
+
+Test Class Name: TestUtil

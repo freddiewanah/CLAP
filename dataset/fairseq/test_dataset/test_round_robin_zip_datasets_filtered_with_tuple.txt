@@ -1,0 +1,33 @@
+def filter_indices_by_size(self, indices, max_sizes):
+    """Filter a list of sample indices. Remove those that are longer
+            than specified in max_sizes.
+
+        Args:
+            indices (np.array): original array of sample indices
+            max_sizes (int or list[int] or tuple[int]): max sample size,
+                can be defined separately for src and tgt (then list or tuple)
+
+        Returns:
+            np.array: filtered sample array
+            list: list of removed indices
+        """
+    return data_utils.filter_paired_dataset_indices_by_size(self.src_sizes, self.tgt_sizes, indices, max_sizes)
+
+----------
+
+def test_round_robin_zip_datasets_filtered_with_tuple(self):
+    long_dataset = lang_pair_dataset([10, 20, 8, 11, 1000, 7, 12])
+    short_dataset = lang_pair_dataset([11, 20, 9, 1000])
+    dataset = RoundRobinZipDatasets({'a': long_dataset, 'b': short_dataset})
+    idx = dataset.ordered_indices()
+    (idx, _) = dataset.filter_indices_by_size(idx, 19)
+    self.assertEqual(list(idx), [0, 1, 2, 3, 4])
+    self.assertEqual(dict(dataset[0]), {'a': sample(5, 7), 'b': sample(2, 9)})
+    self.assertEqual(dict(dataset[2]), {'a': sample(0, 10), 'b': sample(2, 9)})
+    self.assertEqual(dict(dataset[4]), {'a': sample(6, 12), 'b': sample(2, 9)})
+
+----------
+
+
+
+Test Class Name: TestDataset

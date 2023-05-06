@@ -1,0 +1,31 @@
+@classmethod
+def from_settings(cls, settings: Settings, crawler=None):
+    mwlist = cls._get_mwlist_from_settings(settings)
+    middlewares = []
+    enabled = []
+    for clspath in mwlist:
+        try:
+            mwcls = load_object(clspath)
+            mw = create_instance(mwcls, settings, crawler)
+            middlewares.append(mw)
+            enabled.append(clspath)
+        except NotConfigured as e:
+            if e.args:
+                clsname = clspath.split('.')[-1]
+                logger.warning('Disabled %(clsname)s: %(eargs)s', {'clsname': clsname, 'eargs': e.args[0]}, extra={'crawler': crawler})
+    logger.info('Enabled %(componentname)ss:\n%(enabledlist)s', {'componentname': cls.component_name, 'enabledlist': pprint.pformat(enabled)}, extra={'crawler': crawler})
+    return cls(*middlewares)
+
+----------
+
+def test_enabled_from_settings(self):
+    settings = Settings()
+    mwman = TestMiddlewareManager.from_settings(settings)
+    classes = [x.__class__ for x in mwman.middlewares]
+    self.assertEqual(classes, [M1, M3])
+
+----------
+
+
+
+Test Class Name: MiddlewareManagerTest

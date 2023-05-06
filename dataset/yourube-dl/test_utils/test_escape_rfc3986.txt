@@ -1,0 +1,23 @@
+def escape_rfc3986(s):
+    """Escape non-ASCII characters as suggested by RFC 3986"""
+    if sys.version_info < (3, 0) and isinstance(s, compat_str):
+        s = s.encode('utf-8')
+    return compat_str(compat_urllib_parse.quote(s, b"%/;:@&=+$,!~*'()?#[]"))
+
+----------
+
+def test_escape_rfc3986(self):
+    reserved = "!*'();:@&=+$,/?#[]"
+    unreserved = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~'
+    self.assertEqual(escape_rfc3986(reserved), reserved)
+    self.assertEqual(escape_rfc3986(unreserved), unreserved)
+    self.assertEqual(escape_rfc3986('тест'), '%D1%82%D0%B5%D1%81%D1%82')
+    self.assertEqual(escape_rfc3986('%D1%82%D0%B5%D1%81%D1%82'), '%D1%82%D0%B5%D1%81%D1%82')
+    self.assertEqual(escape_rfc3986('foo bar'), 'foo%20bar')
+    self.assertEqual(escape_rfc3986('foo%20bar'), 'foo%20bar')
+
+----------
+
+
+
+Test Class Name: TestUtil

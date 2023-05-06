@@ -1,0 +1,34 @@
+def deprecate(msg, version=None, date=None, collection_name=None):
+    if isinstance(msg, string_types):
+        if date is not None:
+            _global_deprecations.append({'msg': msg, 'date': date, 'collection_name': collection_name})
+        else:
+            _global_deprecations.append({'msg': msg, 'version': version, 'collection_name': collection_name})
+    else:
+        raise TypeError('deprecate requires a string not a %s' % type(msg))
+
+----------
+
+@pytest.mark.parametrize('stdin', [{}], indirect=['stdin'])
+def test_deprecate(am, capfd, monkeypatch):
+    monkeypatch.setattr(warnings, '_global_deprecations', [])
+    am.deprecate('deprecation1')
+    am.deprecate('deprecation2', '2.3')
+    am.deprecate('deprecation3', version='2.4')
+    am.deprecate('deprecation4', date='2020-03-10')
+    am.deprecate('deprecation5', collection_name='ansible.builtin')
+    am.deprecate('deprecation6', '2.3', collection_name='ansible.builtin')
+    am.deprecate('deprecation7', version='2.4', collection_name='ansible.builtin')
+    am.deprecate('deprecation8', date='2020-03-10', collection_name='ansible.builtin')
+    with pytest.raises(SystemExit):
+        am.exit_json(deprecations=['deprecation9', ('deprecation10', '2.4')])
+    (out, err) = capfd.readouterr()
+    output = json.loads(out)
+    assert 'warnings' not in output or output['warnings'] == []
+    assert output['deprecations'] == [{u'msg': u'deprecation1', u'version': None, u'collection_name': None}, {u'msg': u'deprecation2', u'version': '2.3', u'collection_name': None}, {u'msg': u'deprecation3', u'version': '2.4', u'collection_name': None}, {u'msg': u'deprecation4', u'date': '2020-03-10', u'collection_name': None}, {u'msg': u'deprecation5', u'version': None, u'collection_name': 'ansible.builtin'}, {u'msg': u'deprecation6', u'version': '2.3', u'collection_name': 'ansible.builtin'}, {u'msg': u'deprecation7', u'version': '2.4', u'collection_name': 'ansible.builtin'}, {u'msg': u'deprecation8', u'date': '2020-03-10', u'collection_name': 'ansible.builtin'}, {u'msg': u'deprecation9', u'version': None, u'collection_name': None}, {u'msg': u'deprecation10', u'version': '2.4', u'collection_name': None}]
+
+----------
+
+
+
+Test Class Name: default

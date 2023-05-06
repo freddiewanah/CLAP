@@ -1,0 +1,39 @@
+@classmethod
+def parse(cls, headers: str) -> 'HTTPHeaders':
+    """Returns a dictionary from HTTP header text.
+
+        >>> h = HTTPHeaders.parse("Content-Type: text/html\\r\\nContent-Length: 42\\r\\n")
+        >>> sorted(h.items())
+        [('Content-Length', '42'), ('Content-Type', 'text/html')]
+
+        .. versionchanged:: 5.1
+
+           Raises `HTTPInputError` on malformed headers instead of a
+           mix of `KeyError`, and `ValueError`.
+
+        """
+    h = cls()
+    for line in headers.split('\n'):
+        if line.endswith('\r'):
+            line = line[:-1]
+        if line:
+            h.parse_line(line)
+    return h
+
+----------
+
+@gen_test
+def test_unix_socket(self):
+    self.stream.write(b'GET /hello HTTP/1.0\r\n\r\n')
+    response = (yield self.stream.read_until(b'\r\n'))
+    self.assertEqual(response, b'HTTP/1.1 200 OK\r\n')
+    header_data = (yield self.stream.read_until(b'\r\n\r\n'))
+    headers = HTTPHeaders.parse(header_data.decode('latin1'))
+    body = (yield self.stream.read_bytes(int(headers['Content-Length'])))
+    self.assertEqual(body, b'Hello world')
+
+----------
+
+
+
+Test Class Name: UnixSocketTest

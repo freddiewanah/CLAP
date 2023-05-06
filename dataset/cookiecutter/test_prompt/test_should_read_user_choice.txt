@@ -1,0 +1,26 @@
+def prompt_choice_for_config(cookiecutter_dict, env, key, options, no_input):
+    """Prompt user with a set of options to choose from.
+
+    :param no_input: Do not prompt for user input and return the first available option.
+    """
+    rendered_options = [render_variable(env, raw, cookiecutter_dict) for raw in options]
+    if no_input:
+        return rendered_options[0]
+    return read_user_choice(key, rendered_options)
+
+----------
+
+def test_should_read_user_choice(self, mocker, choices, context):
+    """Verify prompt_choice_for_config return user selection on no_input=False."""
+    read_user_choice = mocker.patch('cookiecutter.prompt.read_user_choice')
+    read_user_choice.return_value = 'all'
+    expected_choice = 'all'
+    actual_choice = prompt.prompt_choice_for_config(cookiecutter_dict=context, env=environment.StrictEnvironment(), key='orientation', options=choices, no_input=False)
+    read_user_choice.assert_called_once_with('orientation', choices)
+    assert expected_choice == actual_choice
+
+----------
+
+
+
+Test Class Name: TestPromptChoiceForConfig

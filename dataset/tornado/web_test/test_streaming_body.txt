@@ -1,0 +1,34 @@
+def close(self) -> None:
+    """Closes the HTTPClient, freeing any resources used."""
+    if not self._closed:
+        self._async_client.close()
+        self._io_loop.close()
+        self._closed = True
+
+----------
+
+@gen_test
+def test_streaming_body(self):
+    self.prepared = Future()
+    self.data = Future()
+    self.finished = Future()
+    stream = self.connect(b'/stream_body', connection_close=True)
+    yield self.prepared
+    stream.write(b'4\r\nasdf\r\n')
+    data = (yield self.data)
+    self.assertEqual(data, b'asdf')
+    self.data = Future()
+    stream.write(b'4\r\nqwer\r\n')
+    data = (yield self.data)
+    self.assertEqual(data, b'qwer')
+    stream.write(b'0\r\n\r\n')
+    yield self.finished
+    data = (yield stream.read_until_close())
+    self.assertTrue(data.endswith(b'{}'))
+    stream.close()
+
+----------
+
+
+
+Test Class Name: CloseDetectionHandler

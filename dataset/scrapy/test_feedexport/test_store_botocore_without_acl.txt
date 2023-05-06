@@ -1,0 +1,21 @@
+def store(file):
+    """Store the given file stream"""
+
+----------
+
+@defer.inlineCallbacks
+def test_store_botocore_without_acl(self):
+    skip_if_no_boto()
+    storage = S3FeedStorage('s3://mybucket/export.csv', 'access_key', 'secret_key')
+    self.assertEqual(storage.access_key, 'access_key')
+    self.assertEqual(storage.secret_key, 'secret_key')
+    self.assertEqual(storage.acl, None)
+    storage.s3_client = mock.MagicMock()
+    yield storage.store(BytesIO(b'test file'))
+    self.assertNotIn('ACL', storage.s3_client.put_object.call_args[1])
+
+----------
+
+
+
+Test Class Name: S3FeedStorageTest
