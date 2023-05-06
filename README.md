@@ -3,4 +3,4 @@
 
 This is the repository of CLAP, the folders includes:
 * datasets: the python assert generation dataset.
-* CLAP: the implementation of CLAP.
+* CLAP: the implementation of CLAP (Updated soon once got accepted).
