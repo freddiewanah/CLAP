@@ -8,8 +8,6 @@ import tiktoken
 rerunList = []
 
 envDir = ""
-
-
 openai.api_key = ""
 
 def get_reponse_from_openai(prompt):
@@ -174,7 +172,6 @@ def main():
             focalMethodName = ''
             for line in focalMethod.split('\n'):
                 if 'def ' in line:
-                    focalMethodName = line.split(' ')[1].split('(')[0]
                     break
             # skip the file is there is no assert
             if 'self.assert' not in testCode:

@@ -197,42 +197,30 @@ def check_function(function, functions, dirName, file, imports, content, focalMe
     methodCalled = []
     # check if function has a line start with self.assert
     functionValid = False
-    # debug
-    # if function != 'test_list_str':
-    #     return None
     for line in functions[function].split('\n'):
         if line.strip().startswith('self.assert') or line.strip().startswith('assert '):
             functionValid = True
             break
     if not functionValid:
         return None
-
-    # print(function, dirName, imports)
     try:
         funcTree = ast.parse(functions[function])
         for node in ast.walk(funcTree):
             if isinstance(node, ast.Call):
                 if isinstance(node.func, ast.Attribute):
-                    # print(ast.unparse(node.func))
                     methodCalled.append(node.func.attr)
                 elif isinstance(node.func, ast.Name):
                     methodCalled.append(node.func.id)
-        # print(function, methodCalled)
-        # print(file)
 
     except Exception as e:
         print(e)
         return None
     potentialFunctions = []
     for fileNameTemp in focalMethodsDict.keys():
-        print(fileNameTemp)
         for funcName in focalMethodsDict[fileNameTemp].keys():
-            # for funcName in focalMethodsDict[focalFileName][fileNameTemp].keys():
-             print(funcName)
              libName = fileNameTemp.replace('.py', '').split('/')[-1]
              className = funcName.split('++++')[0]
              funcName1 = funcName.split('++++')[1]
-             # print(libName, className, funcName1)
              for importedLib in imports:
                  if libName.lower() in importedLib.lower():
                      if className in content:
@@ -242,17 +230,12 @@ def check_function(function, functions, dirName, file, imports, content, focalMe
                      if funcName1 in content:
                          if (fileNameTemp, funcName, funcName1) not in potentialFunctions:
                              potentialFunctions.append((fileNameTemp, funcName, funcName1))
-    print(potentialFunctions)
-    print(methodCalled)
     #   reverse loop through the methodCalled
     for method in reversed(methodCalled):
         for potentialFunction in potentialFunctions:
             if method == potentialFunction[2] and len(potentialFunction[1].split('++++')[0]) > 0:
                 # check if addtional information is needed
                 additionalInformation = checkAdditonalInfo(privateFunctions, functions[function], thisClassName)
-                print('found')
-                print(additionalInformation)
-                # print(potentialFunction)
                 return {
                     'focalFile': focalMethodsDict[potentialFunction[0]][potentialFunction[1]],
                     'testFunction': functions[function],
@@ -260,10 +243,7 @@ def check_function(function, functions, dirName, file, imports, content, focalMe
                 }
         for potentialFunction in potentialFunctions:
             if method == potentialFunction[2]:
-                # print('found')
-                # print(potentialFunction)
                 additionalInformation = checkAdditonalInfo(privateFunctions, functions[function], thisClassName)
-
                 return {
                     'focalFile': focalMethodsDict[potentialFunction[0]][potentialFunction[1]],
                     'testFunction': functions[function],
@@ -292,15 +272,11 @@ def get_pairs(focalMethodsDict, all_files, save_dir):
     currentProgressCount = 0
     # visit the test files
     for testFileName in all_files['Test Files']:
-
         currentProgressCount += 1
         print('current progress: ', currentProgressCount, '/', allFilesCount)
         with open(os.path.join(target_dir, 'test', testFileName), 'r') as f:
-            print('Reading: ', testFileName)
             content = f.read()
             if 'assert' not in content:
-                print('skipped')
-                print('no assert: ' + testFileName)
                 continue
             try:
                 tree = ast.parse(content)
@@ -312,20 +288,15 @@ def get_pairs(focalMethodsDict, all_files, save_dir):
                 functions = analyzer.get_functions()
                 imports = analyzer.get_imports()
                 privateFunctions = analyzer.get_private_functions()
-                print(functions)
-                print('imports: ',imports)
                 for thisClassName in functions.keys():
                     for function in functions[thisClassName].keys():
                         # check if file saved
                         if os.path.exists(os.path.join(save_dir, testFileName.replace('.py', ''), function + '.txt')):
-                            print('skipped')
                             continue
 
                         result = check_function(function, functions[thisClassName], testFileName, testFileName, imports, content, focalMethodsDict, privateFunctions, thisClassName)
                         if result is not None:
-                            print('about to save')
 
-                            # create the directory if not exists
                             if not os.path.exists(os.path.join(save_dir, testFileName.replace('.py', ''))):
                                 os.makedirs(os.path.join(save_dir, testFileName.replace('.py', '')))
                             with open(os.path.join(save_dir, testFileName.replace('.py', ''), function + '.txt'), 'w') as f:
@@ -340,9 +311,6 @@ def get_pairs(focalMethodsDict, all_files, save_dir):
                 print(e)
                 continue
 
-
-    print(count)
-    print(len(set(noList)))
 if __name__ == '__main__':
     all_files = get_all_files(target_dir)
     focalMethodsDict = get_all_focal_methods(all_files)

@@ -23,8 +23,6 @@ def run_unittest(test_case_name, test_function_name):
         return result.errors[0][1]
 
 projectFolder = ""
-
-
 command = ""
 
 def save_temp_file(tarFile, newCode, testFuncName):
@@ -33,11 +31,9 @@ def save_temp_file(tarFile, newCode, testFuncName):
     # Read the contents of file_a.py
     with open(tarFilePath, 'r') as f:
         code = f.read()
-
     try:
         # Parse the source code to an AST
         module = ast.parse(code)
-
         # Find the function definition for funcB
         for node in module.body:
             if isinstance(node, ast.ClassDef):
@@ -60,7 +56,6 @@ def save_temp_file(tarFile, newCode, testFuncName):
     tempFilepath = tarFilePath.replace('.py', '_temp.py')
     with open(tempFilepath, 'w') as f:
         f.write(new_code)
-    print("temp file saved at: " + tempFilepath)
     return tempFilepath
 
 def find_file_within_folder(folder, file_name):
@@ -68,8 +63,6 @@ def find_file_within_folder(folder, file_name):
         file_name = file_name.split('/')[-1]
     for root, dirs, files in os.walk(folder):
         for file in files:
-            # print(file)
-            # print('file_name: ' + file_name)
             if file == file_name:
                 return os.path.join(root, file)
     return None
@@ -81,7 +74,6 @@ def parse_error_message(message):
     short_error_lines = []
     startFlag = False
     is_error = any("ERROR" in line for line in error_lines)
-    print('is_error:  ', is_error)
     if is_error:
         return 'ERROR'
     for line in error.split('\n'):
@@ -104,7 +96,6 @@ def parse_error_message(message):
 def parse_noself_message(message):
     error_lines = [line.decode('utf-8').replace('|n', '\n').replace("|", "") for line in message.split(b'\n')]
     is_error = any("ERROR" in line for line in error_lines)
-    print('is_error:  ', is_error)
     if is_error:
         return 'ERROR'
 
@@ -113,9 +104,7 @@ def parse_noself_message(message):
     error = '\n'.join(error_lines)
     short_error_lines = []
     startFlag = False
-
     for line in error.split('\n'):
-        # print(line)
         if line.startswith('>') or 'actual=' in line.lower() or ': AssertionError' in line or 'expected' in line.lower():
             startFlag = True
         if startFlag:
@@ -140,21 +129,16 @@ def run_pytest_noself(test_file, test_function, envDir, newCode, className, noCl
     tempFilepath = save_temp_file(test_file, newCode, test_function)
     if tempFilepath is None:
         return None
-
     # Run pytest as a subprocess and capture its output
     cmd = [envDir, '', '--target', tempFilepath + '::' + className + '.' + test_function]
     if className == 'default' or noClass:
         cmd = [envDir, '', '--target', tempFilepath + '::' + test_function]
-    # print(noClass,cmd)
     try:
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         output = e.output
-        print("all error: " + str(output))
         os.remove(tempFilepath)
         return parse_noself_message(output)
-
-    print("all error: " + str(output))
     # If pytest succeeded, return None
     if b'collected 1 item' in output and b'1 passed in' in output:
         os.remove(tempFilepath)
@@ -181,7 +165,6 @@ def run_pytest(test_file, test_function, envDir, newCode, className, noClass):
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         output = e.output
-        print("error origin: " + str(e))
         os.remove(tempFilepath)
         if 'exit status 4' in str(e):
             return 'ERROR'

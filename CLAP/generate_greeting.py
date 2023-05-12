@@ -14,7 +14,6 @@ tarFiles = []
 
 
 def extract_first_two_params(call_node):
-    # print(call_node.args[:2])
     tempList = [str(ast.unparse(node)) for node in call_node.args[:2]]
     if len(tempList) == 1:
         tempList.append('')
@@ -102,7 +101,6 @@ def processGreetingFile(greetingFile):
     return greetingPrompt
 
 def main():
-    questionPrompt = ''
     # read the existing files
     tarPath = projectDir
     result_list = []
@@ -121,7 +119,6 @@ def main():
                 continue
             else:
                 dirName = root.replace(tarPath+'/', '')
-                # print(os.path.join(root, file), dirName)
                 if dirName not in fileByDir:
                     fileByDir[dirName] = []
                 fileByDir[dirName].append(file)
@@ -141,8 +138,6 @@ def main():
 
             if '.txt' not in fileName:
                 continue
-            # print(fileName, dirName)
-            # print(tarPath)
             with open(os.path.join(tarPath, dirName, fileName), 'r') as f:
                 for line in f.read().split('\n----------\n')[1].split('\n'):
                     if 'self.assert' in line:
@@ -204,15 +199,13 @@ def main():
                             if similarFileNameDict.get(os.path.join(dirName, fileName)) is None:
                                 similarFileNameDict[os.path.join(dirName, fileName)] = maxSimilarityFileName
             else:
-                # similarFileNameDict[os.path.join(dirName, fileName)] = ''
                 similarFileNameDict[os.path.join(dirName, fileName)] = maxSimilarityFileName
 
             if '503' in fileName:
                 if len(similarFileNameDict[os.path.join(dirName, fileName)]) == 0:
                     print('no similar file: !!!!', fileName)
             if len(similarFileNameDict[os.path.join(dirName, fileName)]) == 0:
-                # print('no similar file: ????', fileName, dirName)
-                # find the most similar fileName from all file list
+                # get the closest file
                 maxSimilarity = 0
                 maxSimilarityFileName = ''
                 for allFileName in allFileNames:
@@ -225,13 +218,11 @@ def main():
                         maxSimilarityFileName = allFileName
                 similarFileNameDict[os.path.join(dirName, fileName)] = maxSimilarityFileName+'----'
 
-    # read through the pair_result
     tarPath = projectDir
     for root, dirs, files in os.walk(tarPath):
         hasNew = False
         for name in tarFiles:
             if name.replace('.py', '') in root:
-                print('passs', name, root)
                 hasNew = True
                 break
         if not hasNew:
@@ -259,7 +250,6 @@ def main():
 
             dirName = root.replace(tarPath+'/', '')
             if os.path.join(dirName, file) not in similarFileNameDict:
-                # print('no similar file::::::::::: ', os.path.join(dirName, file))
                 with open(
                         "",
                         'r') as f:
@@ -267,13 +257,10 @@ def main():
             else:
                 similarFileName = similarFileNameDict[os.path.join(dirName, file)]
                 if len(similarFileName) == 0:
-                    # print('213141235423534262345623452345234', os.path.join(dirName, file))
                     with open("", 'r') as f:
                         greetingPrompt = f.read()
                 else:
                     tempRoot = root
-
-                    thePath =''
                     if '/' in similarFileName:
                         # remove the last part of root path
                         if '----' in similarFileName:
@@ -303,11 +290,9 @@ def checkAllGreets():
                 continue
             with open(os.path.join(root, file), 'r') as f:
                 greeting = f.read()
-            # count the number of <AssertPlaceholder
             if greeting.count('<AssertPlaceholder') <= 1:
                 print('no greeting', file)
 
 
 if __name__ == '__main__':
-    # checkAllGreets()
     main()
