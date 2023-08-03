@@ -1,0 +1,23 @@
+#Method to be tested:
+def programming_language(self) -> str:
+    """Get a random programming language from the list.
+
+        :return: Programming language.
+
+        :Example:
+            Erlang.
+        """
+    return self.random.choice(PROGRAMMING_LANGS)
+#Unit test:
+
+def test_programming_language(self, dev):
+    result = dev.programming_language()
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+assert result is not None
+
+
+----------
+    assert result in data.PROGRAMMING_LANGS

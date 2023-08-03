@@ -1,0 +1,26 @@
+#Method to be tested:
+def fetch(self, request: Union['HTTPRequest', str], **kwargs: Any) -> 'HTTPResponse':
+    """Executes a request, returning an `HTTPResponse`.
+
+        The request may be either a string URL or an `HTTPRequest` object.
+        If it is a string, we construct an `HTTPRequest` using any additional
+        kwargs: ``HTTPRequest(request, **kwargs)``
+
+        If an error occurs during the fetch, we raise an `HTTPError` unless
+        the ``raise_error`` keyword argument is set to False.
+        """
+    response = self._io_loop.run_sync(functools.partial(self._async_client.fetch, request, **kwargs))
+    return response
+#Unit test:
+
+def test_oauth10a_get_user_coroutine_exception(self):
+    response = self.fetch('/oauth10a/client/login_coroutine?oauth_token=zxcv&fail_in_get_user=true', headers={'Cookie': '_oauth_request_token=enhjdg==|MTIzNA=='})
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+self.assertRaises(HTTPError, self.fetch, '/oauth10a/client/login_coroutine?oauth_token=zxcv&fail_in_get_user=true', headers={'Cookie': '_oauth_request_token=enhjdg==|MTIzNA=='})
+
+
+----------
+    self.assertEqual(response.code, 503)

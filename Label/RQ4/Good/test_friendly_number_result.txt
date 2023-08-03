@@ -1,0 +1,28 @@
+#Method to be tested:
+def friendly_number(self, value: int) -> str:
+    """Returns a comma-separated number for the given integer."""
+    if self.code not in ('en', 'en_US'):
+        return str(value)
+    s = str(value)
+    parts = []
+    while s:
+        parts.append(s[-3:])
+        s = s[:-3]
+    return ','.join(reversed(parts))
+#Unit test:
+
+def test_friendly_number(self):
+    locale = tornado.locale.get('en_US')
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+1. The function is testing `friendly_number` and the unit test is `test_friendly_number`.
+2. For AssertPlaceholder1 is testing `locale.friendly_number(value=1234567)` with `assertEqual`, and the expected value is `'1,234,567'`.
+
+#Generated assertion:
+self.assertEqual(locale.friendly_number(value=1234567), '1,234,567')
+
+
+----------
+    self.assertEqual(locale.friendly_number(1000000), '1,000,000')

@@ -1,0 +1,31 @@
+#Method to be tested:
+def documentation_pages(self) -> Sequence[File]:
+    """Return iterable of all Markdown page file objects."""
+    return [file for file in self if file.is_documentation_page()]
+#Unit test:
+
+@tempdir()
+def test_build_page(self, site_dir):
+    cfg = load_config(site_dir=site_dir, nav=['index.md'], plugins=[])
+    fs = [File('index.md', cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls'])]
+    files = Files(fs)
+    nav = get_navigation(files, cfg)
+    page = files.documentation_pages()[0].page
+    page.title = 'Title'
+    page.markdown = 'page content'
+    page.content = '<p>page content</p>'
+    build._build_page(page, cfg, files, nav, self._get_env_with_null_translations(cfg))
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+2. The assertion should be testing the expected result of the `documentation_pages` function.
+
+3. The expected result should be a list of `File` objects.
+
+#Generated assertion:
+self.assertEqual(len(files.documentation_pages()), 1)
+
+
+----------
+    self.assertPathIsFile(site_dir, 'index.html')

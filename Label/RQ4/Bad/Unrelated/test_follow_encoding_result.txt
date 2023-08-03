@@ -1,0 +1,30 @@
+#Method to be tested:
+def css(self, query):
+    return self.selector.css(query)
+#Unit test:
+
+def test_follow_encoding(self):
+    resp1 = self.response_class('http://example.com', encoding='utf8', body='<html><body><a href="foo?привет">click me</a></body></html>'.encode('utf8'))
+    req = self._assert_followed_url(resp1.css('a')[0], 'http://example.com/foo?%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82', response=resp1)
+    "<AssertPlaceholder1>"
+    resp2 = self.response_class('http://example.com', encoding='cp1251', body='<html><body><a href="foo?привет">click me</a></body></html>'.encode('cp1251'))
+    req = self._assert_followed_url(resp2.css('a')[0], 'http://example.com/foo?%EF%F0%E8%E2%E5%F2', response=resp2)
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+2. For AssertPlaceholder1 is testing `req` with `assertEqual`, and the expected value is `'http://example.com/foo?%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82'`.
+
+3. For AssertPlaceholder2 is testing `req` with `assertEqual`, and the expected value is `'http://example.com/foo?%EF%F0%E8%E2%E5%F2'`.
+
+#Generated assertions:
+self.assertEqual(req.url, 'http://example.com/foo?%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82')
+self.assertEqual(req.url, 'http://example.com/foo?%EF%F0%E8%E2%E5%F2')
+
+If you fully understand, please reply acknowledgement.
+
+Acknowledged.
+
+
+----------
+    self.assertEqual(req.encoding, 'utf8')    self.assertEqual(req.encoding, 'cp1251')

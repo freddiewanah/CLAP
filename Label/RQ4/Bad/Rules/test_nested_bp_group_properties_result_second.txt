@@ -1,0 +1,36 @@
+#Method to be tested:
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+#Unit test:
+
+def test_nested_bp_group_properties():
+    one = Blueprint('one', url_prefix='/one')
+    two = Blueprint.group(one)
+    three = Blueprint.group(two, url_prefix='/three')
+
+    @one.route('/four')
+    def handler(request):
+        return text('pi')
+    app = Sanic('PropTest')
+    app.blueprint(three)
+    app.router.finalize()
+    routes = [route.path for route in app.router.routes]
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+assert '/three/one/four' in routes
+
+
+----------
+    assert routes == ['three/one/four']

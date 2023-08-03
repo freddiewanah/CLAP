@@ -1,0 +1,20 @@
+#Method to be tested:
+def xpath(self, query, **kwargs):
+    return self.selector.xpath(query, **kwargs)
+#Unit test:
+
+def test_xmliter_namespaced_nodename(self):
+    body = b'\n            <?xml version="1.0" encoding="UTF-8"?>\n            <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">\n                <channel>\n                <title>My Dummy Company</title>\n                <link>http://www.mydummycompany.com</link>\n                <description>This is a dummy company. We do nothing.</description>\n                <item>\n                    <title>Item 1</title>\n                    <description>This is item 1</description>\n                    <link>http://www.mydummycompany.com/items/1</link>\n                    <g:image_link>http://www.mydummycompany.com/images/item1.jpg</g:image_link>\n                    <g:id>ITEM_1</g:id>\n                    <g:price>400</g:price>\n                </item>\n                </channel>\n            </rss>\n        '
+    response = XmlResponse(url='http://mydummycompany.com', body=body)
+    my_iter = self.xmliter(response, 'g:image_link')
+    node = next(my_iter)
+    node.register_namespace('g', 'http://base.google.com/ns/1.0')
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+self.assertEqual(node.xpath('//g:image_link/text()'), [<Selector query='//g:image_link/text()' data='http://www.mydummycompany.com/images/...'>])
+
+
+----------
+    self.assertEqual(node.xpath('text()').extract(), ['http://www.mydummycompany.com/images/item1.jpg'])

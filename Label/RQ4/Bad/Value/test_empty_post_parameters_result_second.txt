@@ -1,0 +1,21 @@
+#Method to be tested:
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+#Unit test:
+
+def test_empty_post_parameters(self):
+    response = self.fetch('/echo', method='POST', body='foo=&bar=')
+    data = json_decode(response.body)
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+self.assertEqual(data, {'foo': '', 'bar': ''})
+
+
+----------
+    self.assertEqual(data, {'foo': [''], 'bar': ['']})

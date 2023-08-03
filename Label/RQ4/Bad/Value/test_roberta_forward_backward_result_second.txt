@@ -1,0 +1,32 @@
+#Method to be tested:
+def backward(self, loss):
+    """Computes the sum of gradients of the given tensor w.r.t. graph leaves.
+
+        Compared to :func:`fairseq.optim.FairseqOptimizer.backward`, this
+        function additionally dynamically scales the loss to avoid gradient
+        underflow.
+        """
+    if self.scaler is not None:
+        loss = self.scaler.scale(loss)
+    loss.backward()
+    self._needs_sync = True
+#Unit test:
+
+@cpu_gpu
+def test_roberta_forward_backward(self, device: str):
+    (_, model) = get_toy_model(device)
+    sample = mk_sample('en', device)
+    en_tokens = sample['net_input']['src_tokens']
+    (bs, l) = en_tokens.shape
+    (logits, _) = model(**sample['net_input'])
+    "<AssertPlaceholder1>"
+    loss = logits.sum()
+    loss.backward()
+
+
+#Generated assertions:
+self.assertEqual(logits.shape, torch.Size([2, 7, 100]))
+
+
+----------
+    self.assertEqual(logits.shape, (bs, l, VOCAB_SIZE))

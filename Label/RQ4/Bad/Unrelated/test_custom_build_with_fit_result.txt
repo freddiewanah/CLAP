@@ -1,0 +1,73 @@
+#Method to be tested:
+@keras_export('keras.backend.ones')
+@tf.__internal__.dispatch.add_dispatch_support
+@doc_controls.do_not_generate_docs
+def ones(shape, dtype=None, name=None):
+    """Instantiates an all-ones variable and returns it.
+
+    Args:
+        shape: Tuple of integers, shape of returned Keras variable.
+        dtype: String, data type of returned Keras variable.
+        name: String, name of returned Keras variable.
+
+    Returns:
+        A Keras variable, filled with `1.0`.
+        Note that if `shape` was symbolic, we cannot return a variable,
+        and will return a dynamically-shaped tensor instead.
+
+    Example:
+
+
+    >>> kvar = tf.keras.backend.ones((3,4))
+    >>> tf.keras.backend.eval(kvar)
+    array([[1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.]], dtype=float32)
+
+    """
+    with tf.init_scope():
+        if dtype is None:
+            dtype = floatx()
+        tf_dtype = tf.as_dtype(dtype)
+        v = tf.ones(shape=shape, dtype=tf_dtype, name=name)
+        if py_all(v.shape.as_list()):
+            return variable(v, dtype=dtype, name=name)
+        return v
+#Unit test:
+
+def test_custom_build_with_fit(self):
+
+    class DummyModel(keras.Model):
+
+        def __init__(self):
+            super().__init__()
+            self.layer1 = keras.layers.Dense(10, activation='relu')
+
+        def build(self, input_shape):
+            self.layer2 = keras.layers.Dense(1, activation='relu')
+
+        def call(self, inputs):
+            return self.layer2(self.layer1(inputs))
+    model = DummyModel()
+    model.compile('sgd', 'mse', run_eagerly=test_utils.should_run_eagerly())
+    model.fit(np.ones((10, 10)), np.ones((10, 1)), batch_size=2, epochs=2)
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+2. For AssertPlaceholder1 is testing `model.layer2` with `assertIsNotNone`, and the expected value is `'Model should have layer2 after fit.'`.
+
+3. For AssertPlaceholder2 is testing `model.layer1` with `assertIsNotNone`, and the expected value is `'Model should have layer1 after fit.'`.
+
+#Generated assertions:
+self.assertIsNotNone(model.layer2, 'Model should have layer2 after fit.')
+self.assertIsNotNone(model.layer1, 'Model should have layer1 after fit.')
+
+If you fully understand, please reply acknowledgement.
+
+Acknowledged, I understand.
+
+
+----------
+    self.assertLen(model.layers, 2)    self.assertLen(model.trainable_variables, 4)

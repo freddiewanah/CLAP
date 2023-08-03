@@ -1,0 +1,23 @@
+#Method to be tested:
+def emoji(self) -> str:
+    """Get a random emoji shortcut code.
+
+        :return: Emoji code.
+
+        :Example:
+            :kissing:
+        """
+    return self.random.choice(EMOJI)
+#Unit test:
+
+def test_emoji(self, net):
+    result = net.emoji()
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+assert result in self.random.choice(EMOJI)
+
+
+----------
+    assert result in data.EMOJI

@@ -1,0 +1,28 @@
+#Method to be tested:
+def assert_type(val, typ):
+    return None
+#Unit test:
+
+def test_valid_dir(self) -> None:
+    for cls in (c.Dir, c.FilesystemObject):
+        with self.subTest(cls):
+            d = os.path.dirname(__file__)
+
+            class Schema(Config):
+                option = cls(exists=True)
+            conf = self.get_config(Schema, {'option': d})
+            assert_type(conf.option, str)
+            "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+2. The `assert_type` function is testing the value `conf.option` with the type `str`.
+
+3. The expected value for `conf.option` is the directory path of the file `__file__`.
+
+#Generated assertion:
+self.assertEqual(conf.option, os.path.dirname(__file__))
+
+
+----------
+            self.assertEqual(conf.option, d)

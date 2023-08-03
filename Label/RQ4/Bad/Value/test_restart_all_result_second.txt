@@ -1,0 +1,26 @@
+#Method to be tested:
+def restart(self, process_names: Optional[List[str]]=None, restart_order=RestartOrder.SHUTDOWN_FIRST, **kwargs):
+    for process in self.transient_processes:
+        if not process_names or process.name in process_names:
+            process.restart(restart_order=restart_order, **kwargs)
+#Unit test:
+
+def test_restart_all():
+    p1 = Mock()
+    p2 = Mock()
+    context = Mock()
+    context.Process.side_effect = [p1, p2, p1, p2]
+    manager = WorkerManager(2, fake_serve, {}, context, (Mock(), Mock()), {})
+    "<AssertPlaceholder1>"
+    manager.restart()
+    p1.terminate.assert_called_once()
+    p2.terminate.assert_called_once()
+    context.Process.assert_has_calls([call(name='Sanic-Server-0-0', target=fake_serve, kwargs={'config': {}}, daemon=True), call(name='Sanic-Server-1-0', target=fake_serve, kwargs={'config': {}}, daemon=True), call(name='Sanic-Server-0-0', target=fake_serve, kwargs={'config': {}}, daemon=True), call(name='Sanic-Server-1-0', target=fake_serve, kwargs={'config': {}}, daemon=True)])
+
+
+#Generated assertions:
+assert list(manager.transient_processes) == [p1, p2]
+
+
+----------
+    assert len(list(manager.transient_processes))

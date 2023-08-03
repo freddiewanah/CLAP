@@ -1,0 +1,22 @@
+#Method to be tested:
+def open(spider):
+    """Open the storage for the given spider. It must return a file-like
+        object that will be used for the exporters"""
+#Unit test:
+
+def test_default_temp_dir(self):
+    b = BlockingFeedStorage()
+    tmp = b.open(self.get_test_spider())
+    tmp_path = Path(tmp.name).parent
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+2. We need to assert that the `tmp_path` is equal to the expected value.
+
+#Generated assertion:
+self.assertEqual(tmp_path, Path(tempfile.gettempdir()))
+
+
+----------
+    self.assertEqual(str(tmp_path), tempfile.gettempdir())

@@ -1,0 +1,31 @@
+#Method to be tested:
+def list(self) -> List[str]:
+    """
+        List all registered datasets.
+
+        Returns:
+            list[str]
+        """
+    return list(self.keys())
+#Unit test:
+
+def test_iter_style(self):
+
+    class DS(torch.utils.data.IterableDataset):
+
+        def __iter__(self):
+            yield from [1, 2, 3]
+    ds = DS()
+    ds = MapDataset(ds, TestMapDataset.map_func)
+    "<AssertPlaceholder1>"
+    data = list(iter(ds))
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+- Assertion: `self.assertTrue(isinstance(ds, MapDataset))`
+- Assertion: `self.assertListEqual(data, [2, 4, 6])`
+
+
+----------
+    self.assertIsInstance(ds, torch.utils.data.IterableDataset)    self.assertEqual(data, [2, 6])

@@ -1,0 +1,46 @@
+#Method to be tested:
+@gen.coroutine
+def f():
+    yield gen.moment
+    raise gen.Return((1, 2))
+#Unit test:
+
+@gen_test
+def test_moment(self):
+    calls = []
+
+    @gen.coroutine
+    def f(name, yieldable):
+        for i in range(5):
+            calls.append(name)
+            yield yieldable
+    immediate = Future()
+    immediate.set_result(None)
+    yield [f('a', immediate), f('b', immediate)]
+    "<AssertPlaceholder1>"
+    calls = []
+    yield [f('a', gen.moment), f('b', gen.moment)]
+    "<AssertPlaceholder2>"
+    self.finished = True
+    calls = []
+    yield [f('a', gen.moment), f('b', immediate)]
+    "<AssertPlaceholder3>"
+
+
+#Generated assertions:
+
+1. The function is testing `f` and the unit test is `test_moment`.
+2. For AssertPlaceholder1 is testing `calls` with `assertEqual`, and the expected value is `['a', 'b']`.
+3. For AssertPlaceholder2 is testing `calls` with `assertEqual`, and the expected value is `['a', 'b', 'a', 'b', 'a', 'b', 'a', 'b', 'a', 'b']`.
+4. For AssertPlaceholder3 is testing `calls` with `assertEqual`, and the expected value is `['a', 'b', 'a', 'a', 'a', 'a', 'a']`.
+
+#Generated assertions:
+self.assertEqual(calls, ['a', 'b'])
+self.assertEqual(calls, ['a', 'b', 'a', 'b', 'a', 'b', 'a', 'b', 'a', 'b'])
+self.assertEqual(calls, ['a', 'b', 'a', 'a', 'a', 'a', 'a'])
+
+If you fully understand, please reply acknowledgement.
+
+
+----------
+    self.assertEqual(''.join(calls), 'aaaaabbbbb')    self.assertEqual(''.join(calls), 'ababababab')    self.assertEqual(''.join(calls), 'abbbbbaaaa')

@@ -1,0 +1,34 @@
+#Method to be tested:
+def get_oldest(class_name):
+    """Get the oldest object for a specific class name"""
+    for (cls, wdict) in live_refs.items():
+        if cls.__name__ == class_name:
+            if not wdict:
+                break
+            return min(wdict.items(), key=itemgetter(1))[0]
+#Unit test:
+
+def test_get_oldest(self):
+    o1 = Foo()
+    o1_time = time()
+    o2 = Bar()
+    o3_time = time()
+    if o3_time <= o1_time:
+        sleep(0.01)
+        o3_time = time()
+    if o3_time <= o1_time:
+        raise SkipTest('time.time is not precise enough')
+    o3 = Foo()
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+    "<AssertPlaceholder3>"
+
+
+#Generated assertions:
+self.assertEqual(trackref.get_oldest('Foo'), o1)
+self.assertEqual(trackref.get_oldest('Bar'), o2)
+self.assertEqual(trackref.get_oldest('Foo'), o3)
+
+
+----------
+    self.assertIs(trackref.get_oldest('Foo'), o1)    self.assertIs(trackref.get_oldest('Bar'), o2)    self.assertIsNone(trackref.get_oldest('XXX'))

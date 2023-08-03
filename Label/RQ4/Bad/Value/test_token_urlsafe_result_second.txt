@@ -1,0 +1,31 @@
+#Method to be tested:
+@staticmethod
+def token_urlsafe(entropy: int=32) -> str:
+    """Return a random URL-safe text string, in Base64 encoding.
+
+        The string has *entropy* random bytes.  If *entropy* is ``None``
+        or not supplied, a reasonable default is used.
+
+        .. warning:: Seed is not applicable to this method,
+            because of its cryptographic-safe nature.
+
+        :param entropy: Number of bytes (default: 32).
+        :return: URL-safe token.
+        """
+    return secrets.token_urlsafe(entropy)
+#Unit test:
+
+@pytest.mark.parametrize('entropy', [32, 64, 128])
+def test_token_urlsafe(self, crypto, entropy):
+    result = crypto.token_urlsafe(entropy=entropy)
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+assert len(result) == entropy * 4 // 3 + 1
+assert isinstance(result, str)
+
+
+----------
+    assert len(result) > entropy    assert isinstance(result, str)

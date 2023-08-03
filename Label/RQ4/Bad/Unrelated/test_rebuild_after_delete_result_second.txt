@@ -1,0 +1,39 @@
+#Method to be tested:
+def do_request(server, content):
+    request = FakeRequest(content + ' HTTP/1.1')
+    server.RequestHandlerClass(request, ('127.0.0.1', 0), server)
+    response = request.out_file.getvalue()
+    (headers, _, content) = response.partition(b'\r\n\r\n')
+    (status, _, headers) = headers.partition(b'\r\n')
+    status = status.split(None, 1)[1].decode()
+    headers = email.message_from_bytes(headers)
+    headers['_status'] = status
+    return (headers, content.decode())
+#Unit test:
+
+@tempdir({'foo.docs': 'a'})
+@tempdir({'foo.site': 'original'})
+def test_rebuild_after_delete(self, site_dir, docs_dir):
+    started_building = threading.Event()
+
+    def rebuild():
+        started_building.set()
+        Path(site_dir, 'foo.site').unlink()
+    with testing_server(site_dir, rebuild) as server:
+        server.watch(docs_dir, rebuild)
+        time.sleep(0.01)
+        Path(docs_dir, 'foo.docs').write_text('b')
+        "<AssertPlaceholder1>"
+        with "<AssertPlaceholder2>"
+            (_, output) = do_request(server, 'GET /foo.site')
+        "<AssertPlaceholder3>"
+
+
+#Generated assertions:
+self.assertTrue(started_building.wait(timeout=10))
+self.assertFalse(Path(site_dir, 'foo.site').exists())
+self.assertEqual(output, 'original')
+
+
+----------
+        self.assertTrue(started_building.wait(timeout=10))        with self.assertLogs('mkdocs.livereload'):        self.assertIn('404', output)

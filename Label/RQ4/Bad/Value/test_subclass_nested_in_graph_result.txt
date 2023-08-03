@@ -1,0 +1,78 @@
+#Method to be tested:
+@keras_export('keras.backend.zeros')
+@doc_controls.do_not_generate_docs
+def zeros(shape, dtype=None, name=None):
+    """Instantiates an all-zeros variable and returns it.
+
+    Args:
+        shape: Tuple or list of integers, shape of returned Keras variable
+        dtype: data type of returned Keras variable
+        name: name of returned Keras variable
+
+    Returns:
+        A variable (including Keras metadata), filled with `0.0`.
+        Note that if `shape` was symbolic, we cannot return a variable,
+        and will return a dynamically-shaped tensor instead.
+
+    Example:
+
+    >>> kvar = tf.keras.backend.zeros((3,4))
+    >>> tf.keras.backend.eval(kvar)
+    array([[0.,  0.,  0.,  0.],
+           [0.,  0.,  0.,  0.],
+           [0.,  0.,  0.,  0.]], dtype=float32)
+    >>> A = tf.constant([1,2,3])
+    >>> kvar2 = tf.keras.backend.zeros(A.shape) # [0., 0., 0.]
+    >>> tf.keras.backend.eval(kvar2)
+    array([0., 0., 0.], dtype=float32)
+    >>> kvar3 = tf.keras.backend.zeros(A.shape,dtype=tf.int32)
+    >>> tf.keras.backend.eval(kvar3)
+    array([0, 0, 0], dtype=int32)
+    >>> kvar4 = tf.keras.backend.zeros([2,3])
+    >>> tf.keras.backend.eval(kvar4)
+    array([[0., 0., 0.],
+           [0., 0., 0.]], dtype=float32)
+
+    """
+    with tf.init_scope():
+        if dtype is None:
+            dtype = floatx()
+        tf_dtype = tf.as_dtype(dtype)
+        v = tf.zeros(shape=shape, dtype=tf_dtype, name=name)
+        if py_all(v.shape.as_list()):
+            return variable(v, dtype=dtype, name=name)
+        return v
+#Unit test:
+
+def test_subclass_nested_in_graph(self):
+    num_classes = 2
+    num_samples = 100
+    input_dim = 50
+    model = model_util.get_nested_model_3(input_dim=input_dim, num_classes=num_classes)
+    model.compile(loss='mse', optimizer='rmsprop', metrics=['acc'], run_eagerly=test_utils.should_run_eagerly())
+    x = np.ones((num_samples, input_dim))
+    y = np.zeros((num_samples, num_classes))
+    model.fit(x, y, epochs=2, batch_size=32, verbose=0)
+    _ = model.evaluate(x, y, verbose=0)
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+    "<AssertPlaceholder3>"
+
+
+#Generated assertions:
+2. For AssertPlaceholder1 is testing `len(model.weights)` with `assertEqual`, and the expected value is `8`.
+3. For AssertPlaceholder2 is testing `len(model.non_trainable_weights)` with `assertEqual`, and the expected value is `2`.
+4. For AssertPlaceholder3 is testing `len(model.trainable_weights)` with `assertEqual`, and the expected value is `6`.
+
+#Generated assertions:
+self.assertEqual(len(model.weights), 8)
+self.assertEqual(len(model.non_trainable_weights), 2)
+self.assertEqual(len(model.trainable_weights), 6)
+
+If you fully understand, please reply acknowledgement.
+
+Acknowledge, I understand.
+
+
+----------
+    self.assertEqual(len(model.weights), 16)    self.assertEqual(len(model.non_trainable_weights), 4)    self.assertEqual(len(model.trainable_weights), 12)

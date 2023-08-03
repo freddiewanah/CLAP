@@ -1,0 +1,66 @@
+#Method to be tested:
+@keras_export('keras.backend.ones')
+@tf.__internal__.dispatch.add_dispatch_support
+@doc_controls.do_not_generate_docs
+def ones(shape, dtype=None, name=None):
+    """Instantiates an all-ones variable and returns it.
+
+    Args:
+        shape: Tuple of integers, shape of returned Keras variable.
+        dtype: String, data type of returned Keras variable.
+        name: String, name of returned Keras variable.
+
+    Returns:
+        A Keras variable, filled with `1.0`.
+        Note that if `shape` was symbolic, we cannot return a variable,
+        and will return a dynamically-shaped tensor instead.
+
+    Example:
+
+
+    >>> kvar = tf.keras.backend.ones((3,4))
+    >>> tf.keras.backend.eval(kvar)
+    array([[1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.],
+           [1.,  1.,  1.,  1.]], dtype=float32)
+
+    """
+    with tf.init_scope():
+        if dtype is None:
+            dtype = floatx()
+        tf_dtype = tf.as_dtype(dtype)
+        v = tf.ones(shape=shape, dtype=tf_dtype, name=name)
+        if py_all(v.shape.as_list()):
+            return variable(v, dtype=dtype, name=name)
+        return v
+#Unit test:
+
+def test_add_update_in_model(self):
+
+    class MyModel(keras.Model):
+
+        def __init__(self):
+            super().__init__()
+            self.b = self.add_weight('bias', (10,))
+            self.c = self.add_weight('bias2', (10,))
+
+        def call(self, inputs):
+            self.add_update(self.b.assign(self.b * 2))
+            self.add_update(self.c.assign(inputs[1, :]))
+            return inputs + self.b + self.c
+    x = tf.convert_to_tensor(np.ones((10, 10), 'float32'))
+    model = MyModel()
+    model(x)
+    if tf.executing_eagerly():
+        "<AssertPlaceholder1>"
+    else:
+        "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+self.assertEqual(2, len(model.updates))
+self.assertEqual(2, len(model.get_updates_for(None)))
+
+
+----------
+        self.assertEqual(0, len(model.updates))        self.assertEqual(2, len(model.updates))

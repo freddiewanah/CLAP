@@ -1,0 +1,46 @@
+#Method to be tested:
+@abstractmethod
+def run(self):
+    """Run the ansible command
+
+        Subclasses must implement this method.  It does the actual work of
+        running an Ansible command.
+        """
+    self.parse()
+    cli_collections_path = context.CLIARGS.get('collections_path') or []
+    if not is_sequence(cli_collections_path):
+        cli_collections_path = [cli_collections_path]
+    init_plugin_loader(cli_collections_path)
+    display.vv(to_text(opt_help.version(self.parser.prog)))
+    if C.CONFIG_FILE:
+        display.v(u'Using %s as config file' % to_text(C.CONFIG_FILE))
+    else:
+        display.v(u'No config file found; using defaults')
+    for deprecated in C.config.DEPRECATED:
+        name = deprecated[0]
+        why = deprecated[1]['why']
+        if 'alternatives' in deprecated[1]:
+            alt = ', use %s instead' % deprecated[1]['alternatives']
+        else:
+            alt = ''
+        ver = deprecated[1].get('version')
+        date = deprecated[1].get('date')
+        collection_name = deprecated[1].get('collection_name')
+        display.deprecated('%s option, %s%s' % (name, why, alt), version=ver, date=date, collection_name=collection_name)
+#Unit test:
+
+def test_did_you_mean_playbook():
+    """ Test adhoc with yml file as argument parameter"""
+    adhoc_cli = AdHocCLI(['/bin/ansible', '-m', 'command', 'localhost.yml'])
+    adhoc_cli.parse()
+    with pytest.raises(AnsibleOptionsError) as exec_info:
+        adhoc_cli.run()
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+assert isinstance(exec_info.value, AnsibleOptionsError)
+
+
+----------
+    assert 'No argument passed to command module (did you mean to run ansible-playbook?)' == str(exec_info.value)

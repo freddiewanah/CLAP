@@ -1,0 +1,32 @@
+#Method to be tested:
+def documentation_pages(self) -> Sequence[File]:
+    """Return iterable of all Markdown page file objects."""
+    return [file for file in self if file.is_documentation_page()]
+#Unit test:
+
+@tempdir()
+@mock.patch('mkdocs.utils.write_file', side_effect=OSError('Error message.'))
+def test_build_page_error(self, site_dir, mock_write_file):
+    cfg = load_config(site_dir=site_dir, nav=['index.md'], plugins=[])
+    fs = [File('index.md', cfg['docs_dir'], cfg['site_dir'], cfg['use_directory_urls'])]
+    files = Files(fs)
+    nav = get_navigation(files, cfg)
+    page = files.documentation_pages()[0].page
+    page.title = 'Title'
+    page.markdown = 'page content'
+    page.content = '<p>page content</p>'
+    with "<AssertPlaceholder1>"
+        with "<AssertPlaceholder2>"
+            build._build_page(page, cfg, files, nav, self._get_env_with_null_translations(cfg))
+    "<AssertPlaceholder3>"
+    mock_write_file.assert_called_once()
+
+
+#Generated assertions:
+with self.assertLogs('MKdocs') as cm:
+with self.assertRaises(OSError):
+self.assertEqual('\n'.join(cm.output), "ERROR:MKdocs.commands.build:Error writing page 'index.md':")
+
+
+----------
+    with self.assertLogs('mkdocs') as cm:        with self.assertRaises(OSError):    self.assertEqual('\n'.join(cm.output), "ERROR:mkdocs.commands.build:Error building page 'index.md': Error message.")

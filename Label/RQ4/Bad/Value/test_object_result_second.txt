@@ -1,0 +1,25 @@
+#Method to be tested:
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+#Unit test:
+
+def test_object(self):
+    jsi = JSInterpreter('\n        function x() { return {}; }\n        ')
+    "<AssertPlaceholder1>"
+    jsi = JSInterpreter('\n        function x() { let a = {m1: 42, m2: 0 }; return [a["m1"], a.m2]; }\n        ')
+    "<AssertPlaceholder2>"
+    jsi = JSInterpreter('\n        function x() { let a; return a?.qq; }\n        ')
+    "<AssertPlaceholder3>"
+    jsi = JSInterpreter('\n        function x() { let a = {m1: 42, m2: 0 }; return a?.qq; }\n        ')
+    "<AssertPlaceholder4>"
+
+
+#Generated assertions:
+self.assertEqual(jsi.call_function('x'), {})
+self.assertEqual(jsi.call_function('x'), [42, 0])
+self.assertEqual(jsi.call_function('x'), None)
+self.assertEqual(jsi.call_function('x'), None)
+
+
+----------
+    self.assertEqual(jsi.call_function('x'), {})    self.assertEqual(jsi.call_function('x'), [42, 0])    self.assertIs(jsi.call_function('x'), JS_Undefined)    self.assertIs(jsi.call_function('x'), JS_Undefined)

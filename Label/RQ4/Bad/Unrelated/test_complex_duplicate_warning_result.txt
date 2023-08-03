@@ -1,0 +1,34 @@
+#Method to be tested:
+def get_warning_messages():
+    """Return a tuple of warning messages accumulated over this run"""
+    return tuple(_global_warnings)
+#Unit test:
+
+@pytest.mark.parametrize('stdin', [{'foo': 'hello1', 'dup': 'hello2'}], indirect=['stdin'])
+def test_complex_duplicate_warning(self, stdin, complex_argspec):
+    """Test that the complex argspec issues a warning if we specify an option both with its canonical name and its alias"""
+    am = basic.AnsibleModule(**complex_argspec)
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+    "<AssertPlaceholder3>"
+
+
+#Generated assertions:
+2. For AssertPlaceholder1 is testing `get_warning_messages()[0]['msg']`, and the expected value is `"Option 'foo' was specified both by its canonical name and an alias 'dup'."`.
+
+3. For AssertPlaceholder2 is testing `get_warning_messages()[0]['version']`, and the expected value is `'9.99'`.
+
+4. For AssertPlaceholder3 is testing `get_warning_messages()[0]['category']`, and the expected value is `'DeprecationWarning'`.
+
+#Generated assertions:
+assert "Option 'foo' was specified both by its canonical name and an alias 'dup'." in get_warning_messages()[0]['msg']
+assert get_warning_messages()[0]['version'] == '9.99'
+assert get_warning_messages()[0]['category'] == 'DeprecationWarning'
+
+If you fully understand, please reply acknowledgement.
+
+Acknowledged.
+
+
+----------
+    assert isinstance(am.params['foo'], str)    assert 'Both option foo and its alias dup are set.' in get_warning_messages()    assert am.params['foo'] == 'hello2'

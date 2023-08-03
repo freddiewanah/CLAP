@@ -1,0 +1,25 @@
+#Method to be tested:
+def long_desc(self):
+    return 'Fetch a URL using the Scrapy downloader and print its content to stdout. You may want to use --nolog to disable logging'
+#Unit test:
+
+def test_methods(self):
+    command = view.Command()
+    command.settings = Settings()
+    parser = argparse.ArgumentParser(prog='scrapy', prefix_chars='-', formatter_class=ScrapyHelpFormatter, conflict_handler='resolve')
+    command.add_options(parser)
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+2. For AssertPlaceholder1 is testing `parser.description` with `assertEqual`, and the expected value is `command.long_desc()`.
+3. For AssertPlaceholder2 is testing `parser.epilog` with `assertEqual`, and the expected value is `None`.
+
+#Generated assertions:
+self.assertEqual(parser.description, command.long_desc())
+self.assertEqual(parser.epilog, None)
+
+
+----------
+    self.assertEqual(command.short_desc(), 'Open URL in browser, as seen by Scrapy')    self.assertIn('URL using the Scrapy downloader and show its', command.long_desc())

@@ -1,0 +1,19 @@
+#Method to be tested:
+def join(self, seq):
+    return self.data.join(seq)
+#Unit test:
+
+def test_read_config_yaml_file_negative(self):
+    with pytest.raises(AnsibleError) as exec_info:
+        self.manager._read_config_yaml_file(os.path.join(curdir, 'test_non_existent.yml'))
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+
+#Generated assertion:
+assert exec_info.type == AnsibleError
+
+
+----------
+    assert 'Missing base YAML definition file (bad install?)' in str(exec_info.value)

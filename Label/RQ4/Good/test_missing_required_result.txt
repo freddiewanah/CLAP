@@ -1,0 +1,23 @@
+#Method to be tested:
+def validate(self, value: object) -> T:
+    return self.run_validation(value)
+#Unit test:
+
+def test_missing_required(self):
+    conf = defaults.MkDocsConfig()
+    (errors, warnings) = conf.validate()
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+2. For AssertPlaceholder1 is testing `len(errors)` with `assertEqual`, and the expected value is `1`.
+3. For AssertPlaceholder2 is testing `len(warnings)` with `assertEqual`, and the expected value is `0`.
+
+#Generated assertions:
+self.assertEqual(len(errors), 1)
+self.assertEqual(len(warnings), 0)
+
+
+----------
+    self.assertEqual(errors, [('site_name', ValidationError('Required configuration not provided.'))])    self.assertEqual(warnings, [])

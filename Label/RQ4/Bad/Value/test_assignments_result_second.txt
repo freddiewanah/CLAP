@@ -1,0 +1,22 @@
+#Method to be tested:
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+#Unit test:
+
+def test_assignments(self):
+    jsi = JSInterpreter('function f(){var x = 20; x = 30 + 1; return x;}')
+    "<AssertPlaceholder1>"
+    jsi = JSInterpreter('function f(){var x = 20; x += 30 + 1; return x;}')
+    "<AssertPlaceholder2>"
+    jsi = JSInterpreter('function f(){var x = 20; x -= 30 + 1; return x;}')
+    "<AssertPlaceholder3>"
+
+
+#Generated assertions:
+self.assertEqual(jsi.call_function('f'), 51)
+self.assertEqual(jsi.call_function('f'), 51)
+self.assertEqual(jsi.call_function('f'), -11)
+
+
+----------
+    self.assertEqual(jsi.call_function('f'), 31)    self.assertEqual(jsi.call_function('f'), 51)    self.assertEqual(jsi.call_function('f'), -11)

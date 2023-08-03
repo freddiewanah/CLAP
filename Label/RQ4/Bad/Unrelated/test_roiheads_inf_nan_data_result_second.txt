@@ -1,0 +1,25 @@
+#Method to be tested:
+@torch.jit.unused
+def to(self, *args: Any, **kwargs: Any) -> 'ImageList':
+    cast_tensor = self.tensor.to(*args, **kwargs)
+    return ImageList(cast_tensor, self.image_sizes)
+#Unit test:
+
+def test_roiheads_inf_nan_data(self):
+    self.model.eval()
+    for tensor in [self._inf_tensor, self._nan_tensor]:
+        images = ImageList(tensor(1, 3, 512, 512), [(510, 510)])
+        features = {'p2': tensor(1, 256, 256, 256), 'p3': tensor(1, 256, 128, 128), 'p4': tensor(1, 256, 64, 64), 'p5': tensor(1, 256, 32, 32), 'p6': tensor(1, 256, 16, 16)}
+        props = [Instances((510, 510))]
+        props[0].proposal_boxes = Boxes([[10, 10, 20, 20]]).to(device=self.model.device)
+        props[0].objectness_logits = torch.tensor([1.0]).reshape(1, 1)
+        (det, _) = self.model.roi_heads(images, features, props)
+        "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+self.assertFalse(torch.isnan(det.tensor).any() or torch.isinf(det.tensor).any(), "Output tensor contains NaN or Inf values")
+
+
+----------
+        self.assertEqual(len(det[0]), 0)

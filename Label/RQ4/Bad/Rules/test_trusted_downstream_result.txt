@@ -1,0 +1,28 @@
+#Method to be tested:
+def json_decode(value: Union[str, bytes]) -> Any:
+    """Returns Python objects for the given JSON string.
+
+    Supports both `str` and `bytes` inputs.
+    """
+    return json.loads(to_basestring(value))
+#Unit test:
+
+def test_trusted_downstream(self):
+    valid_ipv4_list = {'X-Forwarded-For': '127.0.0.1, 4.4.4.4, 5.5.5.5'}
+    resp = self.fetch('/', headers=valid_ipv4_list)
+    if resp.headers['request-version'].startswith('HTTP/2'):
+        self.skipTest('requires HTTP/1.x')
+    result = json_decode(resp.body)
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+1. The function is testing `json_decode` and the unit test is `test_trusted_downstream`.
+2. For AssertPlaceholder1 is testing `result` with `assertIsInstance`, and the expected value is `dict`.
+
+#Generated assertion:
+self.assertIsInstance(result, dict)
+
+
+----------
+    self.assertEqual(result['remote_ip'], '4.4.4.4')

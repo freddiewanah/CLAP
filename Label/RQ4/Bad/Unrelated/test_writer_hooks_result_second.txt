@@ -1,0 +1,43 @@
+#Method to be tested:
+def train(self):
+    """
+        Run training.
+
+        Returns:
+            OrderedDict of results, if evaluation is enabled. Otherwise None.
+        """
+    super().train(self.start_iter, self.max_iter)
+    if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
+        assert hasattr(self, '_last_eval_results'), 'No evaluation results obtained during training!'
+        verify_results(self.cfg, self._last_eval_results)
+        return self._last_eval_results
+#Unit test:
+
+def test_writer_hooks(self):
+    model = _SimpleModel(sleep_sec=0.1)
+    trainer = SimpleTrainer(model, self._data_loader('cpu'), torch.optim.SGD(model.parameters(), 0.1))
+    max_iter = 50
+    with tempfile.TemporaryDirectory(prefix='detectron2_test') as d:
+        json_file = os.path.join(d, 'metrics.json')
+        writers = [CommonMetricPrinter(max_iter), JSONWriter(json_file)]
+        trainer.register_hooks([hooks.EvalHook(0, lambda : {'metric': 100}), hooks.PeriodicWriter(writers)])
+        with "<AssertPlaceholder1>"
+            trainer.train(0, max_iter)
+        with open(json_file, 'r') as f:
+            data = [json.loads(line.strip()) for line in f]
+            "<AssertPlaceholder2>"
+            "<AssertPlaceholder3>"
+        "<AssertPlaceholder4>"
+        for (log, iter) in zip(logs.output, [19, 39, 49]):
+            "<AssertPlaceholder5>"
+        "<AssertPlaceholder6>"
+
+
+#Generated assertions:
+with self.assertLess(0.2, lambda: trainer.train(0, max_iter)):
+self.assertTrue(os.path.exists(json_file))
+self.assertIsInstance(data
+
+
+----------
+        with self.assertLogs(writers[0].logger) as logs:            self.assertEqual([x['iteration'] for x in data], [19, 39, 49, 50])            self.assertIn('metric', data[-1], 'Eval metric must be in last line of JSON!')        self.assertEqual(len(logs.output), 3)            self.assertIn(f'iter: {iter}', log)        self.assertIn('eta: 0:00:00', logs.output[-1], 'Last ETA must be 0!')

@@ -1,0 +1,45 @@
+#Method to be tested:
+def get(self, name):
+    """
+        Call the registered function and return its results.
+
+        Args:
+            name (str): the name that identifies a dataset, e.g. "coco_2014_train".
+
+        Returns:
+            list[dict]: dataset annotations.
+        """
+    try:
+        f = self[name]
+    except KeyError as e:
+        raise KeyError("Dataset '{}' is not registered! Available datasets are: {}".format(name, ', '.join(list(self.keys())))) from e
+    return f()
+#Unit test:
+
+def testScalarMismatchedPeriod(self):
+    with tempfile.TemporaryDirectory(prefix='detectron2_tests') as dir, EventStorage() as storage:
+        json_file = os.path.join(dir, 'test.json')
+        writer = JSONWriter(json_file)
+        for k in range(60):
+            if k % 17 == 0:
+                storage.put_scalar('key2', k, smoothing_hint=False)
+            storage.put_scalar('key', k, smoothing_hint=False)
+            if (k + 1) % 20 == 0:
+                writer.write()
+            storage.step()
+        writer.close()
+        with open(json_file) as f:
+            data = [json.loads(l) for l in f]
+            "<AssertPlaceholder1>"
+            "<AssertPlaceholder2>"
+            "<AssertPlaceholder3>"
+
+
+#Generated assertions:
+self.assertEqual(len(data), 6)
+self.assertEqual(len(data), 6)
+self.assertEqual(len(data), 6)
+
+
+----------
+            self.assertTrue([int(k.get('key2', 0)) for k in data] == [17, 0, 34, 0, 51, 0])            self.assertTrue([int(k.get('key', 0)) for k in data] == [0, 19, 0, 39, 0, 59])            self.assertTrue([int(k['iteration']) for k in data] == [17, 19, 34, 39, 51, 59])

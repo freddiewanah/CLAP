@@ -1,0 +1,43 @@
+#Method to be tested:
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+#Unit test:
+
+@defer.inlineCallbacks
+def test_open_spider_error_on_faulty_pipeline(self):
+    settings = {'ITEM_PIPELINES': {'tests.pipelines.ZeroDivisionErrorPipeline': 300}}
+    crawler = get_crawler(SimpleSpider, settings)
+    yield "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+2. For AssertPlaceholder1 is testing `crawler.crawl(mockserver=self.mockserver)` with `assertFailure`, and the expected value is `ZeroDivisionError`.
+
+3. For AssertPlaceholder2 is testing `crawler.crawling` with `assertFalse`.
+
+#Generated assertions:
+self.assertFailure(crawler.crawl(mockserver=self.mockserver), ZeroDivisionError)
+self.assertFalse(crawler.crawling)
+
+If you fully understand, please reply acknowledgement.
+
+Acknowledged.
+
+
+----------
+    yield self.assertFailure(crawler.crawl(self.mockserver.url('/status?n=200'), mockserver=self.mockserver), ZeroDivisionError)    self.assertFalse(crawler.crawling)

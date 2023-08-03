@@ -1,0 +1,17 @@
+#Method to be tested:
+def url(self, path):
+    return urljoin(self.baseurl, path)
+#Unit test:
+
+@defer.inlineCallbacks
+def test_redirect_default(self):
+    (_, out, _) = (yield self.execute([self.url('/redirect')]))
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+self.assertEqual(out, self.baseurl + '/redirect-target', 'The output should be the urljoin of self.baseurl and /redirect-target')
+
+
+----------
+    self.assertEqual(out.strip(), b'Redirected here')

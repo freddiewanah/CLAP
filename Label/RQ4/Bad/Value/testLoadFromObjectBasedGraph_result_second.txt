@@ -1,0 +1,39 @@
+#Method to be tested:
+def join(self):
+    while True:
+        time.sleep(5)
+#Unit test:
+
+def testLoadFromObjectBasedGraph(self):
+    checkpoint_directory = self.get_temp_dir()
+    checkpoint_prefix = os.path.join(checkpoint_directory, 'ckpt')
+    save_graph = tf.Graph()
+    with save_graph.as_default(), self.session(graph=save_graph) as sess:
+        root = self._initialized_model()
+        object_saver = tf.train.Checkpoint(root=root)
+        save_path = object_saver.save(file_prefix=checkpoint_prefix)
+        var = tf.Variable(1.0, name='a')
+        self.evaluate(var.initializer)
+        second_saver = tf.train.Checkpoint(v=var)
+        second_path = second_saver.save(file_prefix=os.path.join(checkpoint_directory, 'second'))
+    restore_graph = tf.Graph()
+    with restore_graph.as_default(), self.session(graph=restore_graph) as sess:
+        root = self._initialized_model()
+        self._set_sentinels(root)
+        saver = tf.compat.v1.train.Saver()
+        saver.restore(sess=sess, save_path=save_path)
+        self._check_sentinels(root)
+        before_second_restore_ops = restore_graph.get_operations()
+        saver.restore(sess=sess, save_path=save_path)
+        "<AssertPlaceholder1>"
+        with "<AssertPlaceholder2>"
+            saver.restore(sess=sess, save_path=second_path)
+
+
+#Generated assertions:
+self.assertEqual(len(restore_graph.get_operations()), len(before_second_restore_ops))
+with self.assertRaises(AssertionError):
+
+
+----------
+        self.assertEqual(before_second_restore_ops, restore_graph.get_operations())        with self.assertRaisesRegex(tf.errors.NotFoundError, 'Could not find some variables'):

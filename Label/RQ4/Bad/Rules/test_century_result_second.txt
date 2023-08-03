@@ -1,0 +1,22 @@
+#Method to be tested:
+def century(self) -> str:
+    """Get a random century.
+
+        :return: Century.
+        """
+    return self.random.choice(ROMAN_NUMS)
+#Unit test:
+
+def test_century(self, _datetime):
+    result = _datetime.century()
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+assert isinstance(result, str)
+assert result in _datetime.random.choice(ROMAN_NUMS)
+
+
+----------
+    assert result is not None    assert isinstance(result, str)

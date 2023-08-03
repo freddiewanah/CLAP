@@ -1,0 +1,26 @@
+#Method to be tested:
+def day_of_week(self, abbr: bool=False) -> str:
+    """Get a random day of week.
+
+        :param abbr: Abbreviated day name.
+        :return: Day of the week.
+        """
+    key = 'abbr' if abbr else 'name'
+    days: t.List[str] = self.extract(['day', key])
+    return self.random.choice(days)
+#Unit test:
+
+def test_day_of_week(self, dt):
+    result = dt.day_of_week()
+    "<AssertPlaceholder1>"
+    result_abbr = dt.day_of_week(abbr=True)
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+assert result == 'Dienstag'
+assert result_abbr in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+
+----------
+    assert result in dt._data['day']['name']    assert result_abbr in dt._data['day']['abbr']

@@ -1,0 +1,23 @@
+#Method to be tested:
+def extend(self, *iterables: Iterable) -> None:
+    self.data = chain(self.data, chain.from_iterable(iterables))
+#Unit test:
+
+def test_mutablechain(self):
+    m = MutableChain(range(2), [2, 3], (4, 5))
+    m.extend(range(6, 7))
+    m.extend([7, 8])
+    m.extend([9, 10], (11, 12))
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+    "<AssertPlaceholder3>"
+
+
+#Generated assertions:
+self.assertEqual(list(m.data), list(range(2)) + [2, 3] + list((4, 5)) + list(range(6, 7)) + [7, 8] + [9, 10] + list((11, 12)))
+self.assertIsInstance(m.data, chain)
+self.assertIsInstance(m.data, itertools.chain)
+
+
+----------
+    self.assertEqual(next(m), 0)    self.assertEqual(m.__next__(), 1)    self.assertEqual(list(m), list(range(2, 13)))

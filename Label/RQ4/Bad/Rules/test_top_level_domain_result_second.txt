@@ -1,0 +1,24 @@
+#Method to be tested:
+def tld(self, *args: t.Any, **kwargs: t.Any) -> str:
+    """Generates random top level domain.
+
+        An alias for :meth:`top_level_domain`
+        """
+    return self.top_level_domain(*args, **kwargs)
+#Unit test:
+
+@pytest.mark.parametrize('domain_type', [TLDType.CCTLD, TLDType.GTLD, TLDType.GEOTLD, TLDType.UTLD, TLDType.STLD])
+def test_top_level_domain(self, net, domain_type):
+    res_a = net.top_level_domain(tld_type=domain_type)
+    res_b = net.tld(tld_type=domain_type)
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+assert res_a == '.rip'
+assert res_b in net.tld(tld_type=domain_type)
+
+
+----------
+    assert res_a in data.TLD[domain_type.value]    assert res_b in data.TLD[domain_type.value]

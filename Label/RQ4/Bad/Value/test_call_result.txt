@@ -1,0 +1,23 @@
+#Method to be tested:
+def call_function(self, funcname, *args):
+    return self.extract_function(funcname)(args)
+#Unit test:
+
+def test_call(self):
+    jsi = JSInterpreter('\n        function x() { return 2; }\n        function y(a) { return x() + (a?a:0); }\n        function z() { return y(3); }\n        ')
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+1. The function is testing `call_function` and the unit test is `test_call`.
+2. For AssertPlaceholder1 is testing `jsi.call_function('x')` with `assertEqual`, and the expected value is `2`.
+3. For AssertPlaceholder2 is testing `jsi.call_function('z')` with `assertEqual`, and the expected value is `5`.
+
+#Generated assertions:
+self.assertEqual(jsi.call_function('x'), 2)
+self.assertEqual(jsi.call_function('z'), 5)
+
+
+----------
+    self.assertEqual(jsi.call_function('z'), 5)    self.assertEqual(jsi.call_function('y'), 2)

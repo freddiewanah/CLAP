@@ -1,0 +1,39 @@
+#Method to be tested:
+def assert_connector_streams_closed(self, conn):
+    for stream in conn.streams:
+        self.assertTrue(stream.closed)
+#Unit test:
+
+def test_one_family_timeout_after_connect_timeout(self):
+    (conn, future) = self.start_connect([(AF1, 'a'), (AF1, 'b')])
+    "<AssertPlaceholder1>"
+    conn.on_connect_timeout()
+    self.connect_futures.pop((AF1, 'a'))
+    "<AssertPlaceholder2>"
+    conn.on_timeout()
+    "<AssertPlaceholder3>"
+    "<AssertPlaceholder4>"
+    "<AssertPlaceholder5>"
+    "<AssertPlaceholder6>"
+
+
+#Generated assertions:
+1. The function is testing `assert_connector_streams_closed` and the unit test is `test_one_family_timeout_after_connect_timeout`.
+2. For AssertPlaceholder1 is testing `(AF1, 'a')` with `assert_pending`.
+3. For AssertPlaceholder2 is testing `self.streams.pop('a').closed` with `assertTrue`.
+4. For AssertPlaceholder3 is testing `(AF1, 'b')` with `assert_pending`.
+5. For AssertPlaceholder4 is testing `self.streams.pop('b').closed` with `assertTrue`.
+6. For AssertPlaceholder5 is testing `len(conn.streams)` with `assertEqual`, and the expected value is `0`.
+7. For AssertPlaceholder6 is testing `TimeoutError` with `assertRaises`, and the expected value is `future.result`.
+
+#Generated assertions:
+self.assert_pending((AF1, 'a'))
+self.assertTrue(self.streams.pop('a').closed)
+self.assert_pending((AF1, 'b'))
+self.assertTrue(self.streams.pop('b').closed)
+self.assertEqual(len(conn.streams), 0)
+
+
+
+----------
+    self.assert_pending((AF1, 'a'))    self.assertTrue(self.streams.pop('a').closed)    self.assert_pending()    self.assertEqual(len(conn.streams), 1)    self.assert_connector_streams_closed(conn)    self.assertRaises(TimeoutError, future.result)

@@ -1,0 +1,44 @@
+#Method to be tested:
+def text(body: str, status: int=200, headers: Optional[Dict[str, str]]=None, content_type: str='text/plain; charset=utf-8') -> HTTPResponse:
+    """
+    Returns response object with body in text format.
+
+    :param body: Response data to be encoded.
+    :param status: Response code.
+    :param headers: Custom Headers.
+    :param content_type: the content type (string) of the response
+    """
+    if not isinstance(body, str):
+        raise TypeError(f'Bad body type. Expected str, got {type(body).__name__})')
+    return HTTPResponse(body, status=status, headers=headers, content_type=content_type)
+#Unit test:
+
+def test_request_middleware_executes_once(app):
+    i = count()
+
+    @app.middleware('request')
+    async def inc(request):
+        nonlocal i
+        next(i)
+
+    @app.route('/')
+    async def handler(request):
+        await request.app._run_request_middleware(request)
+        return text('OK')
+    (request, response) = app.test_client.get('/')
+    "<AssertPlaceholder1>"
+    (request, response) = app.test_client.get('/')
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+2. For AssertPlaceholder1 is testing `next(i)`, and the expected value is `1`.
+3. For AssertPlaceholder2 is testing `next(i)`, and the expected value is `2`.
+
+#Generated assertions:
+assert next(i) == 1
+assert next(i) == 2
+
+
+----------
+    assert next(i) == 1    assert next(i) == 3

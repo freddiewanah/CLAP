@@ -1,0 +1,35 @@
+#Method to be tested:
+def run_event(self, name: str, item=None, **kwargs):
+    """
+        Run all registered methods of an event.
+
+        `item` is the object to be modified or replaced and returned by the event method.
+        If it isn't given the event method creates a new object to be returned.
+        All other keywords are variables for context, but would not generally
+        be modified by the event method.
+        """
+    pass_item = item is not None
+    events = self.events[name]
+    if events:
+        log.debug(f'Running {len(events)} `{name}` events')
+    for method in events:
+        if pass_item:
+            result = method(item, **kwargs)
+        else:
+            result = method(**kwargs)
+        if result is not None:
+            item = result
+    return item
+#Unit test:
+
+def test_run_undefined_event_on_collection(self):
+    collection = plugins.PluginCollection()
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+self.assertIsNone(collection.run_event('undefined_event'), msg='The event should not be executed')
+
+
+----------
+    self.assertEqual(collection.run_event('pre_page', 'page content'), 'page content')

@@ -1,0 +1,25 @@
+#Method to be tested:
+def assert_type(val, typ):
+    return None
+#Unit test:
+
+def test_int_type(self) -> None:
+
+    class Schema(Config):
+        option = c.ListOfItems(c.Type(int))
+    conf = self.get_config(Schema, {'option': [1, 2, 3]})
+    assert_type(conf.option, List[int])
+    "<AssertPlaceholder1>"
+    with self.expect_error(option="Expected type: <class 'int'> but received: <class 'NoneType'>"):
+        conf = self.get_config(Schema, {'option': [1, None, 3]})
+
+
+#Generated assertions:
+2. The assertion should check that `conf.option` is a list of integers.
+
+#Generated assertion:
+self.assertTrue(all(isinstance(item, int) for item in conf.option))
+
+
+----------
+    self.assertEqual(conf.option, [1, 2, 3])

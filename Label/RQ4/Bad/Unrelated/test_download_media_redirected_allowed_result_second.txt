@@ -1,0 +1,37 @@
+#Method to be tested:
+@defer.inlineCallbacks
+def crawl(self, *args, **kwargs):
+    if self.crawling:
+        raise RuntimeError('Crawling already taking place')
+    self.crawling = True
+    try:
+        self.spider = self._create_spider(*args, **kwargs)
+        self.engine = self._create_engine()
+        start_requests = iter(self.spider.start_requests())
+        yield self.engine.open_spider(self.spider, start_requests)
+        yield defer.maybeDeferred(self.engine.start)
+    except Exception:
+        self.crawling = False
+        if self.engine is not None:
+            yield self.engine.close()
+        raise
+#Unit test:
+
+@defer.inlineCallbacks
+def test_download_media_redirected_allowed(self):
+    settings = dict(self.settings)
+    settings.update({'MEDIA_ALLOW_REDIRECTS': True})
+    runner = CrawlerRunner(settings)
+    crawler = self._create_crawler(RedirectedMediaDownloadSpider, runner=runner)
+    with LogCapture() as log:
+        yield crawler.crawl(self.mockserver.url('/files/images/'), media_key=self.media_key, media_urls_key=self.media_urls_key, mockserver=self.mockserver)
+    self._assert_files_downloaded(self.items, str(log))
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+self.assertTrue(self._assert_files_downloaded(self.items, str(log)) is not None)
+
+
+----------
+    self.assertEqual(crawler.stats.get_value('downloader/response_status_count/302'), 3)

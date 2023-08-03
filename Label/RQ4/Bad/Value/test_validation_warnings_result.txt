@@ -1,0 +1,33 @@
+#Method to be tested:
+def validate(self, value: object) -> T:
+    return self.run_validation(value)
+#Unit test:
+
+def test_validation_warnings(self):
+
+    class InvalidConfigOption(c.BaseConfigOption):
+
+        def pre_validation(self, config, key_name):
+            self.warnings.append('pre_validation warning')
+
+        def run_validation(self, value):
+            self.warnings.append('run_validation warning')
+
+        def post_validation(self, config, key_name):
+            self.warnings.append('post_validation warning')
+    conf = base.Config(schema=(('invalid_option', InvalidConfigOption()),))
+    (errors, warnings) = conf.validate()
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+
+
+#Generated assertions:
+2. The expected value for `warnings` is `['pre_validation warning', 'run_validation warning', 'post_validation warning']`.
+
+#Generated assertions:
+self.assertEqual(warnings, ['pre_validation warning', 'run_validation warning', 'post_validation warning'])
+self.assertEqual(errors, [])
+
+
+----------
+    self.assertEqual(errors, [])    self.assertEqual(warnings, [('invalid_option', 'pre_validation warning'), ('invalid_option', 'run_validation warning'), ('invalid_option', 'post_validation warning')])

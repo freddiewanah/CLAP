@@ -1,0 +1,91 @@
+#Method to be tested:
+@property
+def variables(self):
+    """Returns variables of this optimizer."""
+    return CallableList(self._variables)
+#Unit test:
+
+@test_combinations.generate(test_combinations.combine(mode=['graph', 'eager']))
+def test_initialize_if_not_restoring(self):
+    with self.test_session():
+        checkpoint_directory = self.get_temp_dir()
+        checkpoint_prefix = os.path.join(checkpoint_directory, 'ckpt')
+        optimizer_only_prefix = os.path.join(checkpoint_directory, 'opt')
+        with test_utils.device(should_use_gpu=True):
+            model = MyModel()
+            optimizer = adam.Adam(0.001)
+            root = tf.train.Checkpoint(model=model)
+            optimizer_checkpoint = tf.train.Checkpoint(optimizer=optimizer)
+            checkpoint_path = tf.train.latest_checkpoint(checkpoint_directory)
+            status = root.restore(save_path=checkpoint_path)
+            input_value = tf.constant([[3.0]])
+
+            def train_fn():
+                with tf.GradientTape() as tape:
+                    loss = model(input_value)
+                variables = model.trainable_variables
+                gradients = tape.gradient(loss, variables)
+                return optimizer.apply_gradients(zip(gradients, variables))
+            if not tf.executing_eagerly():
+                train_fn = functools.partial(self.evaluate, train_fn())
+            status.initialize_or_restore()
+            variables_not_in_the_variables_property = [obj for obj in optimizer._hyper.values() if isinstance(obj, tf.Variable)]
+            self.evaluate([v.initializer for v in optimizer.variables() + variables_not_in_the_variables_property])
+            train_fn()
+            model_save_path = root.save(file_prefix=checkpoint_prefix)
+            self.evaluate(optimizer.beta_1.assign(42.0))
+            optimizer_save_path = optimizer_checkpoint.save(optimizer_only_prefix)
+        del train_fn
+        with test_utils.device(should_use_gpu=True):
+            model = MyModel()
+            optimizer = adam.Adam(0.001)
+            root = tf.train.Checkpoint(optimizer=optimizer, model=model)
+            status = root.restore(save_path=model_save_path)
+            input_value = tf.constant([[3.0]])
+
+            def train_fn1():
+                with tf.GradientTape() as tape:
+                    loss = model(input_value)
+                variables = model.trainable_variables
+                gradients = tape.gradient(loss, variables)
+                return optimizer.apply_gradients(zip(gradients, variables))
+            if not tf.executing_eagerly():
+                train_fn1 = functools.partial(self.evaluate, train_fn1())
+            status.initialize_or_restore()
+            train_fn1()
+            with "<AssertPlaceholder1>"
+                status.assert_existing_objects_matched()
+            with "<AssertPlaceholder2>"
+                status.assert_consumed()
+        del train_fn1
+        with test_utils.device(should_use_gpu=True):
+            model = MyModel()
+            optimizer = adam.Adam(0.001, beta_1=1.0)
+            root = tf.train.Checkpoint(optimizer=optimizer, model=model)
+            opt_root = tf.train.Checkpoint(optimizer=optimizer)
+            status = root.restore(save_path=model_save_path)
+            init_only_optimizer_status = opt_root.restore(save_path=None)
+            optimizer_status = opt_root.restore(save_path=optimizer_save_path)
+            input_value = tf.constant([[3.0]])
+
+            def train_fn2():
+                with tf.GradientTape() as tape:
+                    loss = model(input_value)
+                variables = model.trainable_variables
+                gradients = tape.gradient(loss, variables)
+                return optimizer.apply_gradients(zip(gradients, variables))
+            if not tf.executing_eagerly():
+                train_fn2 = functools.partial(self.evaluate, train_fn2())
+            optimizer_status.run_restore_ops()
+            status.initialize_or_restore()
+            init_only_optimizer_status.initialize_or_restore()
+            train_fn2()
+            "<AssertPlaceholder3>"
+
+
+#Generated assertions:
+
+
+
+----------
+            with self.assertRaises(AssertionError):            with self.assertRaises(AssertionError):            self.assertEqual(42.0, self.evaluate(optimizer.beta_1))

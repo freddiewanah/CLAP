@@ -1,0 +1,25 @@
+#Method to be tested:
+def copy(self):
+    return self.__class__(self)
+#Unit test:
+
+@defer.inlineCallbacks
+def test_skip_messages(self):
+    settings = self.base_settings.copy()
+    settings['LOG_FORMATTER'] = SkipMessagesLogFormatter
+    crawler = get_crawler(ItemSpider, settings)
+    with LogCapture() as lc:
+        yield crawler.crawl(mockserver=self.mockserver)
+    "<AssertPlaceholder1>"
+    "<AssertPlaceholder2>"
+    "<AssertPlaceholder3>"
+
+
+#Generated assertions:
+self.assertLogs(lc, 'INFO', 'ItemSpider: Skipping message: test message')
+self.assertLogs(lc, 'INFO', 'ItemSpider: Skipping message: test message2', 1)
+self.assertLogs(lc, 'INFO', 'ItemSpider: Skipping message: test message3', 1)
+
+
+----------
+    self.assertNotIn('Scraped from <200 http://127.0.0.1:', str(lc))    self.assertNotIn('Crawled (200) <GET http://127.0.0.1:', str(lc))    self.assertNotIn('Dropped: Ignoring item', str(lc))

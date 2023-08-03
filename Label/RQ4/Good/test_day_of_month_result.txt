@@ -1,0 +1,23 @@
+#Method to be tested:
+def day_of_month(self) -> int:
+    """Generate a random day of month, from 1 to 31.
+
+        :return: Random value from 1 to 31.
+        """
+    return self.random.randint(1, 31)
+#Unit test:
+
+def test_day_of_month(self, _datetime):
+    result = _datetime.day_of_month()
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+2. For AssertPlaceholder1 is testing `result`, and the expected value is an integer between 1 and 31.
+
+#Generated assertion:
+assert 1 <= result <= 31
+
+
+----------
+    assert result >= 1 or result <= 31

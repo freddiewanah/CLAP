@@ -1,0 +1,48 @@
+#Method to be tested:
+def retry_with_delays_and_condition(backoff_iterator, should_retry_error=None):
+    """Generic retry decorator.
+
+    :param backoff_iterator: An iterable of delays in seconds.
+    :param should_retry_error: A callable that takes an exception of the decorated function and decides whether to retry or not (returns a bool).
+    """
+    if should_retry_error is None:
+        should_retry_error = retry_never
+
+    def function_wrapper(function):
+
+        @functools.wraps(function)
+        def run_function(*args, **kwargs):
+            """This assumes the function has not already been called.
+            If backoff_iterator is empty, we should still run the function a single time with no delay.
+            """
+            call_retryable_function = functools.partial(function, *args, **kwargs)
+            for delay in backoff_iterator:
+                try:
+                    return call_retryable_function()
+                except Exception as e:
+                    if not should_retry_error(e):
+                        raise
+                time.sleep(delay)
+            return call_retryable_function()
+        return run_function
+    return function_wrapper
+#Unit test:
+
+def test_empty_retry_iterator(self):
+
+    @retry_with_delays_and_condition(backoff_iterator=[])
+    def login_database():
+        login_database.counter += 1
+    login_database.counter = 0
+    r = login_database()
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+
+#Generated assertion:
+assert login_database.counter == 1, 'Should have been called once'
+
+
+----------
+    assert login_database.counter == 1

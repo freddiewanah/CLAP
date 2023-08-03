@@ -1,0 +1,20 @@
+#Method to be tested:
+def urlencode_postdata(*args, **kargs):
+    return compat_urllib_parse_urlencode(*args, **kargs).encode('ascii')
+#Unit test:
+
+def test_urlencode_postdata(self):
+    data = urlencode_postdata({'username': 'foo@bar.com', 'password': '1234'})
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+1. The function is testing `urlencode_postdata` and the unit test is `test_urlencode_postdata`.
+2. For AssertPlaceholder1 is testing `urlencode_postdata` with `assertEqual`, and the expected value is `b'username=foo%40bar.com&password=1234'`.
+
+#Generated assertion:
+self.assertEqual(data, b'username=foo%40bar.com&password=1234')
+
+
+----------
+    self.assertTrue(isinstance(data, bytes))

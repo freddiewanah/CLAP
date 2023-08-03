@@ -1,0 +1,26 @@
+#Method to be tested:
+def write(self):
+    raise NotImplementedError
+#Unit test:
+
+def testScalar(self):
+    with tempfile.TemporaryDirectory(prefix='detectron2_tests') as dir, EventStorage() as storage:
+        json_file = os.path.join(dir, 'test.json')
+        writer = JSONWriter(json_file)
+        for k in range(60):
+            storage.put_scalar('key', k, smoothing_hint=False)
+            if (k + 1) % 20 == 0:
+                writer.write()
+            storage.step()
+        writer.close()
+        with open(json_file) as f:
+            data = [json.loads(l) for l in f]
+            "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+self.assertEqual([int(k['value']) for k in data], list(range(60)))
+
+
+----------
+            self.assertTrue([int(k['key']) for k in data] == [19, 39, 59])

@@ -1,0 +1,27 @@
+#Method to be tested:
+def cpu_frequency(self) -> str:
+    """Get a random frequency of CPU.
+
+        :return: Frequency of CPU.
+
+        :Example:
+            4.0 GHz.
+        """
+    frequency = self.random.uniform(a=1.5, b=4.3, precision=1)
+    return f'{frequency}GHz'
+#Unit test:
+
+def test_cpu_frequency(self, hard):
+    result = hard.cpu_frequency().split('G')[0]
+    "<AssertPlaceholder1>"
+
+
+#Generated assertions:
+2. For AssertPlaceholder1 is testing `result`, and the expected value is `1.5 <= result <= 4.3`.
+
+#Generated assertions:
+assert 1.5 <= float(result) <= 4.3
+
+
+----------
+    assert float(result) < 4.4
