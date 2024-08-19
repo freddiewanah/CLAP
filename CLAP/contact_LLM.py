@@ -1,28 +1,27 @@
 import re
 import time
 import os
-import openai
-from run_test_case import run_pytest
+
+from run_test_methods import run_pytest
 import tiktoken
+from openai import OpenAI
 
 rerunList = []
 
 envDir = ""
-openai.api_key = ""
+api_key = ""
 
 def get_reponse_from_openai(prompt):
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=prompt,
-        temperature=0.3,
-        max_tokens=300,
-        top_p=1.0,
-        frequency_penalty=0.0,
-        presence_penalty=0.0,
-        # stop=["\n"]
+    client = OpenAI(api_key=api_key)
+    response = client.chat.completions.create(
+        model="gpt-4-0613",
+        messages=prompt,
+        temperature=0,
+        top_p=1,
+        max_tokens=1000,
     )
     print('response: ', response)
-    return response['choices'][0]['text']
+    return response.choices[0].message.content
 
 def parse_response(response, originalAsserts):
     generatedAsserts = []
